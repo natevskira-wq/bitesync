@@ -185,7 +185,6 @@
       padding: 12px 0;
       border-bottom: 1px solid #F3E8DC;
     }
-    .order-row:last-child { border-bottom: none; }
     .order-row-info { flex: 1; min-width: 0; }
     .order-row-name  { font-size: 15px; font-weight: 600; }
     .order-row-price { font-size: 13px; color: #E07856; font-weight: 700; margin-top: 2px; }
@@ -203,6 +202,35 @@
     .qty-btn:disabled { opacity: .3; cursor: not-allowed; }
     .qty-btn.has-qty  { border-color: #E07856; background: #E07856; color: white; }
     .qty-val { font-size: 17px; font-weight: 700; min-width: 24px; text-align: center; }
+
+    /* Item-level notes (appears when qty > 0) */
+    .item-notes-row {
+      padding: 0 0 10px;
+      margin-top: -4px;
+      border-bottom: 1px solid #F3E8DC;
+    }
+    .item-notes-input {
+      height: 36px !important;
+      border-radius: 8px !important;
+      padding: 0 10px !important;
+      font-size: 13px !important;
+      color: #7A5C42 !important;
+    }
+
+    /* Whole-order notes */
+    .order-notes-section {
+      padding: 16px 0 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .order-notes-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      color: #B09880;
+    }
 
     /* Sticky footer */
     .sticky-footer {
@@ -252,7 +280,6 @@
       display: flex; justify-content: space-between; align-items: baseline;
       font-size: 14px; padding: 6px 0; border-bottom: 1px solid #F3E8DC;
     }
-    .submitted-item:last-child { border-bottom: none; }
     .submitted-item-name { flex: 1; }
     .submitted-item-qty  { color: #7A5C42; font-size: 13px; margin-right: 6px; }
     .submitted-total {
@@ -374,6 +401,7 @@
     let activeSession = null;
     let sessionItems  = [];
     let cart          = new Map(); // sessionItemId → quantity
+    let itemNotes     = new Map(); // sessionItemId → note string
     let countdownTimer = null;
 
     // ── Screen management ─────────────────────────────────────────────
@@ -465,7 +493,7 @@
         if (recent?.length) {
           const { data: myOrders } = await supabase
             .from('bitesync_orders')
-            .select('id, items_subtotal, delivery_share, final_total, paid_status, bitesync_order_items(quantity, line_total, bitesync_session_items(name))')
+            .select('id, items_subtotal, delivery_share, final_total, paid_status, order_notes, bitesync_order_items(quantity, line_total, item_notes, bitesync_session_items(name))')
             .eq('session_id', recent[0].id)
             .eq('member_id', me.id)
             .limit(1);
@@ -496,7 +524,7 @@
           .order('category', { nullsFirst: true })
           .order('name'),
         supabase.from('bitesync_orders')
-          .select('id, status, items_subtotal, order_notes, bitesync_order_items(id, session_item_id, quantity)')
+          .select('id, status, items_subtotal, order_notes, bitesync_order_items(id, session_item_id, quantity, item_notes)')
           .eq('session_id', activeSession.id)
           .eq('member_id', me.id)
           .limit(1),
@@ -506,9 +534,11 @@
       const existingOrder = existingOrders?.[0] || null;
 
       cart.clear();
+      itemNotes.clear();
       if (existingOrder) {
         for (const oi of existingOrder.bitesync_order_items || []) {
           if (oi.quantity > 0) cart.set(oi.session_item_id, oi.quantity);
+          if (oi.item_notes)   itemNotes.set(oi.session_item_id, oi.item_notes);
         }
       }
 
@@ -556,7 +586,8 @@
         for (const [cat, items] of grouped) {
           html += `<div class="cat-header">${x(cat)}</div>`;
           for (const item of items) {
-            const qty = cart.get(item.id) || 0;
+            const qty  = cart.get(item.id) || 0;
+            const note = itemNotes.get(item.id) || '';
             html += `
               <div class="order-row">
                 <div class="order-row-info">
@@ -568,12 +599,25 @@
                   <span class="qty-val" id="qty-${item.id}">${qty}</span>
                   <button class="qty-btn ${qty>0?'has-qty':''}" id="plus-${item.id}" onclick="changeQty('${item.id}',1)">+</button>
                 </div>
+              </div>
+              <div class="item-notes-row" id="notes-row-${item.id}" style="display:${qty>0?'':'none'};">
+                <input type="text" class="item-notes-input" id="item-notes-${item.id}"
+                  placeholder="Special requests (e.g. no onions)"
+                  value="${x(note)}">
               </div>`;
           }
         }
       }
 
-      html += `</div>`;
+      html += `
+          <div class="order-notes-section">
+            <div class="order-notes-label">Order notes (optional)</div>
+            <input type="text" id="order-notes-input"
+              placeholder="E.g. Leave at reception, ring twice…"
+              value="${x(existingOrder?.order_notes || '')}">
+          </div>
+        </div>`;
+
       area.innerHTML = html;
 
       // Sticky footer
@@ -581,7 +625,6 @@
     }
 
     function renderFooter(hasOrder) {
-      // Remove existing footer if any
       document.getElementById('sticky-footer')?.remove();
 
       const footer = document.createElement('div');
@@ -635,7 +678,9 @@
               <span class="submitted-item-qty">${oi.quantity}×</span>
               <span class="submitted-item-name">${x(oi.bitesync_session_items?.name || '—')}</span>
               <span style="white-space:nowrap;">$${(+oi.line_total).toFixed(2)}</span>
-            </div>`).join('')}
+            </div>
+            ${oi.item_notes ? `<div style="font-size:12px;color:#7A5C42;padding:0 0 6px 18px;">↳ ${x(oi.item_notes)}</div>` : ''}`).join('')}
+          ${order.order_notes ? `<div style="font-size:13px;color:#7A5C42;padding:8px 12px;background:#FFF8F0;border-radius:8px;margin-top:4px;">📝 ${x(order.order_notes)}</div>` : ''}
           <div class="submitted-total">
             <span>Subtotal</span><span>$${subtotal.toFixed(2)}</span>
           </div>`;
@@ -672,6 +717,9 @@
       const plusBtn = document.getElementById(`plus-${itemId}`);
       plusBtn.classList.toggle('has-qty', next > 0);
 
+      const notesRow = document.getElementById(`notes-row-${itemId}`);
+      if (notesRow) notesRow.style.display = next > 0 ? '' : 'none';
+
       const totalEl = document.getElementById('footer-total-amount');
       if (totalEl) totalEl.textContent = `$${calcTotal().toFixed(2)}`;
     };
@@ -684,7 +732,8 @@
       const btn = document.getElementById('btn-submit');
       btn.disabled = true; btn.textContent = 'Saving…';
 
-      const subtotal = calcTotal();
+      const orderNotes = document.getElementById('order-notes-input')?.value.trim() || null;
+      const subtotal   = calcTotal();
 
       // Check for existing order
       const { data: existing } = await supabase
@@ -699,6 +748,7 @@
         await supabase.from('bitesync_orders').update({
           items_subtotal: subtotal,
           final_total:    subtotal,
+          order_notes:    orderNotes,
           submitted_at:   new Date().toISOString(),
           status:         'submitted',
         }).eq('id', existing.id);
@@ -706,31 +756,34 @@
         await supabase.from('bitesync_order_items').delete().eq('order_id', orderId);
       } else {
         const { data: newOrder } = await supabase.from('bitesync_orders').insert({
-          session_id:    activeSession.id,
-          member_id:     me.id,
-          status:        'submitted',
+          session_id:     activeSession.id,
+          member_id:      me.id,
+          status:         'submitted',
           items_subtotal: subtotal,
-          final_total:   subtotal,
-          submitted_at:  new Date().toISOString(),
+          final_total:    subtotal,
+          order_notes:    orderNotes,
+          submitted_at:   new Date().toISOString(),
         }).select('id').single();
         orderId = newOrder.id;
       }
 
       const orderItems = itemEntries.map(([sessionItemId, quantity]) => {
-        const item = sessionItems.find(i => i.id === sessionItemId);
+        const item  = sessionItems.find(i => i.id === sessionItemId);
+        const notes = document.getElementById(`item-notes-${sessionItemId}`)?.value.trim() || null;
         return {
           order_id:        orderId,
           session_item_id: sessionItemId,
           quantity,
           unit_price:  +(item.price),
           line_total:  +(item.price) * quantity,
+          item_notes:  notes,
         };
       });
 
       await supabase.from('bitesync_order_items').insert(orderItems);
 
       btn.disabled = false;
-      loadActiveSession(); // refresh to show updated state
+      loadActiveSession();
     };
 
     // ── Helpers ───────────────────────────────────────────────────────

@@ -288,6 +288,22 @@
     .form-section { display: none; flex-direction: column; gap: 12px; }
     .form-section.open { display: flex; }
 
+    /* ── WhatsApp prompt banner ── */
+    .wa-prompt-banner {
+      display: none;
+      background: #FFF3E0;
+      border-bottom: 1.5px solid #FFB74D;
+      padding: 12px 16px;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 640px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .wa-prompt-banner.visible { display: flex; }
+    .wa-prompt-title { font-size: 14px; font-weight: 700; color: #E65100; }
+    .wa-prompt-sub   { font-size: 13px; color: #7A5C42; }
+
     /* ── Misc ── */
     hr { border: none; border-top: 1px solid #F3E8DC; }
 
@@ -366,6 +382,17 @@
       <button class="tab-btn" data-tab="restaurants">Restaurants</button>
       <button class="tab-btn" data-tab="sessions">Sessions</button>
       <button class="tab-btn" data-tab="orders">Orders</button>
+    </div>
+
+    <!-- WhatsApp number prompt (shown if admin has no WA number set) -->
+    <div id="wa-prompt-banner" class="wa-prompt-banner">
+      <div class="wa-prompt-title">📲 Set your WhatsApp number</div>
+      <div class="wa-prompt-sub">Needed to send order summaries to the restaurant.</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input type="tel" id="admin-wa-input" placeholder="+1 555 000 0000" style="flex:1;min-height:40px;">
+        <button class="btn btn-primary btn-sm" onclick="saveAdminWA()">Save</button>
+        <button class="btn btn-ghost btn-sm" onclick="dismissWAPrompt()">Later</button>
+      </div>
     </div>
 
     <!-- ══════════════════════════════════════
@@ -495,7 +522,7 @@
 
       const { data, error } = await supabase
         .from('bitesync_members')
-        .select('id, full_name, is_admin, group_id')
+        .select('id, full_name, is_admin, group_id, whatsapp_number')
         .eq('id', memberId)
         .single();
 
@@ -506,6 +533,11 @@
 
       document.getElementById('loading-overlay').classList.add('hidden');
       document.getElementById('admin-shell').style.display = 'block';
+
+      if (!adminMember.whatsapp_number) {
+        document.getElementById('wa-prompt-banner').classList.add('visible');
+      }
+
       loadMembers();
     }
 
@@ -581,6 +613,21 @@
       if (!confirm('Delete this registration request?')) return;
       await supabase.from('bitesync_members').delete().eq('id', id);
       loadMembers();
+    };
+
+    // ── WhatsApp prompt ────────────────────────────────────────────────
+    window.saveAdminWA = async () => {
+      const num = document.getElementById('admin-wa-input').value.trim();
+      if (!num) { alert('Please enter a WhatsApp number.'); return; }
+      const { error } = await supabase.from('bitesync_members')
+        .update({ whatsapp_number: num }).eq('id', adminMember.id);
+      if (error) { alert('Failed to save. Try again.'); return; }
+      adminMember.whatsapp_number = num;
+      document.getElementById('wa-prompt-banner').classList.remove('visible');
+    };
+
+    window.dismissWAPrompt = () => {
+      document.getElementById('wa-prompt-banner').classList.remove('visible');
     };
 
     // ════════════════════════════════════════════════════════════════
@@ -728,13 +775,11 @@
       document.getElementById('form-new-session').classList.toggle('open', sessFormOpen);
       document.getElementById('btn-toggle-session').textContent = sessFormOpen ? '✕' : '+ New';
       if (sessFormOpen) {
-        // populate restaurant dropdown
         const sel = document.getElementById('sess-restaurant');
         sel.innerHTML = '<option value="">Loading…</option>';
         const { data } = await supabase.from('bitesync_restaurants').select('id,name').eq('created_by_group_id', groupId).order('name');
         sel.innerHTML = '<option value="">Select restaurant…</option>' +
           (data||[]).map(r=>`<option value="${r.id}">${x(r.name)}</option>`).join('');
-        // default deadline to tomorrow 9am
         const d = new Date(); d.setDate(d.getDate()+1); d.setHours(9,0,0,0);
         document.getElementById('sess-deadline').value = d.toISOString().slice(0,16);
       }
@@ -800,7 +845,6 @@
       const card = document.createElement('div');
       card.className = 'card';
 
-      // State machine action buttons
       const actions = {
         draft:     `<button class="btn btn-success btn-sm" onclick="openSession('${s.id}')">▶ Open</button>
                     <button class="btn btn-danger btn-sm"  onclick="cancelSession('${s.id}')">✕ Cancel</button>`,
@@ -935,15 +979,21 @@
       await loadOrders(id);
     });
 
+    // Cached data for WhatsApp export
+    let waSessionData = null;
+    let waOrdersData  = null;
+
     async function loadOrders(sessionId) {
       const el = document.getElementById('orders-content');
       el.innerHTML = '<div class="spinner"></div>';
 
-      const [{ data: session }, { data: orders, error }] = await Promise.all([
-        supabase.from('bitesync_sessions').select('delivery_fee, status').eq('id', sessionId).single(),
+      const [{ data: session }, { data: orders, error }, { data: allMembers }] = await Promise.all([
+        supabase.from('bitesync_sessions')
+          .select('delivery_fee, status, label, restaurant_id, bitesync_restaurants(name, phones)')
+          .eq('id', sessionId).single(),
         supabase.from('bitesync_orders')
           .select(`
-            id, status, items_subtotal, delivery_share, final_total, paid_status, order_notes, submitted_at,
+            id, member_id, status, items_subtotal, delivery_share, final_total, paid_status, order_notes, submitted_at,
             bitesync_members(full_name),
             bitesync_order_items(
               id, quantity, unit_price, line_total, item_notes,
@@ -952,93 +1002,137 @@
           `)
           .eq('session_id', sessionId)
           .order('submitted_at'),
+        supabase.from('bitesync_members')
+          .select('id, full_name')
+          .eq('group_id', groupId)
+          .eq('status', 'active')
+          .order('full_name'),
       ]);
 
       if (error)           { el.innerHTML = '<div class="empty">Failed to load orders.</div>'; return; }
-      if (!orders?.length) { el.innerHTML = '<div class="empty">No orders placed yet for this session.</div>'; return; }
 
       el.innerHTML = '';
+      waSessionData = session;
+      waOrdersData  = orders || [];
 
-      // Delivery fee split card
-      const fee = +(session?.delivery_fee || 0);
-      if (fee > 0) {
-        const perPerson   = fee / orders.length;
-        const alreadySplit = orders.some(o => +(o.delivery_share || 0) > 0);
-        const splitCard   = document.createElement('div');
-        splitCard.className = 'card';
-        splitCard.innerHTML = `
-          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
-            <div>
-              <div style="font-weight:700;">Delivery Fee: $${fee.toFixed(2)}</div>
-              <div style="font-size:13px;color:#7A5C42;">÷ ${orders.length} orders = $${perPerson.toFixed(2)} each</div>
-              ${alreadySplit ? '<div style="font-size:12px;color:#27AE60;margin-top:4px;">✓ Already split</div>' : ''}
-            </div>
-            <button class="btn btn-primary btn-sm" id="btn-split-delivery"
-              onclick="splitDelivery('${sessionId}', ${fee}, ${orders.length})">
-              ${alreadySplit ? 'Re-split' : 'Split Now'}
-            </button>
-          </div>`;
-        el.appendChild(splitCard);
-      }
+      // WhatsApp export card
+      const waCard = document.createElement('div');
+      waCard.className = 'card';
+      const restPhone = session?.bitesync_restaurants?.phones?.[0];
+      const waHint = restPhone
+        ? `Will open WhatsApp to ${x(restPhone)}`
+        : 'No restaurant phone on file — message will be copied to clipboard';
+      waCard.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+          <div>
+            <div style="font-weight:700;font-size:15px;">📲 Send to Restaurant</div>
+            <div style="font-size:12px;color:#7A5C42;margin-top:3px;">${waHint}</div>
+          </div>
+          <button class="btn btn-success btn-sm" onclick="exportWhatsApp()">Send via WA</button>
+        </div>`;
+      el.appendChild(waCard);
 
-      let grandTotal = 0;
-
-      for (const o of orders) {
-        const name  = o.bitesync_members?.full_name || 'Unknown';
-        const items = o.bitesync_order_items || [];
-        const total = +(o.final_total || 0);
-        grandTotal += total;
-
-        const card = document.createElement('div');
-        card.className = 'card';
-
-        const lines = items.map(oi => {
-          const iname = oi.bitesync_session_items?.name || '—';
-          const icat  = oi.bitesync_session_items?.category;
-          return `
-            <div class="order-line">
-              <div class="order-line-name">
-                <span class="order-line-qty">${oi.quantity}×</span>${x(iname)}
-                ${icat ? `<span style="color:#B09880;font-size:12px;"> ${x(icat)}</span>` : ''}
-                ${oi.item_notes ? `<div style="font-size:12px;color:#7A5C42;margin-left:18px;">↳ ${x(oi.item_notes)}</div>` : ''}
+      if (!orders?.length) {
+        const empty = document.createElement('div');
+        empty.className = 'empty';
+        empty.textContent = 'No orders placed yet for this session.';
+        el.appendChild(empty);
+      } else {
+        // Delivery fee split card
+        const fee = +(session?.delivery_fee || 0);
+        if (fee > 0) {
+          const perPerson   = fee / orders.length;
+          const alreadySplit = orders.some(o => +(o.delivery_share || 0) > 0);
+          const splitCard   = document.createElement('div');
+          splitCard.className = 'card';
+          splitCard.innerHTML = `
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+              <div>
+                <div style="font-weight:700;">Delivery Fee: $${fee.toFixed(2)}</div>
+                <div style="font-size:13px;color:#7A5C42;">÷ ${orders.length} orders = $${perPerson.toFixed(2)} each</div>
+                ${alreadySplit ? '<div style="font-size:12px;color:#27AE60;margin-top:4px;">✓ Already split</div>' : ''}
               </div>
-              <div style="font-weight:600;white-space:nowrap;">$${(+oi.line_total).toFixed(2)}</div>
-            </div>`;
-        }).join('');
-
-        card.innerHTML = `
-          <div class="card-header">
-            <div class="card-title">${x(name)}</div>
-            <div style="display:flex;align-items:center;gap:8px;">
-              <span class="badge badge-${o.paid_status}">${o.paid_status}</span>
-              <button class="btn btn-sm ${o.paid_status==='paid'?'btn-neutral':'btn-success'}"
-                onclick="togglePaid('${o.id}','${o.paid_status}')">
-                ${o.paid_status==='paid' ? 'Unmark' : 'Mark Paid'}
+              <button class="btn btn-primary btn-sm" id="btn-split-delivery"
+                onclick="splitDelivery('${sessionId}', ${fee}, ${orders.length})">
+                ${alreadySplit ? 'Re-split' : 'Split Now'}
               </button>
+            </div>`;
+          el.appendChild(splitCard);
+        }
+
+        let grandTotal = 0;
+
+        for (const o of orders) {
+          const name  = o.bitesync_members?.full_name || 'Unknown';
+          const items = o.bitesync_order_items || [];
+          const total = +(o.final_total || 0);
+          grandTotal += total;
+
+          const card = document.createElement('div');
+          card.className = 'card';
+
+          const lines = items.map(oi => {
+            const iname = oi.bitesync_session_items?.name || '—';
+            const icat  = oi.bitesync_session_items?.category;
+            return `
+              <div class="order-line">
+                <div class="order-line-name">
+                  <span class="order-line-qty">${oi.quantity}×</span>${x(iname)}
+                  ${icat ? `<span style="color:#B09880;font-size:12px;"> ${x(icat)}</span>` : ''}
+                  ${oi.item_notes ? `<div style="font-size:12px;color:#7A5C42;margin-left:18px;">↳ ${x(oi.item_notes)}</div>` : ''}
+                </div>
+                <div style="font-weight:600;white-space:nowrap;">$${(+oi.line_total).toFixed(2)}</div>
+              </div>`;
+          }).join('');
+
+          card.innerHTML = `
+            <div class="card-header">
+              <div class="card-title">${x(name)}</div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span class="badge badge-${o.paid_status}">${o.paid_status}</span>
+                <button class="btn btn-sm ${o.paid_status==='paid'?'btn-neutral':'btn-success'}"
+                  onclick="togglePaid('${o.id}','${o.paid_status}')">
+                  ${o.paid_status==='paid' ? 'Unmark' : 'Mark Paid'}
+                </button>
+              </div>
             </div>
-          </div>
-          ${lines}
-          ${o.order_notes ? `<div style="font-size:13px;color:#7A5C42;margin-top:4px;">Note: ${x(o.order_notes)}</div>` : ''}
-          <div class="order-total">
-            <span>Subtotal</span><span>$${(+o.items_subtotal).toFixed(2)}</span>
-          </div>
-          ${o.delivery_share ? `<div class="order-line" style="color:#7A5C42;font-size:13px;padding-top:4px;"><span>Delivery share</span><span>$${(+o.delivery_share).toFixed(2)}</span></div>` : ''}
-          <div style="display:flex;justify-content:space-between;font-weight:800;font-size:16px;color:#E07856;margin-top:4px;">
-            <span>Total</span><span>$${total.toFixed(2)}</span>
-          </div>`;
+            ${lines}
+            ${o.order_notes ? `<div style="font-size:13px;color:#7A5C42;margin-top:4px;">📝 ${x(o.order_notes)}</div>` : ''}
+            <div class="order-total">
+              <span>Subtotal</span><span>$${(+o.items_subtotal).toFixed(2)}</span>
+            </div>
+            ${o.delivery_share ? `<div class="order-line" style="color:#7A5C42;font-size:13px;padding-top:4px;"><span>Delivery share</span><span>$${(+o.delivery_share).toFixed(2)}</span></div>` : ''}
+            <div style="display:flex;justify-content:space-between;font-weight:800;font-size:16px;color:#E07856;margin-top:4px;">
+              <span>Total</span><span>$${total.toFixed(2)}</span>
+            </div>`;
 
-        el.appendChild(card);
+          el.appendChild(card);
+        }
+
+        const summary = document.createElement('div');
+        summary.className = 'card';
+        summary.innerHTML = `
+          <div style="display:flex;justify-content:space-between;font-weight:800;font-size:17px;">
+            <span>Session Total</span>
+            <span style="color:#E07856;">$${grandTotal.toFixed(2)}</span>
+          </div>
+          <div style="font-size:13px;color:#7A5C42;">${orders.length} order${orders.length!==1?'s':''}</div>`;
+        el.appendChild(summary);
+
+        // Who hasn't ordered yet
+        if (allMembers?.length) {
+          const orderedIds = new Set(orders.map(o => o.member_id));
+          const notYet = allMembers.filter(m => !orderedIds.has(m.id));
+          if (notYet.length) {
+            const nyCard = document.createElement('div');
+            nyCard.className = 'card';
+            nyCard.innerHTML = `
+              <div style="font-weight:700;font-size:15px;color:#E07856;">⏳ Haven't ordered yet (${notYet.length})</div>
+              ${notYet.map(m => `<div style="font-size:14px;padding:3px 0;color:#7A5C42;">${x(m.full_name)}</div>`).join('')}`;
+            el.appendChild(nyCard);
+          }
+        }
       }
-
-      const summary = document.createElement('div');
-      summary.className = 'card';
-      summary.innerHTML = `
-        <div style="display:flex;justify-content:space-between;font-weight:800;font-size:17px;">
-          <span>Session Total</span>
-          <span style="color:#E07856;">$${grandTotal.toFixed(2)}</span>
-        </div>
-        <div style="font-size:13px;color:#7A5C42;">${orders.length} order${orders.length!==1?'s':''}</div>`;
-      el.appendChild(summary);
     }
 
     window.togglePaid = async (orderId, cur) => {
@@ -1070,6 +1164,55 @@
 
       loadOrders(sessionId);
     };
+
+    // ── WhatsApp export ───────────────────────────────────────────────
+    window.exportWhatsApp = async () => {
+      if (!waSessionData || !waOrdersData?.length) {
+        alert('No orders to export.');
+        return;
+      }
+
+      const msg = generateOrderMessage(waSessionData, waOrdersData);
+      const encoded = encodeURIComponent(msg);
+
+      // Copy to clipboard (best-effort)
+      try { await navigator.clipboard.writeText(msg); } catch (_) {}
+
+      const phone = waSessionData.bitesync_restaurants?.phones?.[0];
+      if (phone) {
+        const digits = phone.replace(/[^\d]/g, '');
+        window.open(`https://wa.me/${digits}?text=${encoded}`, '_blank');
+      } else {
+        alert('Order summary copied to clipboard!\n\nPaste it manually in WhatsApp — no restaurant phone number is on file.');
+      }
+    };
+
+    function generateOrderMessage(session, orders) {
+      const restName = session.bitesync_restaurants?.name || 'Restaurant';
+      const label    = session.label ? `${session.label} — ` : '';
+      const date     = new Date().toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+
+      let msg = `🍽 *${label}${restName}*\n📅 ${date}\n\n*ORDER SUMMARY*`;
+
+      for (const o of orders) {
+        const name  = o.bitesync_members?.full_name || 'Unknown';
+        const items = o.bitesync_order_items || [];
+        msg += `\n\n👤 *${name}*`;
+        for (const oi of items) {
+          const iname = oi.bitesync_session_items?.name || '?';
+          msg += `\n• ${oi.quantity}× ${iname}`;
+          if (oi.item_notes) msg += `\n  _↳ ${oi.item_notes}_`;
+        }
+        if (o.order_notes) msg += `\n📝 _${o.order_notes}_`;
+      }
+
+      const grandTotal = orders.reduce((s, o) => s + +(o.items_subtotal || 0), 0);
+      const fee = +(session.delivery_fee || 0);
+      msg += `\n\n📊 *Total: $${grandTotal.toFixed(2)} | ${orders.length} order${orders.length !== 1 ? 's' : ''}*`;
+      if (fee > 0) msg += `\n💸 Delivery fee: $${fee.toFixed(2)}`;
+
+      return msg;
+    }
 
     // ── Helpers ───────────────────────────────────────────────────
     function x(s) {
