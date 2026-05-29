@@ -469,8 +469,12 @@
             <input type="datetime-local" id="sess-deadline">
           </div>
           <div class="field">
-            <span class="field-label">Delivery fee ($)</span>
-            <input type="number" id="sess-fee" placeholder="0.00" min="0" step="0.01">
+            <span class="field-label">Delivery address (optional)</span>
+            <input type="text" id="sess-address" placeholder="123 Main St, Floor 5">
+          </div>
+          <div class="field">
+            <span class="field-label">Address notes (optional)</span>
+            <input type="text" id="sess-address-notes" placeholder="Ring the bell, leave at reception…">
           </div>
           <div id="sess-error" class="error-msg" style="display:none;"></div>
           <div style="display:flex;gap:8px;">
@@ -777,11 +781,24 @@
       if (sessFormOpen) {
         const sel = document.getElementById('sess-restaurant');
         sel.innerHTML = '<option value="">Loading…</option>';
-        const { data } = await supabase.from('bitesync_restaurants').select('id,name').eq('created_by_group_id', groupId).order('name');
+        const [{ data: rests }, { data: lastSess }] = await Promise.all([
+          supabase.from('bitesync_restaurants').select('id,name').eq('created_by_group_id', groupId).order('name'),
+          supabase.from('bitesync_sessions')
+            .select('delivery_address, delivery_address_notes')
+            .eq('group_id', groupId)
+            .not('delivery_address', 'is', null)
+            .order('created_at', { ascending: false })
+            .limit(1),
+        ]);
         sel.innerHTML = '<option value="">Select restaurant…</option>' +
-          (data||[]).map(r=>`<option value="${r.id}">${x(r.name)}</option>`).join('');
+          (rests||[]).map(r=>`<option value="${r.id}">${x(r.name)}</option>`).join('');
         const d = new Date(); d.setDate(d.getDate()+1); d.setHours(9,0,0,0);
         document.getElementById('sess-deadline').value = d.toISOString().slice(0,16);
+        // Auto-fill address from most recent session
+        if (lastSess?.[0]) {
+          document.getElementById('sess-address').value = lastSess[0].delivery_address || '';
+          document.getElementById('sess-address-notes').value = lastSess[0].delivery_address_notes || '';
+        }
       }
     });
 
@@ -789,14 +806,17 @@
       sessFormOpen = false;
       document.getElementById('form-new-session').classList.remove('open');
       document.getElementById('btn-toggle-session').textContent = '+ New';
+      ['sess-label','sess-address','sess-address-notes'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('sess-restaurant').value = '';
     });
 
     document.getElementById('btn-create-session').addEventListener('click', async () => {
-      const errEl   = document.getElementById('sess-error');
-      const label   = document.getElementById('sess-label').value.trim();
-      const restId  = document.getElementById('sess-restaurant').value;
-      const deadline = document.getElementById('sess-deadline').value;
-      const fee     = parseFloat(document.getElementById('sess-fee').value) || 0;
+      const errEl        = document.getElementById('sess-error');
+      const label        = document.getElementById('sess-label').value.trim();
+      const restId       = document.getElementById('sess-restaurant').value;
+      const deadline     = document.getElementById('sess-deadline').value;
+      const address      = document.getElementById('sess-address').value.trim();
+      const addressNotes = document.getElementById('sess-address-notes').value.trim();
 
       errEl.style.display = 'none';
       if (!restId) { errEl.textContent = 'Please select a restaurant.'; errEl.style.display = 'block'; return; }
@@ -805,10 +825,14 @@
       btn.disabled = true; btn.textContent = 'Creating…';
 
       const { error } = await supabase.from('bitesync_sessions').insert({
-        group_id: groupId, restaurant_id: restId,
-        label: label || null, status: 'draft',
-        order_deadline: deadline || null,
-        delivery_fee: fee, created_by: adminMember.id,
+        group_id:               groupId,
+        restaurant_id:          restId,
+        label:                  label || null,
+        status:                 'draft',
+        order_deadline:         deadline || null,
+        delivery_address:       address || null,
+        delivery_address_notes: addressNotes || null,
+        created_by:             adminMember.id,
       });
 
       btn.disabled = false; btn.textContent = 'Create Draft';
@@ -823,7 +847,7 @@
 
       const { data } = await supabase
         .from('bitesync_sessions')
-        .select('id, label, status, order_deadline, delivery_fee, restaurant_id, bitesync_restaurants(name)')
+        .select('id, label, status, order_deadline, delivery_fee, delivery_address, delivery_address_notes, restaurant_id, bitesync_restaurants(name)')
         .eq('group_id', groupId)
         .order('created_at', { ascending: false });
 
@@ -863,11 +887,12 @@
           <div style="min-width:0;">
             <div class="card-title">${x(name)}</div>
             <div class="card-sub">${x(restName)} · Deadline: ${deadline}</div>
-            ${s.delivery_fee ? `<div class="card-sub">Delivery: $${(+s.delivery_fee).toFixed(2)}</div>` : ''}
+            ${s.delivery_address ? `<div class="card-sub">📍 ${x(s.delivery_address)}${s.delivery_address_notes ? ` — ${x(s.delivery_address_notes)}` : ''}</div>` : ''}
+            ${s.delivery_fee ? `<div class="card-sub">Delivery fee: $${(+s.delivery_fee).toFixed(2)}</div>` : ''}
           </div>
           <span class="badge badge-${s.status}">${s.status}</span>
         </div>
-        ${actions ? `<div style="display:flex;gap:8px;flex-wrap:wrap;">${actions}</div>` : ''}
+        ${actions ? `<div id="actions-${s.id}" style="display:flex;gap:8px;flex-wrap:wrap;">${actions}</div>` : ''}
         ${s.status === 'draft' ? `
           <hr>
           <div class="section-label">Menu items for this session</div>
@@ -951,8 +976,26 @@
       loadSessions();
     };
 
-    window.deliverSession = async (id) => {
-      await supabase.from('bitesync_sessions').update({ status: 'delivered' }).eq('id', id);
+    window.deliverSession = (id) => {
+      const actionsDiv = document.getElementById(`actions-${id}`);
+      if (!actionsDiv) return;
+      actionsDiv.innerHTML = `
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;width:100%;">
+          <div style="font-size:13px;font-weight:600;color:#7A5C42;flex-basis:100%;">Enter delivery fee (restaurant told you):</div>
+          <input type="number" id="fee-input-${id}" placeholder="0.00" min="0" step="0.01"
+            style="width:130px;" />
+          <button class="btn btn-primary btn-sm" onclick="confirmDeliver('${id}')">✓ Confirm Delivery</button>
+          <button class="btn btn-ghost btn-sm" onclick="loadSessions()">Cancel</button>
+        </div>`;
+      document.getElementById(`fee-input-${id}`)?.focus();
+    };
+
+    window.confirmDeliver = async (id) => {
+      const fee = parseFloat(document.getElementById(`fee-input-${id}`)?.value) || 0;
+      await supabase.from('bitesync_sessions').update({
+        status:       'delivered',
+        delivery_fee: fee > 0 ? fee : null,
+      }).eq('id', id);
       loadSessions();
     };
 
@@ -996,7 +1039,7 @@
 
       const [{ data: session }, { data: orders, error }, { data: allMembers }] = await Promise.all([
         supabase.from('bitesync_sessions')
-          .select('delivery_fee, status, label, restaurant_id, bitesync_restaurants(name, phones)')
+          .select('delivery_fee, status, label, restaurant_id, delivery_address, delivery_address_notes, bitesync_restaurants(name, phones)')
           .eq('id', sessionId).single(),
         supabase.from('bitesync_orders')
           .select(`
@@ -1214,7 +1257,11 @@
         if (o.order_notes) allOrderNotes.push(o.order_notes);
       }
 
-      let msg = `🍽 *${label}${restName}*\n📅 ${date}\n\n*ORDER SUMMARY*\n`;
+      const address = session.delivery_address
+        ? `\n📍 *${session.delivery_address}*${session.delivery_address_notes ? `\n_${session.delivery_address_notes}_` : ''}`
+        : '';
+
+      let msg = `🍽 *${label}${restName}*\n📅 ${date}${address}\n\n*ORDER SUMMARY*\n`;
 
       for (const [iname, { qty, notes }] of itemMap) {
         msg += `\n• ${qty}× ${iname}`;
