@@ -1043,7 +1043,7 @@
           .eq('id', sessionId).single(),
         supabase.from('bitesync_orders')
           .select(`
-            id, member_id, status, items_subtotal, delivery_share, final_total, paid_status, order_notes, submitted_at,
+            id, member_id, excluded_from_delivery, status, items_subtotal, delivery_share, final_total, paid_status, order_notes, submitted_at,
             bitesync_members(full_name),
             bitesync_order_items(
               id, quantity, unit_price, line_total, item_notes,
@@ -1091,19 +1091,21 @@
         // Delivery fee split card
         const fee = +(session?.delivery_fee || 0);
         if (fee > 0) {
-          const perPerson   = fee / orders.length;
-          const alreadySplit = orders.some(o => +(o.delivery_share || 0) > 0);
-          const splitCard   = document.createElement('div');
+          const excludedCount = orders.filter(o => o.excluded_from_delivery).length;
+          const includedCount = orders.length - excludedCount;
+          const perPerson     = includedCount > 0 ? fee / includedCount : 0;
+          const alreadySplit  = orders.some(o => +(o.delivery_share || 0) > 0);
+          const splitCard     = document.createElement('div');
           splitCard.className = 'card';
           splitCard.innerHTML = `
             <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
               <div>
                 <div style="font-weight:700;">Delivery Fee: $${fee.toFixed(2)}</div>
-                <div style="font-size:13px;color:#7A5C42;">÷ ${orders.length} orders = $${perPerson.toFixed(2)} each</div>
+                <div style="font-size:13px;color:#7A5C42;">÷ ${includedCount} order${includedCount!==1?'s':''} = $${perPerson.toFixed(2)} each${excludedCount > 0 ? ` · ${excludedCount} excluded` : ''}</div>
                 ${alreadySplit ? '<div style="font-size:12px;color:#27AE60;margin-top:4px;">✓ Already split</div>' : ''}
               </div>
               <button class="btn btn-primary btn-sm" id="btn-split-delivery"
-                onclick="splitDelivery('${sessionId}', ${fee}, ${orders.length})">
+                onclick="splitDelivery('${sessionId}', ${fee})">
                 ${alreadySplit ? 'Re-split' : 'Split Now'}
               </button>
             </div>`;
@@ -1138,11 +1140,16 @@
           card.innerHTML = `
             <div class="card-header">
               <div class="card-title">${x(name)}</div>
-              <div style="display:flex;align-items:center;gap:8px;">
+              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
                 <span class="badge badge-${o.paid_status}">${o.paid_status}</span>
                 <button class="btn btn-sm ${o.paid_status==='paid'?'btn-neutral':'btn-success'}"
                   onclick="togglePaid('${o.id}','${o.paid_status}')">
                   ${o.paid_status==='paid' ? 'Unmark' : 'Mark Paid'}
+                </button>
+                <button class="btn btn-sm btn-ghost" style="font-size:12px;min-height:30px;padding:0 9px;${o.excluded_from_delivery?'color:#E67E22;font-weight:700;':''}"
+                  onclick="toggleExclude('${o.id}',${o.excluded_from_delivery})"
+                  title="${o.excluded_from_delivery?'Excluded from delivery split':'Include in delivery split'}">
+                  ${o.excluded_from_delivery ? '🚫 Excluded' : '÷ In split'}
                 </button>
               </div>
             </div>
@@ -1151,7 +1158,9 @@
             <div class="order-total">
               <span>Subtotal</span><span>$${(+o.items_subtotal).toFixed(2)}</span>
             </div>
-            ${o.delivery_share ? `<div class="order-line" style="color:#7A5C42;font-size:13px;padding-top:4px;"><span>Delivery share</span><span>$${(+o.delivery_share).toFixed(2)}</span></div>` : ''}
+            ${o.excluded_from_delivery
+              ? `<div style="font-size:12px;color:#B09880;padding-top:4px;font-style:italic;">Not included in delivery split</div>`
+              : o.delivery_share ? `<div class="order-line" style="color:#7A5C42;font-size:13px;padding-top:4px;"><span>Delivery share</span><span>$${(+o.delivery_share).toFixed(2)}</span></div>` : ''}
             <div style="display:flex;justify-content:space-between;font-weight:800;font-size:16px;color:#E07856;margin-top:4px;">
               <span>Total</span><span>$${total.toFixed(2)}</span>
             </div>`;
@@ -1194,25 +1203,37 @@
       if (sid) loadOrders(sid);
     };
 
-    window.splitDelivery = async (sessionId, fee, count) => {
+    window.splitDelivery = async (sessionId, fee) => {
       const btn = document.getElementById('btn-split-delivery');
       btn.disabled = true; btn.textContent = 'Splitting…';
 
-      const share = Math.round((fee / count) * 100) / 100;
-
       const { data: orders } = await supabase
-        .from('bitesync_orders').select('id, items_subtotal').eq('session_id', sessionId);
+        .from('bitesync_orders')
+        .select('id, items_subtotal, excluded_from_delivery')
+        .eq('session_id', sessionId);
 
       if (!orders?.length) { btn.disabled = false; return; }
 
-      await Promise.all(orders.map(o =>
-        supabase.from('bitesync_orders').update({
-          delivery_share: share,
-          final_total:    Math.round((+(o.items_subtotal) + share) * 100) / 100,
-        }).eq('id', o.id)
-      ));
+      const eligible = orders.filter(o => !o.excluded_from_delivery);
+      const share    = eligible.length > 0 ? Math.round((fee / eligible.length) * 100) / 100 : 0;
+
+      await Promise.all(orders.map(o => {
+        const excl = o.excluded_from_delivery;
+        return supabase.from('bitesync_orders').update({
+          delivery_share: excl ? 0 : share,
+          final_total:    Math.round((+(o.items_subtotal) + (excl ? 0 : share)) * 100) / 100,
+        }).eq('id', o.id);
+      }));
 
       loadOrders(sessionId);
+    };
+
+    window.toggleExclude = async (orderId, excluded) => {
+      await supabase.from('bitesync_orders')
+        .update({ excluded_from_delivery: !excluded })
+        .eq('id', orderId);
+      const sid = document.getElementById('orders-picker').value;
+      if (sid) loadOrders(sid);
     };
 
     // ── WhatsApp export ───────────────────────────────────────────────

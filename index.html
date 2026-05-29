@@ -203,6 +203,11 @@
     .qty-btn.has-qty  { border-color: #E07856; background: #E07856; color: white; }
     .qty-val { font-size: 17px; font-weight: 700; min-width: 24px; text-align: center; }
 
+    /* Deadline urgency */
+    .session-banner.urgent   { background: #C5623C; }
+    .session-banner.critical { background: #B83C2B; animation: pulse-urgent 1.2s ease-in-out infinite; }
+    @keyframes pulse-urgent { 0%,100% { opacity:1; } 50% { opacity:.82; } }
+
     /* Item-level notes (appears when qty > 0) */
     .item-notes-row {
       padding: 0 0 10px;
@@ -506,12 +511,73 @@
         }
 
         document.getElementById('sticky-footer')?.remove();
-        area.innerHTML = `
-          <div class="no-session">
-            <div class="no-session-emoji">☕</div>
-            <div class="no-session-title">No active session</div>
-            <div class="no-session-sub">The admin hasn't opened an ordering session yet. Check back soon!</div>
+
+        // Check for a session cancelled within the last 24 h + member order history
+        const yesterday = new Date(Date.now() - 86400000).toISOString();
+        const [{ data: cancelled }, { data: history }] = await Promise.all([
+          supabase.from('bitesync_sessions')
+            .select('label, bitesync_restaurants(name)')
+            .eq('group_id', me.group_id)
+            .eq('status', 'cancelled')
+            .gte('created_at', yesterday)
+            .order('created_at', { ascending: false })
+            .limit(1),
+          supabase.from('bitesync_orders')
+            .select(`id, items_subtotal, final_total, submitted_at,
+              bitesync_sessions(label, status, bitesync_restaurants(name)),
+              bitesync_order_items(quantity, bitesync_session_items(name))`)
+            .eq('member_id', me.id)
+            .order('submitted_at', { ascending: false })
+            .limit(10),
+        ]);
+
+        const pastOrders = (history || [])
+          .filter(o => ['settled','delivered','closed'].includes(o.bitesync_sessions?.status))
+          .slice(0, 5);
+
+        let noSessionHtml;
+        if (cancelled?.length) {
+          const restName2  = cancelled[0].bitesync_restaurants?.name || 'Restaurant';
+          const sessLabel2 = cancelled[0].label ? `"${x(cancelled[0].label)}" at ` : '';
+          noSessionHtml = `
+            <div class="no-session" style="background:#FDF0EE;border-radius:16px;">
+              <div class="no-session-emoji">😔</div>
+              <div class="no-session-title">Session cancelled</div>
+              <div class="no-session-sub">${sessLabel2}${x(restName2)} was cancelled. The admin will open a new one soon.</div>
+            </div>`;
+        } else {
+          noSessionHtml = `
+            <div class="no-session">
+              <div class="no-session-emoji">☕</div>
+              <div class="no-session-title">No active session</div>
+              <div class="no-session-sub">The admin hasn't opened an ordering session yet. Check back soon!</div>
+            </div>`;
+        }
+
+        let html = noSessionHtml;
+
+        if (pastOrders.length) {
+          const rows = pastOrders.map(o => {
+            const sess    = o.bitesync_sessions;
+            const rest    = x(sess?.bitesync_restaurants?.name || '—');
+            const label   = sess?.label ? `${x(sess.label)} · ` : '';
+            const items   = o.bitesync_order_items || [];
+            const summary = items.slice(0,3).map(oi => `${oi.quantity}× ${x(oi.bitesync_session_items?.name||'?')}`).join(', ');
+            const more    = items.length > 3 ? ` +${items.length-3} more` : '';
+            const total   = +(o.final_total || o.items_subtotal || 0);
+            return `<div style="padding:10px 0;border-bottom:1px solid #F3E8DC;">
+              <div style="font-size:14px;font-weight:700;">${label}${rest}</div>
+              <div style="font-size:13px;color:#7A5C42;margin-top:2px;">${summary}${more}</div>
+              <div style="font-size:12px;color:#B09880;margin-top:3px;">$${total.toFixed(2)} · ${timeAgo(o.submitted_at)}</div>
+            </div>`;
+          }).join('');
+          html += `<div class="card" style="width:100%;">
+            <div style="font-size:15px;font-weight:700;margin-bottom:2px;">📋 Past Orders</div>
+            ${rows}
           </div>`;
+        }
+
+        area.innerHTML = html;
         return;
       }
 
@@ -552,6 +618,11 @@
           const remaining = new Date(activeSession.order_deadline) - Date.now();
           if (remaining <= 0) { clearInterval(countdownTimer); loadActiveSession(); return; }
           el.textContent = countdownStr(new Date(activeSession.order_deadline));
+          const banner = document.getElementById('session-banner');
+          if (banner) {
+            banner.className = 'session-banner' +
+              (remaining < 5*60*1000 ? ' critical' : remaining < 30*60*1000 ? ' urgent' : '');
+          }
         }, 30_000);
       }
     }
@@ -563,9 +634,12 @@
       const deadline = activeSession.order_deadline ? new Date(activeSession.order_deadline) : null;
       const hasOrder = !!existingOrder;
 
-      // Banner
+      // Banner — colour shifts when deadline is approaching
+      const msLeft  = deadline ? deadline - Date.now() : Infinity;
+      const urgency = msLeft < 5*60*1000 ? ' critical' : msLeft < 30*60*1000 ? ' urgent' : '';
+
       let html = `
-        <div class="session-banner">
+        <div class="session-banner${urgency}" id="session-banner">
           <div class="session-restaurant">🍽 ${x(restName)}</div>
           ${deadline ? `<div class="session-deadline">Order by ${deadline.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} · <span id="deadline-countdown">${countdownStr(deadline)}</span></div>` : ''}
           ${hasOrder ? '<div class="session-badge">✓ Order placed — you can still edit below</div>' : ''}
@@ -800,6 +874,13 @@
     function x(s) {
       if (s == null) return '';
       return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function timeAgo(iso) {
+      const m = Math.floor((Date.now() - new Date(iso)) / 60000);
+      if (m < 60)   return `${m}m ago`;
+      if (m < 1440) return `${Math.floor(m/60)}h ago`;
+      return `${Math.floor(m/1440)}d ago`;
     }
 
     // ── Entry navigation ──────────────────────────────────────────────
