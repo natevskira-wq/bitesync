@@ -41,7 +41,7 @@
       margin-top: -12px;
     }
 
-    /* Screen visibility */
+    /* Screens */
     .screen { width: 100%; display: none; flex-direction: column; align-items: center; gap: 14px; }
     .screen.active { display: flex; }
 
@@ -56,177 +56,192 @@
       flex-direction: column;
       gap: 14px;
     }
+    .card-title { font-size: 20px; font-weight: 700; }
+    .card-sub   { font-size: 14px; color: #7A5C42; line-height: 1.55; }
 
-    .card-title {
-      font-size: 20px;
-      font-weight: 700;
+    /* Form */
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field-label { font-size: 13px; font-weight: 600; }
+
+    input[type="text"], input[type="tel"], select {
+      width: 100%; height: 48px;
+      border: 1.5px solid #E8D5C4; border-radius: 12px;
+      padding: 0 14px; font-size: 16px; font-family: inherit;
+      color: #3D2817; background: #FFF8F0;
+      outline: none; -webkit-appearance: none; appearance: none;
+      transition: border-color .15s, background .15s;
     }
-
-    .card-sub {
-      font-size: 14px;
-      color: #7A5C42;
-      line-height: 1.55;
-    }
-
-    /* Form fields */
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .field-label {
-      font-size: 13px;
-      font-weight: 600;
-      color: #3D2817;
-    }
-
-    input[type="text"],
-    input[type="tel"],
+    input:focus, select:focus { border-color: #E07856; background: white; }
     select {
-      width: 100%;
-      height: 48px;
-      border: 1.5px solid #E8D5C4;
-      border-radius: 12px;
-      padding: 0 14px;
-      font-size: 16px;
-      font-family: inherit;
-      color: #3D2817;
-      background: #FFF8F0;
-      outline: none;
-      transition: border-color 0.15s, background 0.15s;
-      -webkit-appearance: none;
-      appearance: none;
-    }
-
-    input[type="text"]:focus,
-    input[type="tel"]:focus,
-    select:focus {
-      border-color: #E07856;
-      background: #fff;
-    }
-
-    select {
-      cursor: pointer;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237A5C42' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 14px center;
-      background-color: #FFF8F0;
-      padding-right: 42px;
+      background-repeat: no-repeat; background-position: right 12px center; background-color: #FFF8F0;
+      padding-right: 40px; cursor: pointer;
     }
+    select:focus { background-color: white; }
 
-    select:focus { background-color: #fff; }
-
-    .checkbox-row {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      gap: 10px;
-      cursor: pointer;
-      padding: 2px 0;
-    }
-
-    .checkbox-row input[type="checkbox"] {
-      width: 20px;
-      height: 20px;
-      flex-shrink: 0;
-      accent-color: #E07856;
-      cursor: pointer;
-      border-radius: 4px;
-    }
-
-    .checkbox-row span {
-      font-size: 14px;
-      color: #7A5C42;
-      user-select: none;
-    }
+    .checkbox-row { display: flex; flex-direction: row; align-items: center; gap: 10px; cursor: pointer; padding: 2px 0; }
+    .checkbox-row input[type="checkbox"] { width: 20px; height: 20px; flex-shrink: 0; accent-color: #E07856; cursor: pointer; }
+    .checkbox-row span { font-size: 14px; color: #7A5C42; user-select: none; }
 
     /* Buttons */
     .btn {
-      width: 100%;
-      min-height: 52px;
-      border: none;
-      border-radius: 14px;
-      font-size: 16px;
-      font-weight: 700;
-      font-family: inherit;
-      cursor: pointer;
-      transition: opacity 0.15s, transform 0.1s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      text-decoration: none;
+      width: 100%; min-height: 52px; border: none; border-radius: 14px;
+      font-size: 16px; font-weight: 700; font-family: inherit; cursor: pointer;
+      padding: 0 18px; display: inline-flex; align-items: center; justify-content: center;
+      gap: 8px; transition: opacity .15s, transform .1s; white-space: nowrap; text-decoration: none;
     }
-
-    .btn:active { transform: scale(0.97); }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-    .btn-primary  { background: #E07856; color: #fff; }
-    .btn-secondary { background: #fff; color: #E07856; border: 2px solid #E07856; }
-    .btn-ghost    { background: transparent; color: #7A5C42; font-size: 14px; font-weight: 600; min-height: 44px; }
+    .btn:active  { transform: scale(0.97); }
+    .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+    .btn-primary   { background: #E07856; color: white; }
+    .btn-secondary { background: white; color: #E07856; border: 2px solid #E07856; }
+    .btn-ghost     { background: transparent; color: #7A5C42; font-size: 14px; font-weight: 600; min-height: 44px; }
+    .btn-sm        { min-height: 40px; font-size: 14px; border-radius: 10px; padding: 0 16px; }
 
     /* Error */
     .error-msg {
-      font-size: 14px;
-      color: #B83C2B;
-      background: #FDF0EE;
-      border-radius: 10px;
-      padding: 12px 14px;
-      text-align: center;
-      line-height: 1.45;
+      font-size: 14px; color: #B83C2B; background: #FDF0EE;
+      border-radius: 10px; padding: 12px 14px; text-align: center; line-height: 1.45;
     }
 
     /* Divider */
-    .divider {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .divider::before, .divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: #E8D5C4;
-    }
+    .divider { display: flex; align-items: center; gap: 12px; }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #E8D5C4; }
     .divider span { font-size: 12px; color: #B09880; white-space: nowrap; }
 
     /* Spinner */
     .spinner {
-      width: 40px;
-      height: 40px;
-      border: 3px solid #E8D5C4;
-      border-top-color: #E07856;
-      border-radius: 50%;
-      animation: spin 0.75s linear infinite;
-      flex-shrink: 0;
+      width: 40px; height: 40px;
+      border: 3px solid #E8D5C4; border-top-color: #E07856;
+      border-radius: 50%; animation: spin .75s linear infinite; flex-shrink: 0;
     }
-
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Checking screen */
-    #screen-checking {
-      min-height: 40vh;
-      justify-content: center;
-      align-items: center;
-      gap: 12px;
-    }
-
+    #screen-checking { min-height: 40vh; justify-content: center; align-items: center; gap: 12px; }
     .check-text { font-size: 14px; color: #7A5C42; }
 
-    /* Waiting screen */
-    .waiting-inner {
+    .waiting-inner { display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; }
+
+    /* ── Home screen ── */
+    .home-topbar {
       display: flex;
-      flex-direction: column;
       align-items: center;
-      gap: 16px;
-      text-align: center;
+      justify-content: space-between;
+      width: 100%;
+      gap: 10px;
+    }
+    .home-greeting { font-size: 22px; font-weight: 800; flex: 1; }
+    #admin-link {
+      width: auto; min-height: 38px; font-size: 13px; border-radius: 10px;
+      padding: 0 14px; flex-shrink: 0; display: none;
     }
 
-    /* Home screen */
-    .home-emoji    { font-size: 60px; text-align: center; line-height: 1; }
-    .home-greeting { font-size: 24px; font-weight: 800; text-align: center; }
-    .home-sub      { font-size: 15px; color: #7A5C42; text-align: center; line-height: 1.55; max-width: 300px; }
+    /* No session */
+    .no-session {
+      width: 100%;
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      padding: 40px 24px; text-align: center;
+    }
+    .no-session-emoji { font-size: 52px; }
+    .no-session-title { font-size: 17px; font-weight: 700; }
+    .no-session-sub   { font-size: 14px; color: #7A5C42; line-height: 1.5; }
+
+    /* Session banner */
+    .session-banner {
+      width: 100%;
+      background: #E07856;
+      color: white;
+      border-radius: 16px;
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .session-restaurant { font-size: 18px; font-weight: 800; }
+    .session-deadline   { font-size: 13px; opacity: .85; }
+    .session-badge {
+      margin-top: 6px;
+      background: rgba(255,255,255,.25);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      width: fit-content;
+    }
+
+    /* Order form */
+    .order-form { width: 100%; display: flex; flex-direction: column; gap: 0; padding-bottom: 100px; }
+
+    .cat-header {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .7px; color: #B09880;
+      padding: 16px 0 8px;
+    }
+
+    .order-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid #F3E8DC;
+    }
+    .order-row:last-child { border-bottom: none; }
+    .order-row-info { flex: 1; min-width: 0; }
+    .order-row-name  { font-size: 15px; font-weight: 600; }
+    .order-row-price { font-size: 13px; color: #E07856; font-weight: 700; margin-top: 2px; }
+
+    .qty-control { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .qty-btn {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 2px solid #E8D5C4; background: white;
+      font-size: 20px; font-weight: 300; color: #3D2817;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: border-color .15s, background .15s;
+      flex-shrink: 0; padding: 0; line-height: 1;
+    }
+    .qty-btn:not(:disabled):hover { border-color: #E07856; color: #E07856; }
+    .qty-btn:disabled { opacity: .3; cursor: not-allowed; }
+    .qty-btn.has-qty  { border-color: #E07856; background: #E07856; color: white; }
+    .qty-val { font-size: 17px; font-weight: 700; min-width: 24px; text-align: center; }
+
+    /* Sticky footer */
+    .sticky-footer {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: white;
+      border-top: 1.5px solid #E8D5C4;
+      box-shadow: 0 -4px 20px rgba(61,40,23,.10);
+      padding: 12px 16px 24px;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      max-width: 390px;
+      margin: 0 auto;
+      left: 50%; transform: translateX(-50%);
+      width: 100%;
+    }
+    .footer-total {
+      display: flex; flex-direction: column; gap: 1px; flex-shrink: 0;
+    }
+    .footer-total-label { font-size: 11px; color: #B09880; font-weight: 600; }
+    .footer-total-amount { font-size: 20px; font-weight: 800; color: #E07856; }
+    .footer-btn { flex: 1; min-height: 48px; border-radius: 12px; font-size: 15px; }
+
+    /* Submitted order */
+    .submitted-item {
+      display: flex; justify-content: space-between; align-items: baseline;
+      font-size: 14px; padding: 6px 0; border-bottom: 1px solid #F3E8DC;
+    }
+    .submitted-item:last-child { border-bottom: none; }
+    .submitted-item-name { flex: 1; }
+    .submitted-item-qty  { color: #7A5C42; font-size: 13px; margin-right: 6px; }
+    .submitted-total {
+      display: flex; justify-content: space-between;
+      font-weight: 800; font-size: 16px; color: #E07856;
+      padding-top: 10px; margin-top: 4px;
+      border-top: 1.5px solid #E8D5C4;
+    }
   </style>
 </head>
 <body>
@@ -235,7 +250,7 @@
     <div class="wordmark">BiteSync</div>
     <div class="tagline">Group breakfast, made easy</div>
 
-    <!-- ─── Checking localStorage ─── -->
+    <!-- ─── Checking ─── -->
     <div id="screen-checking" class="screen active">
       <div class="spinner"></div>
       <div class="check-text">Loading…</div>
@@ -245,14 +260,14 @@
     <div id="screen-entry" class="screen">
       <div class="card">
         <div class="card-title">Welcome!</div>
-        <div class="card-sub">Join your group breakfast order or sign back in on a new device.</div>
+        <div class="card-sub">Join your group breakfast order or sign in on a new device.</div>
         <button class="btn btn-primary" id="btn-go-register">First time? Register</button>
         <div class="divider"><span>or</span></div>
         <button class="btn btn-secondary" id="btn-go-claim">Already registered, new device</button>
       </div>
     </div>
 
-    <!-- ─── Register form ─── -->
+    <!-- ─── Register ─── -->
     <div id="screen-register" class="screen">
       <div class="card">
         <div class="card-title">Create your account</div>
@@ -281,28 +296,26 @@
       <button class="btn btn-ghost" id="btn-back-from-register">← Back</button>
     </div>
 
-    <!-- ─── Waiting for admin approval ─── -->
+    <!-- ─── Waiting for approval ─── -->
     <div id="screen-waiting" class="screen">
       <div class="card">
         <div class="waiting-inner">
           <div class="spinner"></div>
           <div class="card-title">Pending approval</div>
-          <div class="card-sub">An admin needs to approve your account. This page checks automatically every 10 seconds — no need to refresh.</div>
+          <div class="card-sub">An admin will approve your account soon. This page checks every 10 seconds — no need to refresh.</div>
         </div>
       </div>
     </div>
 
-    <!-- ─── New-device claim ─── -->
+    <!-- ─── New device claim ─── -->
     <div id="screen-claim" class="screen">
       <div class="card">
         <div class="card-title">Sign in on this device</div>
-        <div class="card-sub">Select your name and enter your registered phone number to continue.</div>
+        <div class="card-sub">Select your name and enter your registered phone number.</div>
         <form id="form-claim" novalidate style="display:contents;">
           <div class="field">
             <span class="field-label">Your name</span>
-            <select id="claim-name">
-              <option value="">Loading members…</option>
-            </select>
+            <select id="claim-name"><option value="">Loading members…</option></select>
           </div>
           <div class="field">
             <span class="field-label">Registered phone number</span>
@@ -315,26 +328,36 @@
       <button class="btn btn-ghost" id="btn-back-from-claim">← Back</button>
     </div>
 
-    <!-- ─── Home placeholder ─── -->
+    <!-- ─── Home (ordering) ─── -->
     <div id="screen-home" class="screen">
-      <div class="home-emoji">🍳</div>
-      <div class="home-greeting" id="home-greeting">Hi there!</div>
-      <div class="home-sub">You're all set. Ordering will open here once a session is live.</div>
-      <a href="admin.html" id="admin-link" class="btn btn-secondary" style="display:none;max-width:220px;margin-top:8px;">⚙ Admin View</a>
+      <div class="home-topbar">
+        <div id="home-greeting" class="home-greeting">Hi! 👋</div>
+        <a href="admin.html" id="admin-link" class="btn btn-secondary btn-sm">⚙ Admin</a>
+      </div>
+      <div id="session-area" style="width:100%;">
+        <div style="display:flex;justify-content:center;padding:32px 0;"><div class="spinner"></div></div>
+      </div>
     </div>
 
-  </div>
+  </div><!-- /.app -->
 
   <script type="module">
     import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-    const SUPABASE_URL  = 'https://syrhuxxryctrzjdzexnx.supabase.co';
+    const SUPABASE_URL      = 'https://syrhuxxryctrzjdzexnx.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN5cmh1eHhyeWN0cnpqZHpleG54Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxMjYzMjUsImV4cCI6MjA4MDcwMjMyNX0.DP4O-USLYPbjGoTwM2fSc8juzLsABrDbGpQ-7CxSAXQ';
-    const GROUP_CODE    = 'BITESYNC-MAIN';
+    const GROUP_CODE        = 'BITESYNC-MAIN';
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // ── Screen management ──────────────────────────────────────────────────
+    // ── Global state ─────────────────────────────────────────────────
+    let me            = null;  // {id, full_name, is_admin, group_id}
+    let activeSession = null;
+    let sessionItems  = [];
+    let cart          = new Map(); // sessionItemId → quantity
+    let countdownTimer = null;
+
+    // ── Screen management ─────────────────────────────────────────────
     const screens = {
       checking: document.getElementById('screen-checking'),
       entry:    document.getElementById('screen-entry'),
@@ -349,128 +372,323 @@
       screens[name].classList.add('active');
     }
 
-    // ── Helpers ────────────────────────────────────────────────────────────
     function showErr(el, msg) { el.textContent = msg; el.style.display = 'block'; }
-    function hideErr(el) { el.style.display = 'none'; }
+    function hideErr(el)      { el.style.display = 'none'; }
 
-    function goHome(fullName, isAdmin = false) {
-      document.getElementById('home-greeting').textContent = `Hi ${fullName}! 👋`;
-      document.getElementById('admin-link').style.display = isAdmin ? 'flex' : 'none';
-      show('home');
-    }
-
-    // ── Init: check localStorage ───────────────────────────────────────────
+    // ── Init ──────────────────────────────────────────────────────────
     async function init() {
       const memberId = localStorage.getItem('bitesync_member_id');
+      if (!memberId) { show('entry'); return; }
 
-      if (memberId) {
-        const { data, error } = await supabase
-          .from('bitesync_members')
-          .select('id, full_name, status, is_admin')
-          .eq('id', memberId)
-          .single();
+      const { data, error } = await supabase
+        .from('bitesync_members')
+        .select('id, full_name, status, is_admin, group_id')
+        .eq('id', memberId)
+        .single();
 
-        if (!error && data && data.status === 'active') {
-          goHome(data.full_name, data.is_admin);
-          return;
-        }
-        // Stale / inactive — clear and show entry
-        localStorage.removeItem('bitesync_member_id');
+      if (!error && data && data.status === 'active') {
+        me = data;
+        goHome();
+        return;
       }
-
+      localStorage.removeItem('bitesync_member_id');
       show('entry');
     }
 
     init();
 
-    // ── Navigation ─────────────────────────────────────────────────────────
-    document.getElementById('btn-go-register').addEventListener('click', () => show('register'));
+    function goHome() {
+      document.getElementById('home-greeting').textContent = `Hi ${me.full_name}! 👋`;
+      document.getElementById('admin-link').style.display = me.is_admin ? 'flex' : 'none';
+      show('home');
+      loadActiveSession();
+    }
 
+    // ── Session loading ───────────────────────────────────────────────
+    async function loadActiveSession() {
+      const area = document.getElementById('session-area');
+      area.innerHTML = '<div style="display:flex;justify-content:center;padding:32px 0;"><div class="spinner"></div></div>';
+
+      clearInterval(countdownTimer);
+
+      const { data: sessions } = await supabase
+        .from('bitesync_sessions')
+        .select('id, label, status, order_deadline, delivery_fee, restaurant_id, bitesync_restaurants(name)')
+        .eq('group_id', me.group_id)
+        .eq('status', 'open')
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (!sessions?.length) {
+        area.innerHTML = `
+          <div class="no-session">
+            <div class="no-session-emoji">☕</div>
+            <div class="no-session-title">No active session</div>
+            <div class="no-session-sub">The admin hasn't opened an ordering session yet. Check back soon!</div>
+          </div>`;
+        return;
+      }
+
+      activeSession = sessions[0];
+
+      const [{ data: items }, { data: existingOrders }] = await Promise.all([
+        supabase.from('bitesync_session_items')
+          .select('id, name, category, price')
+          .eq('session_id', activeSession.id)
+          .order('category', { nullsFirst: true })
+          .order('name'),
+        supabase.from('bitesync_orders')
+          .select('id, status, items_subtotal, order_notes, bitesync_order_items(id, session_item_id, quantity)')
+          .eq('session_id', activeSession.id)
+          .eq('member_id', me.id)
+          .limit(1),
+      ]);
+
+      sessionItems = items || [];
+      const existingOrder = existingOrders?.[0] || null;
+
+      cart.clear();
+      if (existingOrder) {
+        for (const oi of existingOrder.bitesync_order_items || []) {
+          if (oi.quantity > 0) cart.set(oi.session_item_id, oi.quantity);
+        }
+      }
+
+      renderSession(existingOrder);
+
+      // Live deadline countdown
+      if (activeSession.order_deadline) {
+        countdownTimer = setInterval(() => {
+          const el = document.getElementById('deadline-countdown');
+          if (el) el.textContent = countdownStr(new Date(activeSession.order_deadline));
+          else clearInterval(countdownTimer);
+        }, 30_000);
+      }
+    }
+
+    // ── Render session UI ─────────────────────────────────────────────
+    function renderSession(existingOrder) {
+      const area     = document.getElementById('session-area');
+      const restName = activeSession.bitesync_restaurants?.name || 'Restaurant';
+      const deadline = activeSession.order_deadline ? new Date(activeSession.order_deadline) : null;
+      const hasOrder = !!existingOrder;
+
+      // Banner
+      let html = `
+        <div class="session-banner">
+          <div class="session-restaurant">🍽 ${x(restName)}</div>
+          ${deadline ? `<div class="session-deadline">Order by ${deadline.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} · <span id="deadline-countdown">${countdownStr(deadline)}</span></div>` : ''}
+          ${hasOrder ? '<div class="session-badge">✓ Order placed — you can still edit below</div>' : ''}
+        </div>
+        <div class="order-form" id="order-form">`;
+
+      // Group items by category
+      const grouped = new Map();
+      for (const item of sessionItems) {
+        const cat = item.category || 'Other';
+        if (!grouped.has(cat)) grouped.set(cat, []);
+        grouped.get(cat).push(item);
+      }
+
+      if (!sessionItems.length) {
+        html += '<div style="padding:24px 0;text-align:center;color:#B09880;font-size:14px;">No items available for this session yet.</div>';
+      } else {
+        for (const [cat, items] of grouped) {
+          html += `<div class="cat-header">${x(cat)}</div>`;
+          for (const item of items) {
+            const qty = cart.get(item.id) || 0;
+            html += `
+              <div class="order-row">
+                <div class="order-row-info">
+                  <div class="order-row-name">${x(item.name)}</div>
+                  <div class="order-row-price">$${(+item.price).toFixed(2)}</div>
+                </div>
+                <div class="qty-control">
+                  <button class="qty-btn" id="minus-${item.id}" onclick="changeQty('${item.id}',-1)" ${qty===0?'disabled':''}>−</button>
+                  <span class="qty-val" id="qty-${item.id}">${qty}</span>
+                  <button class="qty-btn ${qty>0?'has-qty':''}" id="plus-${item.id}" onclick="changeQty('${item.id}',1)">+</button>
+                </div>
+              </div>`;
+          }
+        }
+      }
+
+      html += `</div>`;
+      area.innerHTML = html;
+
+      // Sticky footer
+      renderFooter(hasOrder);
+    }
+
+    function renderFooter(hasOrder) {
+      // Remove existing footer if any
+      document.getElementById('sticky-footer')?.remove();
+
+      const footer = document.createElement('div');
+      footer.className = 'sticky-footer';
+      footer.id = 'sticky-footer';
+      footer.innerHTML = `
+        <div class="footer-total">
+          <div class="footer-total-label">Total</div>
+          <div class="footer-total-amount" id="footer-total-amount">$${calcTotal().toFixed(2)}</div>
+        </div>
+        <button class="btn btn-primary footer-btn" id="btn-submit" onclick="submitOrder()">
+          ${hasOrder ? 'Update Order' : 'Place Order'}
+        </button>`;
+      document.body.appendChild(footer);
+    }
+
+    function calcTotal() {
+      let t = 0;
+      for (const [id, qty] of cart) {
+        const item = sessionItems.find(i => i.id === id);
+        if (item) t += (+item.price) * qty;
+      }
+      return t;
+    }
+
+    // ── Qty controls ──────────────────────────────────────────────────
+    window.changeQty = (itemId, delta) => {
+      const cur  = cart.get(itemId) || 0;
+      const next = Math.max(0, cur + delta);
+      next === 0 ? cart.delete(itemId) : cart.set(itemId, next);
+
+      document.getElementById(`qty-${itemId}`).textContent = next;
+      document.getElementById(`minus-${itemId}`).disabled = next === 0;
+      const plusBtn = document.getElementById(`plus-${itemId}`);
+      plusBtn.classList.toggle('has-qty', next > 0);
+
+      const totalEl = document.getElementById('footer-total-amount');
+      if (totalEl) totalEl.textContent = `$${calcTotal().toFixed(2)}`;
+    };
+
+    // ── Submit / update order ─────────────────────────────────────────
+    window.submitOrder = async () => {
+      const itemEntries = [...cart.entries()].filter(([,q]) => q > 0);
+      if (!itemEntries.length) { alert('Please select at least one item.'); return; }
+
+      const btn = document.getElementById('btn-submit');
+      btn.disabled = true; btn.textContent = 'Saving…';
+
+      const subtotal = calcTotal();
+
+      // Check for existing order
+      const { data: existing } = await supabase
+        .from('bitesync_orders')
+        .select('id')
+        .eq('session_id', activeSession.id)
+        .eq('member_id', me.id)
+        .maybeSingle();
+
+      let orderId;
+      if (existing) {
+        await supabase.from('bitesync_orders').update({
+          items_subtotal: subtotal,
+          final_total:    subtotal,
+          submitted_at:   new Date().toISOString(),
+          status:         'submitted',
+        }).eq('id', existing.id);
+        orderId = existing.id;
+        await supabase.from('bitesync_order_items').delete().eq('order_id', orderId);
+      } else {
+        const { data: newOrder } = await supabase.from('bitesync_orders').insert({
+          session_id:    activeSession.id,
+          member_id:     me.id,
+          status:        'submitted',
+          items_subtotal: subtotal,
+          final_total:   subtotal,
+          submitted_at:  new Date().toISOString(),
+        }).select('id').single();
+        orderId = newOrder.id;
+      }
+
+      const orderItems = itemEntries.map(([sessionItemId, quantity]) => {
+        const item = sessionItems.find(i => i.id === sessionItemId);
+        return {
+          order_id:        orderId,
+          session_item_id: sessionItemId,
+          quantity,
+          unit_price:  +(item.price),
+          line_total:  +(item.price) * quantity,
+        };
+      });
+
+      await supabase.from('bitesync_order_items').insert(orderItems);
+
+      btn.disabled = false;
+      loadActiveSession(); // refresh to show updated state
+    };
+
+    // ── Helpers ───────────────────────────────────────────────────────
+    function countdownStr(deadline) {
+      const diff = deadline - Date.now();
+      if (diff <= 0) return 'Closed';
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      if (h >= 24) return `${Math.floor(h/24)}d left`;
+      if (h > 0)   return `${h}h ${m}m left`;
+      return `${m}m left`;
+    }
+
+    function x(s) {
+      if (s == null) return '';
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── Entry navigation ──────────────────────────────────────────────
+    document.getElementById('btn-go-register').addEventListener('click', () => show('register'));
     document.getElementById('btn-go-claim').addEventListener('click', async () => {
       show('claim');
       await loadActiveMembers();
     });
-
     document.getElementById('btn-back-from-register').addEventListener('click', () => show('entry'));
     document.getElementById('btn-back-from-claim').addEventListener('click', () => show('entry'));
 
-    // ── Register: same-as-phone checkbox ──────────────────────────────────
+    // ── Register flow ─────────────────────────────────────────────────
     const cbSame     = document.getElementById('same-as-phone');
     const inPhone    = document.getElementById('reg-phone');
     const inWhatsapp = document.getElementById('reg-whatsapp');
 
     cbSame.addEventListener('change', () => {
-      if (cbSame.checked) {
-        inWhatsapp.value    = inPhone.value;
-        inWhatsapp.disabled = true;
-      } else {
-        inWhatsapp.disabled = false;
-      }
+      inWhatsapp.value    = cbSame.checked ? inPhone.value : '';
+      inWhatsapp.disabled = cbSame.checked;
     });
+    inPhone.addEventListener('input', () => { if (cbSame.checked) inWhatsapp.value = inPhone.value; });
 
-    inPhone.addEventListener('input', () => {
-      if (cbSame.checked) inWhatsapp.value = inPhone.value;
-    });
-
-    // ── Register: form submit ──────────────────────────────────────────────
-    document.getElementById('form-register').addEventListener('submit', async (e) => {
+    document.getElementById('form-register').addEventListener('submit', async e => {
       e.preventDefault();
-
       const errEl    = document.getElementById('reg-error');
-      const btn      = document.getElementById('btn-register');
       const fullName = document.getElementById('reg-name').value.trim();
       const phone    = inPhone.value.trim();
       const whatsapp = cbSame.checked ? phone : inWhatsapp.value.trim();
 
       hideErr(errEl);
+      if (!fullName || !phone || !whatsapp) { showErr(errEl, 'Please fill in all fields.'); return; }
 
-      if (!fullName || !phone || !whatsapp) {
-        showErr(errEl, 'Please fill in all fields.');
-        return;
-      }
+      const btn = document.getElementById('btn-register');
+      btn.disabled = true; btn.textContent = 'Registering…';
 
-      btn.disabled    = true;
-      btn.textContent = 'Registering…';
-
-      // Resolve group_id from GROUP_CODE
       const { data: grp, error: grpErr } = await supabase
-        .from('bitesync_groups')
-        .select('id')
-        .eq('group_code', GROUP_CODE)
-        .single();
+        .from('bitesync_groups').select('id').eq('group_code', GROUP_CODE).single();
 
       if (grpErr || !grp) {
         showErr(errEl, 'Group not found. Contact your admin.');
-        btn.disabled    = false;
-        btn.textContent = 'Register';
+        btn.disabled = false; btn.textContent = 'Register';
         return;
       }
 
       const { data: member, error: insErr } = await supabase
-        .from('bitesync_members')
-        .insert({
-          full_name:       fullName,
-          phone_number:    phone,
-          whatsapp_number: whatsapp,
-          group_id:        grp.id,
-          status:          'pending',
-          is_admin:        false,
-        })
-        .select('id')
-        .single();
+        .from('bitesync_members').insert({
+          full_name: fullName, phone_number: phone, whatsapp_number: whatsapp,
+          group_id: grp.id, status: 'pending', is_admin: false,
+        }).select('id').single();
 
-      btn.disabled    = false;
-      btn.textContent = 'Register';
-
-      if (insErr) {
-        showErr(errEl, 'Registration failed. You may already be registered, or the name is already taken.');
-        return;
-      }
-
+      btn.disabled = false; btn.textContent = 'Register';
+      if (insErr) { showErr(errEl, 'Registration failed. You may already be registered.'); return; }
       startWaiting(member.id);
     });
 
-    // ── Waiting / approval poll ────────────────────────────────────────────
+    // ── Waiting / poll ────────────────────────────────────────────────
     let pollTimer = null;
 
     function startWaiting(memberId) {
@@ -480,85 +698,53 @@
     }
 
     async function checkApproval(memberId) {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('bitesync_members')
-        .select('status, full_name, is_admin')
-        .eq('id', memberId)
-        .single();
+        .select('status, full_name, is_admin, group_id')
+        .eq('id', memberId).single();
 
-      if (!error && data && data.status === 'active') {
-        clearInterval(pollTimer);
-        pollTimer = null;
+      if (data?.status === 'active') {
+        clearInterval(pollTimer); pollTimer = null;
         localStorage.setItem('bitesync_member_id', memberId);
-        goHome(data.full_name, data.is_admin);
+        me = { id: memberId, ...data };
+        goHome();
       }
     }
 
-    // ── Claim: load active members dropdown ───────────────────────────────
+    // ── Claim flow ────────────────────────────────────────────────────
     async function loadActiveMembers() {
       const sel = document.getElementById('claim-name');
       sel.innerHTML = '<option value="">Loading…</option>';
-
-      const { data, error } = await supabase
-        .from('bitesync_members')
-        .select('full_name')
-        .eq('status', 'active')
-        .order('full_name');
-
-      if (error || !data || data.length === 0) {
-        sel.innerHTML = '<option value="">No active members found</option>';
-        return;
-      }
-
+      const { data } = await supabase
+        .from('bitesync_members').select('full_name').eq('status','active').order('full_name');
       sel.innerHTML = '<option value="">Select your name…</option>' +
-        data.map(m => `<option value="${escHtml(m.full_name)}">${escHtml(m.full_name)}</option>`).join('');
+        (data||[]).map(m=>`<option value="${x(m.full_name)}">${x(m.full_name)}</option>`).join('');
     }
 
-    function escHtml(str) {
-      return str.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    }
-
-    // ── Claim: form submit ─────────────────────────────────────────────────
-    document.getElementById('form-claim').addEventListener('submit', async (e) => {
+    document.getElementById('form-claim').addEventListener('submit', async e => {
       e.preventDefault();
-
       const errEl    = document.getElementById('claim-error');
-      const btn      = document.getElementById('btn-claim');
       const fullName = document.getElementById('claim-name').value;
       const phone    = document.getElementById('claim-phone').value.trim();
+      const btn      = document.getElementById('btn-claim');
 
       hideErr(errEl);
+      if (!fullName || !phone) { showErr(errEl, 'Please select your name and enter your phone number.'); return; }
 
-      if (!fullName || !phone) {
-        showErr(errEl, 'Please select your name and enter your phone number.');
-        return;
-      }
+      btn.disabled = true; btn.textContent = 'Checking…';
 
-      btn.disabled    = true;
-      btn.textContent = 'Checking…';
-
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('bitesync_members')
-        .select('id, full_name, is_admin')
-        .eq('full_name', fullName)
-        .eq('phone_number', phone)
-        .eq('status', 'active');
+        .select('id, full_name, is_admin, group_id')
+        .eq('full_name', fullName).eq('phone_number', phone).eq('status','active');
 
-      btn.disabled    = false;
-      btn.textContent = 'Continue';
+      btn.disabled = false; btn.textContent = 'Continue';
 
-      if (error) {
-        showErr(errEl, 'Something went wrong. Please try again.');
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        showErr(errEl, "Name and phone don't match. Try again or contact admin.");
-        return;
-      }
+      if (!data?.length) { showErr(errEl, "Name and phone don't match. Try again or contact admin."); return; }
 
       localStorage.setItem('bitesync_member_id', data[0].id);
-      goHome(data[0].full_name, data[0].is_admin);
+      me = data[0];
+      goHome();
     });
   </script>
 </body>
