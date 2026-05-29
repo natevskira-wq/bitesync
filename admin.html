@@ -785,7 +785,11 @@
       if (!data?.length) { el.innerHTML = '<div class="empty">No sessions yet.</div>'; return; }
 
       el.innerHTML = '';
-      for (const s of data) el.appendChild(buildSessionCard(s));
+      for (const s of data) {
+        const card = buildSessionCard(s);
+        el.appendChild(card);
+        if (s.status === 'draft') loadSessionItemPicker(s.id, s.restaurant_id);
+      }
     }
 
     function buildSessionCard(s) {
@@ -826,7 +830,6 @@
           <div id="sitems-${s.id}"><div class="spinner" style="width:24px;height:24px;border-width:2px;margin:10px auto;"></div></div>
         ` : ''}`;
 
-      if (s.status === 'draft') loadSessionItemPicker(s.id, s.restaurant_id);
       return card;
     }
 
