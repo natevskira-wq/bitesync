@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>BiteSync</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: #FFF8F0;
+      color: #3D2817;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 48px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 390px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .wordmark {
+      font-size: 30px;
+      font-weight: 800;
+      color: #E07856;
+      letter-spacing: -0.5px;
+      margin-top: 36px;
+    }
+
+    .tagline {
+      font-size: 14px;
+      color: #7A5C42;
+      margin-top: -12px;
+    }
+
+    /* Screen visibility */
+    .screen { width: 100%; display: none; flex-direction: column; align-items: center; gap: 14px; }
+    .screen.active { display: flex; }
+
+    /* Card */
+    .card {
+      width: 100%;
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 2px 16px rgba(61,40,23,.08);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .card-title {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .card-sub {
+      font-size: 14px;
+      color: #7A5C42;
+      line-height: 1.55;
+    }
+
+    /* Form fields */
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #3D2817;
+    }
+
+    input[type="text"],
+    input[type="tel"],
+    select {
+      width: 100%;
+      height: 48px;
+      border: 1.5px solid #E8D5C4;
+      border-radius: 12px;
+      padding: 0 14px;
+      font-size: 16px;
+      font-family: inherit;
+      color: #3D2817;
+      background: #FFF8F0;
+      outline: none;
+      transition: border-color 0.15s, background 0.15s;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    input[type="text"]:focus,
+    input[type="tel"]:focus,
+    select:focus {
+      border-color: #E07856;
+      background: #fff;
+    }
+
+    select {
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237A5C42' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      background-color: #FFF8F0;
+      padding-right: 42px;
+    }
+
+    select:focus { background-color: #fff; }
+
+    .checkbox-row {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      padding: 2px 0;
+    }
+
+    .checkbox-row input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      accent-color: #E07856;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .checkbox-row span {
+      font-size: 14px;
+      color: #7A5C42;
+      user-select: none;
+    }
+
+    /* Buttons */
+    .btn {
+      width: 100%;
+      min-height: 52px;
+      border: none;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .btn-primary  { background: #E07856; color: #fff; }
+    .btn-secondary { background: #fff; color: #E07856; border: 2px solid #E07856; }
+    .btn-ghost    { background: transparent; color: #7A5C42; font-size: 14px; font-weight: 600; min-height: 44px; }
+
+    /* Error */
+    .error-msg {
+      font-size: 14px;
+      color: #B83C2B;
+      background: #FDF0EE;
+      border-radius: 10px;
+      padding: 12px 14px;
+      text-align: center;
+      line-height: 1.45;
+    }
+
+    /* Divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #E8D5C4;
+    }
+    .divider span { font-size: 12px; color: #B09880; white-space: nowrap; }
+
+    /* Spinner */
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #E8D5C4;
+      border-top-color: #E07856;
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Checking screen */
+    #screen-checking {
+      min-height: 40vh;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .check-text { font-size: 14px; color: #7A5C42; }
+
+    /* Waiting screen */
+    .waiting-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      text-align: center;
+    }
+
+    /* Home screen */
+    .home-emoji    { font-size: 60px; text-align: center; line-height: 1; }
+    .home-greeting { font-size: 24px; font-weight: 800; text-align: center; }
+    .home-sub      { font-size: 15px; color: #7A5C42; text-align: center; line-height: 1.55; max-width: 300px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <div class="wordmark">BiteSync</div>
+    <div class="tagline">Group breakfast, made easy</div>
+
+    <!-- ─── Checking localStorage ─── -->
+    <div id="screen-checking" class="screen active">
+      <div class="spinner"></div>
+      <div class="check-text">Loading…</div>
+    </div>
+
+    <!-- ─── Entry choice ─── -->
+    <div id="screen-entry" class="screen">
+      <div class="card">
+        <div class="card-title">Welcome!</div>
+        <div class="card-sub">Join your group breakfast order or sign back in on a new device.</div>
+        <button class="btn btn-primary" id="btn-go-register">First time? Register</button>
+        <div class="divider"><span>or</span></div>
+        <button class="btn btn-secondary" id="btn-go-claim">Already registered, new device</button>
+      </div>
+    </div>
+
+    <!-- ─── Register form ─── -->
+    <div id="screen-register" class="screen">
+      <div class="card">
+        <div class="card-title">Create your account</div>
+        <div class="card-sub">An admin will approve you before you can order.</div>
+        <form id="form-register" novalidate style="display:contents;">
+          <div class="field">
+            <span class="field-label">Full name</span>
+            <input type="text" id="reg-name" placeholder="Jane Smith" autocomplete="name" required>
+          </div>
+          <div class="field">
+            <span class="field-label">Phone number</span>
+            <input type="tel" id="reg-phone" placeholder="+1 555 000 0000" autocomplete="tel" required>
+          </div>
+          <div class="field">
+            <span class="field-label">WhatsApp number</span>
+            <input type="tel" id="reg-whatsapp" placeholder="+1 555 000 0000" autocomplete="tel" required>
+          </div>
+          <label class="checkbox-row">
+            <input type="checkbox" id="same-as-phone">
+            <span>WhatsApp is same as phone number</span>
+          </label>
+          <div id="reg-error" class="error-msg" style="display:none;"></div>
+          <button type="submit" class="btn btn-primary" id="btn-register">Register</button>
+        </form>
+      </div>
+      <button class="btn btn-ghost" id="btn-back-from-register">← Back</button>
+    </div>
+
+    <!-- ─── Waiting for admin approval ─── -->
+    <div id="screen-waiting" class="screen">
+      <div class="card">
+        <div class="waiting-inner">
+          <div class="spinner"></div>
+          <div class="card-title">Pending approval</div>
+          <div class="card-sub">An admin needs to approve your account. This page checks automatically every 10 seconds — no need to refresh.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── New-device claim ─── -->
+    <div id="screen-claim" class="screen">
+      <div class="card">
+        <div class="card-title">Sign in on this device</div>
+        <div class="card-sub">Select your name and enter your registered phone number to continue.</div>
+        <form id="form-claim" novalidate style="display:contents;">
+          <div class="field">
+            <span class="field-label">Your name</span>
+            <select id="claim-name">
+              <option value="">Loading members…</option>
+            </select>
+          </div>
+          <div class="field">
+            <span class="field-label">Registered phone number</span>
+            <input type="tel" id="claim-phone" placeholder="+1 555 000 0000" autocomplete="tel" required>
+          </div>
+          <div id="claim-error" class="error-msg" style="display:none;"></div>
+          <button type="submit" class="btn btn-primary" id="btn-claim">Continue</button>
+        </form>
+      </div>
+      <button class="btn btn-ghost" id="btn-back-from-claim">← Back</button>
+    </div>
+
+    <!-- ─── Home placeholder ─── -->
+    <div id="screen-home" class="screen">
+      <div class="home-emoji">🍳</div>
+      <div class="home-greeting" id="home-greeting">Hi there!</div>
+      <div class="home-sub">You're all set. Ordering will open here once a session is live.</div>
+    </div>
+
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+    import { SUPABASE_URL, SUPABASE_ANON_KEY, GROUP_CODE } from './config.js';
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // ── Screen management ──────────────────────────────────────────────────
+    const screens = {
+      checking: document.getElementById('screen-checking'),
+      entry:    document.getElementById('screen-entry'),
+      register: document.getElementById('screen-register'),
+      waiting:  document.getElementById('screen-waiting'),
+      claim:    document.getElementById('screen-claim'),
+      home:     document.getElementById('screen-home'),
+    };
+
+    function show(name) {
+      Object.values(screens).forEach(s => s.classList.remove('active'));
+      screens[name].classList.add('active');
+    }
+
+    // ── Helpers ────────────────────────────────────────────────────────────
+    function showErr(el, msg) { el.textContent = msg; el.style.display = 'block'; }
+    function hideErr(el) { el.style.display = 'none'; }
+
+    function goHome(fullName) {
+      document.getElementById('home-greeting').textContent = `Hi ${fullName}! 👋`;
+      show('home');
+    }
+
+    // ── Init: check localStorage ───────────────────────────────────────────
+    async function init() {
+      const memberId = localStorage.getItem('bitesync_member_id');
+
+      if (memberId) {
+        const { data, error } = await supabase
+          .from('bitesync_members')
+          .select('id, full_name, status')
+          .eq('id', memberId)
+          .single();
+
+        if (!error && data && data.status === 'active') {
+          goHome(data.full_name);
+          return;
+        }
+        // Stale / inactive — clear and show entry
+        localStorage.removeItem('bitesync_member_id');
+      }
+
+      show('entry');
+    }
+
+    init();
+
+    // ── Navigation ─────────────────────────────────────────────────────────
+    document.getElementById('btn-go-register').addEventListener('click', () => show('register'));
+
+    document.getElementById('btn-go-claim').addEventListener('click', async () => {
+      show('claim');
+      await loadActiveMembers();
+    });
+
+    document.getElementById('btn-back-from-register').addEventListener('click', () => show('entry'));
+    document.getElementById('btn-back-from-claim').addEventListener('click', () => show('entry'));
+
+    // ── Register: same-as-phone checkbox ──────────────────────────────────
+    const cbSame     = document.getElementById('same-as-phone');
+    const inPhone    = document.getElementById('reg-phone');
+    const inWhatsapp = document.getElementById('reg-whatsapp');
+
+    cbSame.addEventListener('change', () => {
+      if (cbSame.checked) {
+        inWhatsapp.value    = inPhone.value;
+        inWhatsapp.disabled = true;
+      } else {
+        inWhatsapp.disabled = false;
+      }
+    });
+
+    inPhone.addEventListener('input', () => {
+      if (cbSame.checked) inWhatsapp.value = inPhone.value;
+    });
+
+    // ── Register: form submit ──────────────────────────────────────────────
+    document.getElementById('form-register').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const errEl    = document.getElementById('reg-error');
+      const btn      = document.getElementById('btn-register');
+      const fullName = document.getElementById('reg-name').value.trim();
+      const phone    = inPhone.value.trim();
+      const whatsapp = cbSame.checked ? phone : inWhatsapp.value.trim();
+
+      hideErr(errEl);
+
+      if (!fullName || !phone || !whatsapp) {
+        showErr(errEl, 'Please fill in all fields.');
+        return;
+      }
+
+      btn.disabled    = true;
+      btn.textContent = 'Registering…';
+
+      // Resolve group_id from GROUP_CODE
+      const { data: grp, error: grpErr } = await supabase
+        .from('bitesync_groups')
+        .select('id')
+        .eq('group_code', GROUP_CODE)
+        .single();
+
+      if (grpErr || !grp) {
+        showErr(errEl, 'Group not found. Contact your admin.');
+        btn.disabled    = false;
+        btn.textContent = 'Register';
+        return;
+      }
+
+      const { data: member, error: insErr } = await supabase
+        .from('bitesync_members')
+        .insert({
+          full_name:       fullName,
+          phone_number:    phone,
+          whatsapp_number: whatsapp,
+          group_id:        grp.id,
+          status:          'pending',
+          is_admin:        false,
+        })
+        .select('id')
+        .single();
+
+      btn.disabled    = false;
+      btn.textContent = 'Register';
+
+      if (insErr) {
+        showErr(errEl, 'Registration failed. You may already be registered, or the name is already taken.');
+        return;
+      }
+
+      startWaiting(member.id);
+    });
+
+    // ── Waiting / approval poll ────────────────────────────────────────────
+    let pollTimer = null;
+
+    function startWaiting(memberId) {
+      show('waiting');
+      clearInterval(pollTimer);
+      pollTimer = setInterval(() => checkApproval(memberId), 10_000);
+    }
+
+    async function checkApproval(memberId) {
+      const { data, error } = await supabase
+        .from('bitesync_members')
+        .select('status, full_name')
+        .eq('id', memberId)
+        .single();
+
+      if (!error && data && data.status === 'active') {
+        clearInterval(pollTimer);
+        pollTimer = null;
+        localStorage.setItem('bitesync_member_id', memberId);
+        goHome(data.full_name);
+      }
+    }
+
+    // ── Claim: load active members dropdown ───────────────────────────────
+    async function loadActiveMembers() {
+      const sel = document.getElementById('claim-name');
+      sel.innerHTML = '<option value="">Loading…</option>';
+
+      const { data, error } = await supabase
+        .from('bitesync_members')
+        .select('full_name')
+        .eq('status', 'active')
+        .order('full_name');
+
+      if (error || !data || data.length === 0) {
+        sel.innerHTML = '<option value="">No active members found</option>';
+        return;
+      }
+
+      sel.innerHTML = '<option value="">Select your name…</option>' +
+        data.map(m => `<option value="${escHtml(m.full_name)}">${escHtml(m.full_name)}</option>`).join('');
+    }
+
+    function escHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // ── Claim: form submit ─────────────────────────────────────────────────
+    document.getElementById('form-claim').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const errEl    = document.getElementById('claim-error');
+      const btn      = document.getElementById('btn-claim');
+      const fullName = document.getElementById('claim-name').value;
+      const phone    = document.getElementById('claim-phone').value.trim();
+
+      hideErr(errEl);
+
+      if (!fullName || !phone) {
+        showErr(errEl, 'Please select your name and enter your phone number.');
+        return;
+      }
+
+      btn.disabled    = true;
+      btn.textContent = 'Checking…';
+
+      const { data, error } = await supabase
+        .from('bitesync_members')
+        .select('id, full_name')
+        .eq('full_name', fullName)
+        .eq('phone_number', phone)
+        .eq('status', 'active');
+
+      btn.disabled    = false;
+      btn.textContent = 'Continue';
+
+      if (error) {
+        showErr(errEl, 'Something went wrong. Please try again.');
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        showErr(errEl, "Name and phone don't match. Try again or contact admin.");
+        return;
+      }
+
+      localStorage.setItem('bitesync_member_id', data[0].id);
+      goHome(data[0].full_name);
+    });
+  </script>
+</body>
+</html>
