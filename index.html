@@ -634,6 +634,8 @@
       const deadline = activeSession.order_deadline ? new Date(activeSession.order_deadline) : null;
       const hasOrder = !!existingOrder;
 
+      if (deadline && deadline <= Date.now()) { renderDeadlinePassed(existingOrder); return; }
+
       // Banner — colour shifts when deadline is approaching
       const msLeft  = deadline ? deadline - Date.now() : Infinity;
       const urgency = msLeft < 5*60*1000 ? ' critical' : msLeft < 30*60*1000 ? ' urgent' : '';
@@ -780,6 +782,42 @@
       area.innerHTML = html;
     }
 
+    // ── Deadline-passed locked view ───────────────────────────────────
+    function renderDeadlinePassed(existingOrder) {
+      document.getElementById('sticky-footer')?.remove();
+      const area     = document.getElementById('session-area');
+      const restName = activeSession.bitesync_restaurants?.name || 'Restaurant';
+
+      let html = `
+        <div class="closed-banner">
+          <div class="closed-banner-title">🍽 ${x(restName)}</div>
+          <div class="closed-banner-sub">⏰ Ordering deadline has passed</div>
+          <div class="closed-status-chip">Waiting for admin to close</div>
+        </div>`;
+
+      if (existingOrder) {
+        const items    = existingOrder.bitesync_order_items || [];
+        const subtotal = +(existingOrder.items_subtotal || 0);
+        html += `
+          <div style="width:100%;">
+            <div class="cat-header">Your order</div>
+            ${items.map(oi => `
+              <div class="submitted-item">
+                <span class="submitted-item-qty">${oi.quantity}×</span>
+                <span class="submitted-item-name">${x(oi.bitesync_session_items?.name || '—')}</span>
+                <span style="white-space:nowrap;">$${(+oi.line_total).toFixed(2)}</span>
+              </div>
+              ${oi.item_notes ? `<div style="font-size:12px;color:#7A5C42;padding:0 0 6px 18px;">↳ ${x(oi.item_notes)}</div>` : ''}
+            `).join('')}
+            <div class="submitted-total"><span>Total</span><span>$${subtotal.toFixed(2)}</span></div>
+          </div>`;
+      } else {
+        html += `<div style="text-align:center;padding:20px 0;font-size:14px;color:#B09880;">You didn't place an order for this session.</div>`;
+      }
+
+      area.innerHTML = html;
+    }
+
     // ── Qty controls ──────────────────────────────────────────────────
     window.changeQty = (itemId, delta) => {
       const cur  = cart.get(itemId) || 0;
@@ -802,6 +840,10 @@
     window.submitOrder = async () => {
       const itemEntries = [...cart.entries()].filter(([,q]) => q > 0);
       if (!itemEntries.length) { alert('Please select at least one item.'); return; }
+      if (activeSession?.order_deadline && new Date(activeSession.order_deadline) <= new Date()) {
+        alert('The ordering deadline has passed. Orders are no longer accepted.');
+        return;
+      }
 
       const btn = document.getElementById('btn-submit');
       btn.disabled = true; btn.textContent = 'Saving…';

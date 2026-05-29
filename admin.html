@@ -761,6 +761,7 @@
             </div>
             <div class="menu-item-price">$${(+item.price).toFixed(2)}</div>
             <button class="btn btn-ghost btn-sm" style="min-height:30px;padding:0 8px;font-size:15px;" title="Edit item" onclick="toggleEditItem('${item.id}')">✏</button>
+            <button class="btn btn-ghost btn-sm" style="min-height:30px;padding:0 8px;font-size:15px;color:#E74C3C;" title="Delete item" onclick="deleteItem('${item.id}','${rid}')">🗑</button>
             <button class="toggle ${item.is_available?'on':''}"
               title="${item.is_available?'Available — click to disable':'Unavailable — click to enable'}"
               onclick="toggleAvail('${item.id}',${item.is_available},'${rid}')"></button>
@@ -793,6 +794,13 @@
       await supabase.from('bitesync_menu_items').update({
         name, category: cat || null, price,
       }).eq('id', id);
+      loadMenuItems(rid);
+    };
+
+    window.deleteItem = async (id, rid) => {
+      if (!confirm('Delete this menu item? This cannot be undone.')) return;
+      const { error } = await supabase.from('bitesync_menu_items').delete().eq('id', id);
+      if (error) { alert('Failed to delete item.'); return; }
       loadMenuItems(rid);
     };
 
@@ -939,8 +947,10 @@
 
       const actions = {
         draft:     `<button class="btn btn-success btn-sm" onclick="openSession('${s.id}')">▶ Open</button>
+                    <button class="btn btn-ghost btn-sm"   onclick="toggleEditSession('${s.id}')">✏ Edit</button>
                     <button class="btn btn-danger btn-sm"  onclick="cancelSession('${s.id}')">✕ Cancel</button>`,
         open:      `<button class="btn btn-secondary btn-sm" onclick="viewOrders('${s.id}')">📋 Orders</button>
+                    <button class="btn btn-ghost btn-sm"   onclick="toggleEditSession('${s.id}')">✏ Edit</button>
                     <button class="btn btn-warning btn-sm" onclick="closeSession('${s.id}')">■ Close</button>
                     <button class="btn btn-danger btn-sm"  onclick="cancelSession('${s.id}')">✕ Cancel</button>`,
         closed:    `<button class="btn btn-secondary btn-sm" onclick="viewOrders('${s.id}')">📋 Orders</button>
@@ -966,6 +976,19 @@
           </div>
         </div>
         ${actions ? `<div id="actions-${s.id}" style="display:flex;gap:8px;flex-wrap:wrap;">${actions}</div>` : ''}
+        ${['draft','open'].includes(s.status) ? `
+          <div id="edit-session-${s.id}" style="display:none;flex-direction:column;gap:10px;">
+            <hr>
+            <div class="field"><span class="field-label">Label</span><input type="text" id="es-label-${s.id}" value="${x(s.label||'')}"></div>
+            <div class="field"><span class="field-label">Deadline</span><input type="datetime-local" id="es-deadline-${s.id}" value="${toInputDatetime(s.order_deadline)}"></div>
+            <div class="field"><span class="field-label">Delivery address</span><input type="text" id="es-address-${s.id}" value="${x(s.delivery_address||'')}"></div>
+            <div class="field"><span class="field-label">Address notes</span><input type="text" id="es-address-notes-${s.id}" value="${x(s.delivery_address_notes||'')}"></div>
+            <div style="display:flex;gap:6px;">
+              <button class="btn btn-primary btn-sm" onclick="saveSession('${s.id}')">Save</button>
+              <button class="btn btn-ghost btn-sm"   onclick="toggleEditSession('${s.id}')">Cancel</button>
+            </div>
+          </div>
+        ` : ''}
         ${s.status === 'draft' ? `
           <hr>
           <div class="section-label">Menu items for this session</div>
@@ -1074,6 +1097,26 @@
 
     window.settleSession = async (id) => {
       await supabase.from('bitesync_sessions').update({ status: 'settled' }).eq('id', id);
+      loadSessions();
+    };
+
+    window.toggleEditSession = (id) => {
+      const el = document.getElementById(`edit-session-${id}`);
+      if (!el) return;
+      el.style.display = el.style.display === 'none' ? 'flex' : 'none';
+    };
+
+    window.saveSession = async (id) => {
+      const label        = document.getElementById(`es-label-${id}`).value.trim();
+      const deadline     = document.getElementById(`es-deadline-${id}`).value;
+      const address      = document.getElementById(`es-address-${id}`).value.trim();
+      const addressNotes = document.getElementById(`es-address-notes-${id}`).value.trim();
+      await supabase.from('bitesync_sessions').update({
+        label:                  label || null,
+        order_deadline:         deadline || null,
+        delivery_address:       address || null,
+        delivery_address_notes: addressNotes || null,
+      }).eq('id', id);
       loadSessions();
     };
 
@@ -1243,12 +1286,14 @@
 
         const summary = document.createElement('div');
         summary.className = 'card';
+        const unpaidCount = orders.filter(o => o.paid_status !== 'paid').length;
         summary.innerHTML = `
           <div style="display:flex;justify-content:space-between;font-weight:800;font-size:17px;">
             <span>Session Total</span>
             <span style="color:#E07856;">$${grandTotal.toFixed(2)}</span>
           </div>
-          <div style="font-size:13px;color:#7A5C42;">${orders.length} order${orders.length!==1?'s':''}</div>`;
+          <div style="font-size:13px;color:#7A5C42;">${orders.length} order${orders.length!==1?'s':''}</div>
+          ${unpaidCount > 0 ? `<button class="btn btn-success btn-sm btn-full" onclick="markAllPaid('${sessionId}')">✓ Mark All ${unpaidCount} Paid</button>` : ''}`;
         el.appendChild(summary);
 
         // Who hasn't ordered yet
@@ -1307,6 +1352,17 @@
         .eq('id', orderId);
       const sid = document.getElementById('orders-picker').value;
       if (sid) loadOrders(sid);
+    };
+
+    window.markAllPaid = async (sessionId) => {
+      const { data: unpaid } = await supabase.from('bitesync_orders')
+        .select('id').eq('session_id', sessionId).neq('paid_status', 'paid');
+      if (!unpaid?.length) return;
+      const now = new Date().toISOString();
+      await Promise.all(unpaid.map(o =>
+        supabase.from('bitesync_orders').update({ paid_status: 'paid', paid_at: now }).eq('id', o.id)
+      ));
+      loadOrders(sessionId);
     };
 
     // ── WhatsApp export ───────────────────────────────────────────────
@@ -1378,6 +1434,13 @@
     }
 
     // ── Helpers ───────────────────────────────────────────────────
+    function toInputDatetime(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      const pad = n => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
     function x(s) {
       if (s == null) return '';
       return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
