@@ -850,7 +850,8 @@
                     <button class="btn btn-danger btn-sm"  onclick="cancelSession('${s.id}')">✕ Cancel</button>`,
         open:      `<button class="btn btn-warning btn-sm" onclick="closeSession('${s.id}')">■ Close</button>
                     <button class="btn btn-danger btn-sm"  onclick="cancelSession('${s.id}')">✕ Cancel</button>`,
-        closed:    `<button class="btn btn-primary btn-sm" onclick="deliverSession('${s.id}')">📦 Mark Delivered</button>
+        closed:    `<button class="btn btn-secondary btn-sm" onclick="reopenSession('${s.id}')">↩ Reopen</button>
+                    <button class="btn btn-primary btn-sm" onclick="deliverSession('${s.id}')">📦 Mark Delivered</button>
                     <button class="btn btn-danger btn-sm"  onclick="cancelSession('${s.id}')">✕ Cancel</button>`,
         delivered: `<button class="btn btn-success btn-sm" onclick="settleSession('${s.id}')">✓ Settle</button>`,
         settled:   '',
@@ -941,6 +942,12 @@
     window.cancelSession = async (id) => {
       if (!confirm('Cancel this session?')) return;
       await supabase.from('bitesync_sessions').update({ status: 'cancelled' }).eq('id', id);
+      loadSessions();
+    };
+
+    window.reopenSession = async (id) => {
+      if (!confirm('Reopen this session? Members will be able to place orders again.')) return;
+      await supabase.from('bitesync_sessions').update({ status: 'open', closed_at: null }).eq('id', id);
       loadSessions();
     };
 
@@ -1192,23 +1199,38 @@
       const label    = session.label ? `${session.label} — ` : '';
       const date     = new Date().toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
 
-      let msg = `🍽 *${label}${restName}*\n📅 ${date}\n\n*ORDER SUMMARY*`;
+      // Aggregate items across all orders — restaurant just needs totals + notes
+      const itemMap = new Map(); // item name → { qty, notes: [{qty, text}] }
+      const allOrderNotes = [];
 
       for (const o of orders) {
-        const name  = o.bitesync_members?.full_name || 'Unknown';
-        const items = o.bitesync_order_items || [];
-        msg += `\n\n👤 *${name}*`;
-        for (const oi of items) {
+        for (const oi of o.bitesync_order_items || []) {
           const iname = oi.bitesync_session_items?.name || '?';
-          msg += `\n• ${oi.quantity}× ${iname}`;
-          if (oi.item_notes) msg += `\n  _↳ ${oi.item_notes}_`;
+          if (!itemMap.has(iname)) itemMap.set(iname, { qty: 0, notes: [] });
+          const entry = itemMap.get(iname);
+          entry.qty += oi.quantity;
+          if (oi.item_notes) entry.notes.push({ qty: oi.quantity, text: oi.item_notes });
         }
-        if (o.order_notes) msg += `\n📝 _${o.order_notes}_`;
+        if (o.order_notes) allOrderNotes.push(o.order_notes);
+      }
+
+      let msg = `🍽 *${label}${restName}*\n📅 ${date}\n\n*ORDER SUMMARY*\n`;
+
+      for (const [iname, { qty, notes }] of itemMap) {
+        msg += `\n• ${qty}× ${iname}`;
+        for (const n of notes) {
+          msg += `\n  _↳ ${n.qty > 1 ? `×${n.qty} ` : ''}${n.text}_`;
+        }
+      }
+
+      if (allOrderNotes.length) {
+        msg += `\n\n📝 *Notes:*`;
+        for (const note of allOrderNotes) msg += `\n_${note}_`;
       }
 
       const grandTotal = orders.reduce((s, o) => s + +(o.items_subtotal || 0), 0);
       const fee = +(session.delivery_fee || 0);
-      msg += `\n\n📊 *Total: $${grandTotal.toFixed(2)} | ${orders.length} order${orders.length !== 1 ? 's' : ''}*`;
+      msg += `\n\n📊 *${orders.length} order${orders.length !== 1 ? 's' : ''} | Total: $${grandTotal.toFixed(2)}*`;
       if (fee > 0) msg += `\n💸 Delivery fee: $${fee.toFixed(2)}`;
 
       return msg;
