@@ -320,6 +320,7 @@
       <div class="home-emoji">🍳</div>
       <div class="home-greeting" id="home-greeting">Hi there!</div>
       <div class="home-sub">You're all set. Ordering will open here once a session is live.</div>
+      <a href="admin.html" id="admin-link" class="btn btn-secondary" style="display:none;max-width:220px;margin-top:8px;">⚙ Admin View</a>
     </div>
 
   </div>
@@ -352,8 +353,9 @@
     function showErr(el, msg) { el.textContent = msg; el.style.display = 'block'; }
     function hideErr(el) { el.style.display = 'none'; }
 
-    function goHome(fullName) {
+    function goHome(fullName, isAdmin = false) {
       document.getElementById('home-greeting').textContent = `Hi ${fullName}! 👋`;
+      document.getElementById('admin-link').style.display = isAdmin ? 'flex' : 'none';
       show('home');
     }
 
@@ -364,12 +366,12 @@
       if (memberId) {
         const { data, error } = await supabase
           .from('bitesync_members')
-          .select('id, full_name, status')
+          .select('id, full_name, status, is_admin')
           .eq('id', memberId)
           .single();
 
         if (!error && data && data.status === 'active') {
-          goHome(data.full_name);
+          goHome(data.full_name, data.is_admin);
           return;
         }
         // Stale / inactive — clear and show entry
@@ -480,7 +482,7 @@
     async function checkApproval(memberId) {
       const { data, error } = await supabase
         .from('bitesync_members')
-        .select('status, full_name')
+        .select('status, full_name, is_admin')
         .eq('id', memberId)
         .single();
 
@@ -488,7 +490,7 @@
         clearInterval(pollTimer);
         pollTimer = null;
         localStorage.setItem('bitesync_member_id', memberId);
-        goHome(data.full_name);
+        goHome(data.full_name, data.is_admin);
       }
     }
 
@@ -537,7 +539,7 @@
 
       const { data, error } = await supabase
         .from('bitesync_members')
-        .select('id, full_name')
+        .select('id, full_name, is_admin')
         .eq('full_name', fullName)
         .eq('phone_number', phone)
         .eq('status', 'active');
@@ -556,7 +558,7 @@
       }
 
       localStorage.setItem('bitesync_member_id', data[0].id);
-      goHome(data[0].full_name);
+      goHome(data[0].full_name, data[0].is_admin);
     });
   </script>
 </body>

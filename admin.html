@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>BiteSync · Admin</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: #FFF8F0;
+      color: #3D2817;
+      min-height: 100dvh;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: #E07856;
+      color: white;
+      padding: 0 16px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-title { font-size: 17px; font-weight: 800; letter-spacing: -0.3px; }
+    .header-back  { font-size: 14px; font-weight: 600; color: rgba(255,255,255,.85); text-decoration: none; }
+    .header-back:hover { color: white; }
+
+    /* ── Tab bar ── */
+    .tab-bar {
+      display: flex;
+      background: white;
+      border-bottom: 1.5px solid #E8D5C4;
+      position: sticky;
+      top: 52px;
+      z-index: 99;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .tab-bar::-webkit-scrollbar { display: none; }
+
+    .tab-btn {
+      flex: 1;
+      min-width: 82px;
+      padding: 13px 10px;
+      border: none;
+      border-bottom: 2.5px solid transparent;
+      background: transparent;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      color: #7A5C42;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: color .15s, border-color .15s;
+    }
+    .tab-btn.active { color: #E07856; border-bottom-color: #E07856; }
+
+    /* ── Panels ── */
+    .tab-panel {
+      display: none;
+      flex-direction: column;
+      gap: 14px;
+      padding: 16px;
+      max-width: 640px;
+      margin: 0 auto;
+      padding-bottom: 40px;
+    }
+    .tab-panel.active { display: flex; }
+
+    /* ── Card ── */
+    .card {
+      background: white;
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 2px 12px rgba(61,40,23,.07);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .card-title { font-size: 16px; font-weight: 700; }
+    .card-sub   { font-size: 13px; color: #7A5C42; line-height: 1.5; }
+
+    /* ── Section label ── */
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .7px;
+      color: #B09880;
+    }
+
+    /* ── Form ── */
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    .field-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: #7A5C42; }
+
+    input[type="text"],
+    input[type="tel"],
+    input[type="number"],
+    input[type="datetime-local"],
+    select,
+    textarea {
+      width: 100%;
+      min-height: 44px;
+      border: 1.5px solid #E8D5C4;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 15px;
+      font-family: inherit;
+      color: #3D2817;
+      background: #FFF8F0;
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+      transition: border-color .15s, background .15s;
+    }
+    textarea { min-height: 68px; resize: vertical; }
+    input:focus, select:focus, textarea:focus { border-color: #E07856; background: white; }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237A5C42' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-color: #FFF8F0;
+      padding-right: 40px;
+      cursor: pointer;
+    }
+    select:focus { background-color: white; }
+
+    /* ── Buttons ── */
+    .btn {
+      min-height: 44px;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      padding: 0 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: opacity .15s, transform .1s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .btn:active  { transform: scale(0.96); }
+    .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+    .btn-primary   { background: #E07856; color: white; }
+    .btn-secondary { background: white; color: #E07856; border: 1.5px solid #E07856; }
+    .btn-success   { background: #27AE60; color: white; }
+    .btn-danger    { background: #E74C3C; color: white; }
+    .btn-warning   { background: #E67E22; color: white; }
+    .btn-neutral   { background: #F3E8DC; color: #3D2817; }
+    .btn-ghost     { background: transparent; color: #7A5C42; }
+    .btn-sm        { min-height: 36px; font-size: 13px; border-radius: 8px; padding: 0 13px; }
+    .btn-full      { width: 100%; }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .badge-pending   { background: #FEF3C7; color: #92400E; }
+    .badge-active    { background: #D1FAE5; color: #065F46; }
+    .badge-draft     { background: #F3F4F6; color: #4B5563; }
+    .badge-open      { background: #D1FAE5; color: #065F46; }
+    .badge-closed    { background: #FEE2E2; color: #991B1B; }
+    .badge-delivered { background: #DBEAFE; color: #1E40AF; }
+    .badge-settled   { background: #E0E7FF; color: #3730A3; }
+    .badge-cancelled { background: #F3F4F6; color: #6B7280; }
+    .badge-unpaid    { background: #FEE2E2; color: #991B1B; }
+    .badge-paid      { background: #D1FAE5; color: #065F46; }
+    .badge-admin     { background: #FDE68A; color: #92400E; font-size: 10px; }
+
+    /* ── Member rows ── */
+    .member-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 11px 0;
+      border-bottom: 1px solid #F3E8DC;
+    }
+    .member-row:last-child { border-bottom: none; }
+    .member-info  { flex: 1; min-width: 0; }
+    .member-name  { font-size: 15px; font-weight: 700; }
+    .member-detail { font-size: 12px; color: #7A5C42; margin-top: 2px; }
+    .member-actions { display: flex; gap: 6px; align-items: center; }
+
+    /* ── Menu item rows ── */
+    .menu-item-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 0;
+      border-bottom: 1px solid #F3E8DC;
+    }
+    .menu-item-row:last-child { border-bottom: none; }
+    .menu-item-info  { flex: 1; min-width: 0; }
+    .menu-item-name  { font-size: 14px; font-weight: 600; }
+    .menu-item-cat   { font-size: 12px; color: #B09880; }
+    .menu-item-price { font-size: 14px; font-weight: 700; color: #E07856; white-space: nowrap; }
+
+    /* ── Toggle switch ── */
+    .toggle {
+      width: 38px;
+      height: 22px;
+      background: #E8D5C4;
+      border-radius: 11px;
+      position: relative;
+      cursor: pointer;
+      border: none;
+      transition: background .2s;
+      flex-shrink: 0;
+    }
+    .toggle.on { background: #27AE60; }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      width: 16px; height: 16px;
+      background: white;
+      border-radius: 50%;
+      top: 3px; left: 3px;
+      transition: left .2s;
+    }
+    .toggle.on::after { left: 19px; }
+
+    /* ── Session item checkboxes ── */
+    .item-check-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 0;
+      border-bottom: 1px solid #F3E8DC;
+      cursor: pointer;
+    }
+    .item-check-row:last-child { border-bottom: none; }
+    .item-check-row input[type="checkbox"] {
+      width: 18px; height: 18px;
+      accent-color: #E07856;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .item-check-label { flex: 1; font-size: 14px; }
+    .item-check-price { font-size: 13px; font-weight: 700; color: #E07856; }
+
+    /* ── Order lines ── */
+    .order-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 14px;
+      padding: 3px 0;
+      gap: 8px;
+    }
+    .order-line-name { flex: 1; }
+    .order-line-qty  { color: #7A5C42; font-size: 13px; margin-right: 4px; }
+    .order-total {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 700;
+      font-size: 15px;
+      padding-top: 10px;
+      margin-top: 6px;
+      border-top: 1.5px solid #E8D5C4;
+    }
+
+    /* ── Inline form ── */
+    .form-section { display: none; flex-direction: column; gap: 12px; }
+    .form-section.open { display: flex; }
+
+    /* ── Misc ── */
+    hr { border: none; border-top: 1px solid #F3E8DC; }
+
+    .error-msg {
+      font-size: 13px;
+      color: #B83C2B;
+      background: #FDF0EE;
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 28px 16px;
+      color: #B09880;
+      font-size: 14px;
+    }
+
+    .spinner {
+      width: 32px; height: 32px;
+      border: 3px solid #E8D5C4;
+      border-top-color: #E07856;
+      border-radius: 50%;
+      animation: spin .75s linear infinite;
+      margin: 20px auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Loading overlay ── */
+    #loading-overlay {
+      position: fixed; inset: 0;
+      background: #FFF8F0;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 200;
+    }
+    #loading-overlay.hidden { display: none; }
+
+    /* ── Access denied ── */
+    #access-denied {
+      padding: 60px 24px;
+      text-align: center;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+    #access-denied.visible { display: flex; }
+  </style>
+</head>
+<body>
+
+  <div id="loading-overlay">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+      <div class="spinner" style="margin:0;"></div>
+      <div style="font-size:14px;color:#7A5C42;">Loading…</div>
+    </div>
+  </div>
+
+  <div id="access-denied">
+    <div style="font-size:52px;">🚫</div>
+    <div style="font-size:22px;font-weight:800;">Admin only</div>
+    <div class="card-sub">You need an admin account to access this page.</div>
+    <a href="index.html" class="btn btn-primary btn-full" style="max-width:280px;">← Back to App</a>
+  </div>
+
+  <div id="admin-shell" style="display:none;">
+
+    <div class="header">
+      <a href="index.html" class="header-back">← My Order</a>
+      <div class="header-title">Admin</div>
+      <div style="width:72px;"></div>
+    </div>
+
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="members">Members</button>
+      <button class="tab-btn" data-tab="restaurants">Restaurants</button>
+      <button class="tab-btn" data-tab="sessions">Sessions</button>
+      <button class="tab-btn" data-tab="orders">Orders</button>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         MEMBERS
+    ══════════════════════════════════════ -->
+    <div id="tab-members" class="tab-panel active">
+
+      <div class="section-label">Pending Approval</div>
+      <div id="pending-list"><div class="spinner"></div></div>
+
+      <div class="section-label">Active Members</div>
+      <div class="card" style="padding:6px 18px;">
+        <div id="active-list"><div class="spinner"></div></div>
+      </div>
+
+    </div>
+
+    <!-- ══════════════════════════════════════
+         RESTAURANTS
+    ══════════════════════════════════════ -->
+    <div id="tab-restaurants" class="tab-panel">
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Restaurants</div>
+          <button class="btn btn-primary btn-sm" id="btn-toggle-rest">+ Add</button>
+        </div>
+        <div id="form-add-rest" class="form-section">
+          <div class="field">
+            <span class="field-label">Name</span>
+            <input type="text" id="rest-name" placeholder="Sunrise Café">
+          </div>
+          <div class="field">
+            <span class="field-label">Phone numbers (comma-separated)</span>
+            <input type="text" id="rest-phones" placeholder="+1 555 000 0000">
+          </div>
+          <div class="field">
+            <span class="field-label">Notes (optional)</span>
+            <textarea id="rest-notes" placeholder="Min order, delivery info…"></textarea>
+          </div>
+          <div id="rest-error" class="error-msg" style="display:none;"></div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-primary" id="btn-save-rest">Save</button>
+            <button class="btn btn-ghost" id="btn-cancel-rest">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="restaurant-list"><div class="spinner"></div></div>
+
+    </div>
+
+    <!-- ══════════════════════════════════════
+         SESSIONS
+    ══════════════════════════════════════ -->
+    <div id="tab-sessions" class="tab-panel">
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Sessions</div>
+          <button class="btn btn-primary btn-sm" id="btn-toggle-session">+ New</button>
+        </div>
+        <div id="form-new-session" class="form-section">
+          <div class="field">
+            <span class="field-label">Label (optional)</span>
+            <input type="text" id="sess-label" placeholder="Friday Breakfast">
+          </div>
+          <div class="field">
+            <span class="field-label">Restaurant</span>
+            <select id="sess-restaurant"><option value="">Select…</option></select>
+          </div>
+          <div class="field">
+            <span class="field-label">Order deadline</span>
+            <input type="datetime-local" id="sess-deadline">
+          </div>
+          <div class="field">
+            <span class="field-label">Delivery fee ($)</span>
+            <input type="number" id="sess-fee" placeholder="0.00" min="0" step="0.01">
+          </div>
+          <div id="sess-error" class="error-msg" style="display:none;"></div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-primary" id="btn-create-session">Create Draft</button>
+            <button class="btn btn-ghost" id="btn-cancel-session">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="session-list"><div class="spinner"></div></div>
+
+    </div>
+
+    <!-- ══════════════════════════════════════
+         ORDERS
+    ══════════════════════════════════════ -->
+    <div id="tab-orders" class="tab-panel">
+
+      <div class="card">
+        <div class="field">
+          <span class="field-label">Session</span>
+          <select id="orders-picker"><option value="">Choose a session…</option></select>
+        </div>
+      </div>
+      <div id="orders-content">
+        <div class="empty">Select a session above to view orders.</div>
+      </div>
+
+    </div>
+
+  </div><!-- /admin-shell -->
+
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+    const SUPABASE_URL      = 'https://syrhuxxryctrzjdzexnx.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN5cmh1eHhyeWN0cnpqZHpleG54Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxMjYzMjUsImV4cCI6MjA4MDcwMjMyNX0.DP4O-USLYPbjGoTwM2fSc8juzLsABrDbGpQ-7CxSAXQ';
+    const GROUP_CODE        = 'BITESYNC-MAIN';
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let adminMember = null;
+    let groupId     = null;
+
+    // ── Auth guard ────────────────────────────────────────────────────
+    async function init() {
+      const memberId = localStorage.getItem('bitesync_member_id');
+      if (!memberId) return deny();
+
+      const { data, error } = await supabase
+        .from('bitesync_members')
+        .select('id, full_name, is_admin, group_id')
+        .eq('id', memberId)
+        .single();
+
+      if (error || !data || !data.is_admin) return deny();
+
+      adminMember = data;
+      groupId     = data.group_id;
+
+      document.getElementById('loading-overlay').classList.add('hidden');
+      document.getElementById('admin-shell').style.display = 'block';
+      loadMembers();
+    }
+
+    function deny() {
+      document.getElementById('loading-overlay').classList.add('hidden');
+      document.getElementById('access-denied').classList.add('visible');
+    }
+
+    init();
+
+    // ── Tabs ──────────────────────────────────────────────────────────
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === `tab-${btn.dataset.tab}`));
+        ({ members: loadMembers, restaurants: loadRestaurants, sessions: loadSessions, orders: loadOrdersPicker })[btn.dataset.tab]?.();
+      });
+    });
+
+    // ════════════════════════════════════════════════════════════════
+    // MEMBERS
+    // ════════════════════════════════════════════════════════════════
+    async function loadMembers() {
+      const { data } = await supabase
+        .from('bitesync_members')
+        .select('id, full_name, phone_number, whatsapp_number, status, is_admin, joined_at')
+        .eq('group_id', groupId)
+        .order('joined_at');
+
+      if (!data) return;
+      renderPending(data.filter(m => m.status === 'pending'));
+      renderActive(data.filter(m => m.status === 'active'));
+    }
+
+    function renderPending(list) {
+      const el = document.getElementById('pending-list');
+      if (!list.length) {
+        el.innerHTML = '<div class="card"><div class="card-sub" style="text-align:center;padding:4px 0;">No pending requests 🎉</div></div>';
+        return;
+      }
+      el.innerHTML = list.map(m => `
+        <div class="card" style="gap:10px;">
+          <div>
+            <div class="member-name">${x(m.full_name)}</div>
+            <div class="member-detail">📞 ${x(m.phone_number)}${m.whatsapp_number && m.whatsapp_number !== m.phone_number ? ` · WhatsApp ${x(m.whatsapp_number)}` : ''}</div>
+            <div class="member-detail">Requested ${ago(m.joined_at)}</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-success btn-sm" onclick="approve('${m.id}')">✓ Approve</button>
+            <button class="btn btn-danger btn-sm"  onclick="reject('${m.id}')">✗ Reject</button>
+          </div>
+        </div>`).join('');
+    }
+
+    function renderActive(list) {
+      const el = document.getElementById('active-list');
+      if (!list.length) { el.innerHTML = '<div class="empty" style="padding:16px 0;">No active members yet.</div>'; return; }
+      el.innerHTML = list.map(m => `
+        <div class="member-row">
+          <div class="member-info">
+            <div class="member-name">${x(m.full_name)}${m.is_admin ? ' <span class="badge badge-admin">Admin</span>' : ''}</div>
+            <div class="member-detail">📞 ${x(m.phone_number)}</div>
+          </div>
+        </div>`).join('');
+    }
+
+    window.approve = async (id) => {
+      await supabase.from('bitesync_members').update({ status: 'active' }).eq('id', id);
+      loadMembers();
+    };
+
+    window.reject = async (id) => {
+      if (!confirm('Delete this registration request?')) return;
+      await supabase.from('bitesync_members').delete().eq('id', id);
+      loadMembers();
+    };
+
+    // ════════════════════════════════════════════════════════════════
+    // RESTAURANTS
+    // ════════════════════════════════════════════════════════════════
+    let restFormOpen = false;
+
+    document.getElementById('btn-toggle-rest').addEventListener('click', () => {
+      restFormOpen = !restFormOpen;
+      document.getElementById('form-add-rest').classList.toggle('open', restFormOpen);
+      document.getElementById('btn-toggle-rest').textContent = restFormOpen ? '✕' : '+ Add';
+    });
+
+    document.getElementById('btn-cancel-rest').addEventListener('click', () => {
+      restFormOpen = false;
+      document.getElementById('form-add-rest').classList.remove('open');
+      document.getElementById('btn-toggle-rest').textContent = '+ Add';
+      ['rest-name','rest-phones','rest-notes'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('rest-error').style.display = 'none';
+    });
+
+    document.getElementById('btn-save-rest').addEventListener('click', async () => {
+      const errEl  = document.getElementById('rest-error');
+      const name   = document.getElementById('rest-name').value.trim();
+      const phones = document.getElementById('rest-phones').value.trim().split(',').map(p=>p.trim()).filter(Boolean);
+      const notes  = document.getElementById('rest-notes').value.trim();
+
+      errEl.style.display = 'none';
+      if (!name) { errEl.textContent = 'Restaurant name is required.'; errEl.style.display = 'block'; return; }
+
+      const btn = document.getElementById('btn-save-rest');
+      btn.disabled = true; btn.textContent = 'Saving…';
+
+      const { error } = await supabase.from('bitesync_restaurants').insert({
+        name, phones, notes: notes || null,
+        created_by_group_id:  groupId,
+        created_by_member_id: adminMember.id,
+      });
+
+      btn.disabled = false; btn.textContent = 'Save';
+      if (error) { errEl.textContent = 'Save failed. Try again.'; errEl.style.display = 'block'; return; }
+      document.getElementById('btn-cancel-rest').click();
+      loadRestaurants();
+    });
+
+    async function loadRestaurants() {
+      const el = document.getElementById('restaurant-list');
+      el.innerHTML = '<div class="spinner"></div>';
+
+      const { data } = await supabase
+        .from('bitesync_restaurants')
+        .select('id, name, phones, notes')
+        .eq('created_by_group_id', groupId)
+        .order('name');
+
+      if (!data?.length) { el.innerHTML = '<div class="empty">No restaurants yet.</div>'; return; }
+
+      el.innerHTML = '';
+      for (const r of data) {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="card-header">
+            <div style="min-width:0;">
+              <div class="card-title">${x(r.name)}</div>
+              ${r.phones?.length ? `<div class="card-sub">${r.phones.map(x).join(' · ')}</div>` : ''}
+              ${r.notes ? `<div class="card-sub">${x(r.notes)}</div>` : ''}
+            </div>
+            <button class="btn btn-secondary btn-sm" id="menu-btn-${r.id}" onclick="toggleMenu('${r.id}')">▾ Menu</button>
+          </div>
+          <div id="menu-section-${r.id}" style="display:none;flex-direction:column;gap:10px;">
+            <div id="menu-items-${r.id}"></div>
+            <hr>
+            <div class="section-label">Add item</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <input type="text"   id="mi-name-${r.id}"  placeholder="Item name" style="flex:2;min-width:120px;">
+              <input type="text"   id="mi-cat-${r.id}"   placeholder="Category"  style="flex:1;min-width:90px;">
+              <input type="number" id="mi-price-${r.id}" placeholder="Price"     style="width:80px;" min="0" step="0.01">
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="addItem('${r.id}')">+ Add Item</button>
+          </div>`;
+        el.appendChild(card);
+      }
+    }
+
+    window.toggleMenu = async (rid) => {
+      const sec = document.getElementById(`menu-section-${rid}`);
+      const open = sec.style.display !== 'none';
+      sec.style.display = open ? 'none' : 'flex';
+      document.getElementById(`menu-btn-${rid}`).textContent = open ? '▾ Menu' : '▴ Hide';
+      if (!open) await loadMenuItems(rid);
+    };
+
+    async function loadMenuItems(rid) {
+      const el = document.getElementById(`menu-items-${rid}`);
+      const { data } = await supabase
+        .from('bitesync_menu_items')
+        .select('id, name, category, price, is_available')
+        .eq('restaurant_id', rid)
+        .order('category', { nullsFirst: true })
+        .order('name');
+
+      if (!data?.length) { el.innerHTML = '<div class="card-sub" style="color:#B09880;">No items yet.</div>'; return; }
+      el.innerHTML = data.map(item => `
+        <div class="menu-item-row">
+          <div class="menu-item-info">
+            <div class="menu-item-name">${x(item.name)}</div>
+            ${item.category ? `<div class="menu-item-cat">${x(item.category)}</div>` : ''}
+          </div>
+          <div class="menu-item-price">$${(+item.price).toFixed(2)}</div>
+          <button class="toggle ${item.is_available?'on':''}"
+            title="${item.is_available?'Available — click to disable':'Unavailable — click to enable'}"
+            onclick="toggleAvail('${item.id}',${item.is_available},'${rid}')"></button>
+        </div>`).join('');
+    }
+
+    window.toggleAvail = async (id, cur, rid) => {
+      await supabase.from('bitesync_menu_items').update({ is_available: !cur }).eq('id', id);
+      loadMenuItems(rid);
+    };
+
+    window.addItem = async (rid) => {
+      const name  = document.getElementById(`mi-name-${rid}`).value.trim();
+      const cat   = document.getElementById(`mi-cat-${rid}`).value.trim();
+      const price = parseFloat(document.getElementById(`mi-price-${rid}`).value) || 0;
+      if (!name) { alert('Item name is required.'); return; }
+
+      const { error } = await supabase.from('bitesync_menu_items').insert({
+        restaurant_id: rid, name, category: cat || null, price, is_available: true,
+      });
+      if (error) { alert('Failed to add item.'); return; }
+      document.getElementById(`mi-name-${rid}`).value  = '';
+      document.getElementById(`mi-cat-${rid}`).value   = '';
+      document.getElementById(`mi-price-${rid}`).value = '';
+      loadMenuItems(rid);
+    };
+
+    // ════════════════════════════════════════════════════════════════
+    // SESSIONS
+    // ════════════════════════════════════════════════════════════════
+    let sessFormOpen = false;
+
+    document.getElementById('btn-toggle-session').addEventListener('click', async () => {
+      sessFormOpen = !sessFormOpen;
+      document.getElementById('form-new-session').classList.toggle('open', sessFormOpen);
+      document.getElementById('btn-toggle-session').textContent = sessFormOpen ? '✕' : '+ New';
+      if (sessFormOpen) {
+        // populate restaurant dropdown
+        const sel = document.getElementById('sess-restaurant');
+        sel.innerHTML = '<option value="">Loading…</option>';
+        const { data } = await supabase.from('bitesync_restaurants').select('id,name').eq('created_by_group_id', groupId).order('name');
+        sel.innerHTML = '<option value="">Select restaurant…</option>' +
+          (data||[]).map(r=>`<option value="${r.id}">${x(r.name)}</option>`).join('');
+        // default deadline to tomorrow 9am
+        const d = new Date(); d.setDate(d.getDate()+1); d.setHours(9,0,0,0);
+        document.getElementById('sess-deadline').value = d.toISOString().slice(0,16);
+      }
+    });
+
+    document.getElementById('btn-cancel-session').addEventListener('click', () => {
+      sessFormOpen = false;
+      document.getElementById('form-new-session').classList.remove('open');
+      document.getElementById('btn-toggle-session').textContent = '+ New';
+    });
+
+    document.getElementById('btn-create-session').addEventListener('click', async () => {
+      const errEl   = document.getElementById('sess-error');
+      const label   = document.getElementById('sess-label').value.trim();
+      const restId  = document.getElementById('sess-restaurant').value;
+      const deadline = document.getElementById('sess-deadline').value;
+      const fee     = parseFloat(document.getElementById('sess-fee').value) || 0;
+
+      errEl.style.display = 'none';
+      if (!restId) { errEl.textContent = 'Please select a restaurant.'; errEl.style.display = 'block'; return; }
+
+      const btn = document.getElementById('btn-create-session');
+      btn.disabled = true; btn.textContent = 'Creating…';
+
+      const { error } = await supabase.from('bitesync_sessions').insert({
+        group_id: groupId, restaurant_id: restId,
+        label: label || null, status: 'draft',
+        order_deadline: deadline || null,
+        delivery_fee: fee, created_by: adminMember.id,
+      });
+
+      btn.disabled = false; btn.textContent = 'Create Draft';
+      if (error) { errEl.textContent = 'Failed. Try again.'; errEl.style.display = 'block'; return; }
+      document.getElementById('btn-cancel-session').click();
+      loadSessions();
+    });
+
+    async function loadSessions() {
+      const el = document.getElementById('session-list');
+      el.innerHTML = '<div class="spinner"></div>';
+
+      const { data } = await supabase
+        .from('bitesync_sessions')
+        .select('id, label, status, order_deadline, delivery_fee, restaurant_id, bitesync_restaurants(name)')
+        .eq('group_id', groupId)
+        .order('created_at', { ascending: false });
+
+      if (!data?.length) { el.innerHTML = '<div class="empty">No sessions yet.</div>'; return; }
+
+      el.innerHTML = '';
+      for (const s of data) el.appendChild(buildSessionCard(s));
+    }
+
+    function buildSessionCard(s) {
+      const name     = s.label || `Session ${s.id.slice(0,6)}`;
+      const restName = s.bitesync_restaurants?.name || '—';
+      const deadline = s.order_deadline ? new Date(s.order_deadline).toLocaleString([], {dateStyle:'short',timeStyle:'short'}) : '—';
+
+      const card = document.createElement('div');
+      card.className = 'card';
+
+      // State machine action buttons
+      const actions = {
+        draft:     `<button class="btn btn-success btn-sm" onclick="openSession('${s.id}')">▶ Open</button>
+                    <button class="btn btn-danger btn-sm"  onclick="cancelSession('${s.id}')">✕ Cancel</button>`,
+        open:      `<button class="btn btn-warning btn-sm" onclick="closeSession('${s.id}')">■ Close</button>
+                    <button class="btn btn-danger btn-sm"  onclick="cancelSession('${s.id}')">✕ Cancel</button>`,
+        closed:    `<button class="btn btn-primary btn-sm" onclick="deliverSession('${s.id}')">📦 Mark Delivered</button>
+                    <button class="btn btn-danger btn-sm"  onclick="cancelSession('${s.id}')">✕ Cancel</button>`,
+        delivered: `<button class="btn btn-success btn-sm" onclick="settleSession('${s.id}')">✓ Settle</button>`,
+        settled:   '',
+        cancelled: '',
+      }[s.status] || '';
+
+      card.innerHTML = `
+        <div class="card-header">
+          <div style="min-width:0;">
+            <div class="card-title">${x(name)}</div>
+            <div class="card-sub">${x(restName)} · Deadline: ${deadline}</div>
+            ${s.delivery_fee ? `<div class="card-sub">Delivery: $${(+s.delivery_fee).toFixed(2)}</div>` : ''}
+          </div>
+          <span class="badge badge-${s.status}">${s.status}</span>
+        </div>
+        ${actions ? `<div style="display:flex;gap:8px;flex-wrap:wrap;">${actions}</div>` : ''}
+        ${s.status === 'draft' ? `
+          <hr>
+          <div class="section-label">Menu items for this session</div>
+          <div class="card-sub">Tick the items members can order from:</div>
+          <div id="sitems-${s.id}"><div class="spinner" style="width:24px;height:24px;border-width:2px;margin:10px auto;"></div></div>
+        ` : ''}`;
+
+      if (s.status === 'draft') loadSessionItemPicker(s.id, s.restaurant_id);
+      return card;
+    }
+
+    async function loadSessionItemPicker(sessionId, restaurantId) {
+      const el = document.getElementById(`sitems-${sessionId}`);
+
+      const [{ data: items }, { data: existing }] = await Promise.all([
+        supabase.from('bitesync_menu_items')
+          .select('id, name, category, price')
+          .eq('restaurant_id', restaurantId)
+          .eq('is_available', true)
+          .order('category', { nullsFirst: true })
+          .order('name'),
+        supabase.from('bitesync_session_items')
+          .select('menu_item_id')
+          .eq('session_id', sessionId),
+      ]);
+
+      if (!items?.length) {
+        el.innerHTML = '<div class="card-sub" style="color:#B09880;">No available items for this restaurant — add some in the Restaurants tab first.</div>';
+        return;
+      }
+
+      const checked = new Set((existing||[]).map(e => e.menu_item_id));
+
+      el.innerHTML = items.map(item => `
+        <label class="item-check-row">
+          <input type="checkbox"
+            data-sid="${sessionId}" data-mid="${item.id}"
+            data-name="${x(item.name)}" data-cat="${x(item.category||'')}" data-price="${item.price}"
+            ${checked.has(item.id) ? 'checked' : ''}
+            onchange="toggleSItem(this)">
+          <span class="item-check-label">
+            ${x(item.name)}${item.category ? ` <span style="color:#B09880;font-size:12px;">${x(item.category)}</span>` : ''}
+          </span>
+          <span class="item-check-price">$${(+item.price).toFixed(2)}</span>
+        </label>`).join('');
+    }
+
+    window.toggleSItem = async (cb) => {
+      const { sid, mid, name, cat, price } = cb.dataset;
+      if (cb.checked) {
+        await supabase.from('bitesync_session_items').insert({
+          session_id: sid, menu_item_id: mid,
+          name, category: cat || null, price: parseFloat(price),
+        });
+      } else {
+        await supabase.from('bitesync_session_items').delete().eq('session_id', sid).eq('menu_item_id', mid);
+      }
+    };
+
+    window.openSession = async (id) => {
+      const { data } = await supabase.from('bitesync_session_items').select('id').eq('session_id', id).limit(1);
+      if (!data?.length) { alert('Tick at least one menu item before opening the session.'); return; }
+      await supabase.from('bitesync_sessions').update({ status: 'open' }).eq('id', id);
+      loadSessions();
+    };
+
+    window.closeSession = async (id) => {
+      if (!confirm('Close this session? Members can no longer place orders.')) return;
+      await supabase.from('bitesync_sessions').update({ status: 'closed', closed_at: new Date().toISOString() }).eq('id', id);
+      loadSessions();
+    };
+
+    window.cancelSession = async (id) => {
+      if (!confirm('Cancel this session?')) return;
+      await supabase.from('bitesync_sessions').update({ status: 'cancelled' }).eq('id', id);
+      loadSessions();
+    };
+
+    window.deliverSession = async (id) => {
+      await supabase.from('bitesync_sessions').update({ status: 'delivered' }).eq('id', id);
+      loadSessions();
+    };
+
+    window.settleSession = async (id) => {
+      await supabase.from('bitesync_sessions').update({ status: 'settled' }).eq('id', id);
+      loadSessions();
+    };
+
+    // ════════════════════════════════════════════════════════════════
+    // ORDERS
+    // ════════════════════════════════════════════════════════════════
+    async function loadOrdersPicker() {
+      const sel = document.getElementById('orders-picker');
+      const { data } = await supabase
+        .from('bitesync_sessions')
+        .select('id, label, status, bitesync_restaurants(name)')
+        .eq('group_id', groupId)
+        .neq('status', 'draft')
+        .order('created_at', { ascending: false });
+
+      sel.innerHTML = '<option value="">Choose a session…</option>' +
+        (data||[]).map(s => {
+          const label = s.label || `Session ${s.id.slice(0,6)}`;
+          return `<option value="${s.id}">${x(label)} — ${x(s.bitesync_restaurants?.name||'?')} (${s.status})</option>`;
+        }).join('');
+    }
+
+    document.getElementById('orders-picker').addEventListener('change', async e => {
+      const id = e.target.value;
+      if (!id) { document.getElementById('orders-content').innerHTML = '<div class="empty">Select a session above to view orders.</div>'; return; }
+      await loadOrders(id);
+    });
+
+    async function loadOrders(sessionId) {
+      const el = document.getElementById('orders-content');
+      el.innerHTML = '<div class="spinner"></div>';
+
+      const { data: orders, error } = await supabase
+        .from('bitesync_orders')
+        .select(`
+          id, status, items_subtotal, delivery_share, final_total, paid_status, order_notes, submitted_at,
+          bitesync_members(full_name),
+          bitesync_order_items(
+            id, quantity, unit_price, line_total, item_notes,
+            bitesync_session_items(name, category)
+          )
+        `)
+        .eq('session_id', sessionId)
+        .order('submitted_at');
+
+      if (error)        { el.innerHTML = '<div class="empty">Failed to load orders.</div>'; return; }
+      if (!orders?.length) { el.innerHTML = '<div class="empty">No orders placed yet for this session.</div>'; return; }
+
+      el.innerHTML = '';
+      let grandTotal = 0;
+
+      for (const o of orders) {
+        const name  = o.bitesync_members?.full_name || 'Unknown';
+        const items = o.bitesync_order_items || [];
+        const total = +(o.final_total || 0);
+        grandTotal += total;
+
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        const lines = items.map(oi => {
+          const iname = oi.bitesync_session_items?.name || '—';
+          const icat  = oi.bitesync_session_items?.category;
+          return `
+            <div class="order-line">
+              <div class="order-line-name">
+                <span class="order-line-qty">${oi.quantity}×</span>${x(iname)}
+                ${icat ? `<span style="color:#B09880;font-size:12px;"> ${x(icat)}</span>` : ''}
+                ${oi.item_notes ? `<div style="font-size:12px;color:#7A5C42;margin-left:18px;">↳ ${x(oi.item_notes)}</div>` : ''}
+              </div>
+              <div style="font-weight:600;white-space:nowrap;">$${(+oi.line_total).toFixed(2)}</div>
+            </div>`;
+        }).join('');
+
+        card.innerHTML = `
+          <div class="card-header">
+            <div class="card-title">${x(name)}</div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span class="badge badge-${o.paid_status}">${o.paid_status}</span>
+              <button class="btn btn-sm ${o.paid_status==='paid'?'btn-neutral':'btn-success'}"
+                onclick="togglePaid('${o.id}','${o.paid_status}')">
+                ${o.paid_status==='paid' ? 'Unmark' : 'Mark Paid'}
+              </button>
+            </div>
+          </div>
+          ${lines}
+          ${o.order_notes ? `<div style="font-size:13px;color:#7A5C42;margin-top:4px;">Note: ${x(o.order_notes)}</div>` : ''}
+          <div class="order-total">
+            <span>Subtotal</span><span>$${(+o.items_subtotal).toFixed(2)}</span>
+          </div>
+          ${o.delivery_share ? `<div class="order-line" style="color:#7A5C42;font-size:13px;padding-top:4px;"><span>Delivery share</span><span>$${(+o.delivery_share).toFixed(2)}</span></div>` : ''}
+          <div style="display:flex;justify-content:space-between;font-weight:800;font-size:16px;color:#E07856;margin-top:4px;">
+            <span>Total</span><span>$${total.toFixed(2)}</span>
+          </div>`;
+
+        el.appendChild(card);
+      }
+
+      const summary = document.createElement('div');
+      summary.className = 'card';
+      summary.innerHTML = `
+        <div style="display:flex;justify-content:space-between;font-weight:800;font-size:17px;">
+          <span>Session Total</span>
+          <span style="color:#E07856;">$${grandTotal.toFixed(2)}</span>
+        </div>
+        <div style="font-size:13px;color:#7A5C42;">${orders.length} order${orders.length!==1?'s':''}</div>`;
+      el.appendChild(summary);
+    }
+
+    window.togglePaid = async (orderId, cur) => {
+      const next = cur === 'paid' ? 'unpaid' : 'paid';
+      const upd  = { paid_status: next };
+      if (next === 'paid') upd.paid_at = new Date().toISOString();
+      await supabase.from('bitesync_orders').update(upd).eq('id', orderId);
+      const sid = document.getElementById('orders-picker').value;
+      if (sid) loadOrders(sid);
+    };
+
+    // ── Helpers ───────────────────────────────────────────────────
+    function x(s) {
+      if (s == null) return '';
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function ago(iso) {
+      const m = Math.floor((Date.now() - new Date(iso)) / 60000);
+      if (m < 60)  return `${m}m ago`;
+      if (m < 1440) return `${Math.floor(m/60)}h ago`;
+      return `${Math.floor(m/1440)}d ago`;
+    }
+  </script>
+</body>
+</html>
