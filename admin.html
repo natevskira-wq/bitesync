@@ -605,6 +605,7 @@
             <div class="member-name">${x(m.full_name)}${m.is_admin ? ' <span class="badge badge-admin">Admin</span>' : ''}</div>
             <div class="member-detail">📞 ${x(m.phone_number)}</div>
           </div>
+          ${m.id === adminMember.id ? `<button class="btn btn-ghost btn-sm" style="font-size:12px;min-height:32px;" onclick="editMyWA()" title="Edit your WhatsApp number">✏ WA</button>` : ''}
         </div>`).join('');
     }
 
@@ -632,6 +633,22 @@
 
     window.dismissWAPrompt = () => {
       document.getElementById('wa-prompt-banner').classList.remove('visible');
+    };
+
+    window.editMyWA = () => {
+      const input = document.getElementById('admin-wa-input');
+      if (adminMember.whatsapp_number) input.value = adminMember.whatsapp_number;
+      document.getElementById('wa-prompt-banner').classList.add('visible');
+      input.focus();
+    };
+
+    window.viewOrders = async (sessionId) => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === 'orders'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-orders'));
+      await loadOrdersPicker();
+      const picker = document.getElementById('orders-picker');
+      picker.value = sessionId;
+      await loadOrders(sessionId);
     };
 
     // ════════════════════════════════════════════════════════════════
@@ -736,17 +753,48 @@
 
       if (!data?.length) { el.innerHTML = '<div class="card-sub" style="color:#B09880;">No items yet.</div>'; return; }
       el.innerHTML = data.map(item => `
-        <div class="menu-item-row">
-          <div class="menu-item-info">
-            <div class="menu-item-name">${x(item.name)}</div>
-            ${item.category ? `<div class="menu-item-cat">${x(item.category)}</div>` : ''}
+        <div>
+          <div class="menu-item-row">
+            <div class="menu-item-info">
+              <div class="menu-item-name">${x(item.name)}</div>
+              ${item.category ? `<div class="menu-item-cat">${x(item.category)}</div>` : ''}
+            </div>
+            <div class="menu-item-price">$${(+item.price).toFixed(2)}</div>
+            <button class="btn btn-ghost btn-sm" style="min-height:30px;padding:0 8px;font-size:15px;" title="Edit item" onclick="toggleEditItem('${item.id}')">✏</button>
+            <button class="toggle ${item.is_available?'on':''}"
+              title="${item.is_available?'Available — click to disable':'Unavailable — click to enable'}"
+              onclick="toggleAvail('${item.id}',${item.is_available},'${rid}')"></button>
           </div>
-          <div class="menu-item-price">$${(+item.price).toFixed(2)}</div>
-          <button class="toggle ${item.is_available?'on':''}"
-            title="${item.is_available?'Available — click to disable':'Unavailable — click to enable'}"
-            onclick="toggleAvail('${item.id}',${item.is_available},'${rid}')"></button>
+          <div id="edit-item-${item.id}" style="display:none;flex-direction:column;gap:8px;padding:6px 0 12px;">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <input type="text"   id="ei-name-${item.id}"  value="${x(item.name)}"               placeholder="Name"     style="flex:2;min-width:120px;">
+              <input type="text"   id="ei-cat-${item.id}"   value="${x(item.category||'')}"        placeholder="Category" style="flex:1;min-width:90px;">
+              <input type="number" id="ei-price-${item.id}" value="${(+item.price).toFixed(2)}"    placeholder="Price"    style="width:80px;" min="0" step="0.01">
+            </div>
+            <div style="display:flex;gap:6px;">
+              <button class="btn btn-primary btn-sm" onclick="saveItem('${item.id}','${rid}')">Save</button>
+              <button class="btn btn-ghost btn-sm"   onclick="toggleEditItem('${item.id}')">Cancel</button>
+            </div>
+          </div>
         </div>`).join('');
     }
+
+    window.toggleEditItem = (id) => {
+      const el = document.getElementById(`edit-item-${id}`);
+      if (!el) return;
+      el.style.display = el.style.display === 'none' ? 'flex' : 'none';
+    };
+
+    window.saveItem = async (id, rid) => {
+      const name  = document.getElementById(`ei-name-${id}`).value.trim();
+      const cat   = document.getElementById(`ei-cat-${id}`).value.trim();
+      const price = parseFloat(document.getElementById(`ei-price-${id}`).value) || 0;
+      if (!name) { alert('Name is required.'); return; }
+      await supabase.from('bitesync_menu_items').update({
+        name, category: cat || null, price,
+      }).eq('id', id);
+      loadMenuItems(rid);
+    };
 
     window.toggleAvail = async (id, cur, rid) => {
       await supabase.from('bitesync_menu_items').update({ is_available: !cur }).eq('id', id);
@@ -794,6 +842,12 @@
           (rests||[]).map(r=>`<option value="${r.id}">${x(r.name)}</option>`).join('');
         const d = new Date(); d.setDate(d.getDate()+1); d.setHours(9,0,0,0);
         document.getElementById('sess-deadline').value = d.toISOString().slice(0,16);
+        // Auto-fill label with tomorrow's weekday if blank
+        const labelEl = document.getElementById('sess-label');
+        if (!labelEl.value) {
+          const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+          labelEl.value = `${days[d.getDay()]} Breakfast`;
+        }
         // Auto-fill address from most recent session
         if (lastSess?.[0]) {
           document.getElementById('sess-address').value = lastSess[0].delivery_address || '';
@@ -859,6 +913,20 @@
         el.appendChild(card);
         if (s.status === 'draft') loadSessionItemPicker(s.id, s.restaurant_id);
       }
+
+      // Populate live order count badges on open sessions
+      const openIds = data.filter(s => s.status === 'open').map(s => s.id);
+      if (openIds.length) {
+        const counts = await Promise.all(
+          openIds.map(id => supabase.from('bitesync_orders')
+            .select('id', { count: 'exact', head: true })
+            .eq('session_id', id))
+        );
+        openIds.forEach((id, i) => {
+          const badge = document.getElementById(`order-count-${id}`);
+          if (badge) badge.textContent = `${counts[i].count ?? 0} ordered`;
+        });
+      }
     }
 
     function buildSessionCard(s) {
@@ -872,9 +940,11 @@
       const actions = {
         draft:     `<button class="btn btn-success btn-sm" onclick="openSession('${s.id}')">▶ Open</button>
                     <button class="btn btn-danger btn-sm"  onclick="cancelSession('${s.id}')">✕ Cancel</button>`,
-        open:      `<button class="btn btn-warning btn-sm" onclick="closeSession('${s.id}')">■ Close</button>
+        open:      `<button class="btn btn-secondary btn-sm" onclick="viewOrders('${s.id}')">📋 Orders</button>
+                    <button class="btn btn-warning btn-sm" onclick="closeSession('${s.id}')">■ Close</button>
                     <button class="btn btn-danger btn-sm"  onclick="cancelSession('${s.id}')">✕ Cancel</button>`,
-        closed:    `<button class="btn btn-secondary btn-sm" onclick="reopenSession('${s.id}')">↩ Reopen</button>
+        closed:    `<button class="btn btn-secondary btn-sm" onclick="viewOrders('${s.id}')">📋 Orders</button>
+                    <button class="btn btn-secondary btn-sm" onclick="reopenSession('${s.id}')">↩ Reopen</button>
                     <button class="btn btn-primary btn-sm" onclick="deliverSession('${s.id}')">📦 Mark Delivered</button>
                     <button class="btn btn-danger btn-sm"  onclick="cancelSession('${s.id}')">✕ Cancel</button>`,
         delivered: `<button class="btn btn-success btn-sm" onclick="settleSession('${s.id}')">✓ Settle</button>`,
@@ -890,7 +960,10 @@
             ${s.delivery_address ? `<div class="card-sub">📍 ${x(s.delivery_address)}${s.delivery_address_notes ? ` — ${x(s.delivery_address_notes)}` : ''}</div>` : ''}
             ${s.delivery_fee ? `<div class="card-sub">Delivery fee: $${(+s.delivery_fee).toFixed(2)}</div>` : ''}
           </div>
-          <span class="badge badge-${s.status}">${s.status}</span>
+          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+            <span class="badge badge-${s.status}">${s.status}</span>
+            ${s.status === 'open' ? `<span id="order-count-${s.id}" class="badge badge-active">…</span>` : ''}
+          </div>
         </div>
         ${actions ? `<div id="actions-${s.id}" style="display:flex;gap:8px;flex-wrap:wrap;">${actions}</div>` : ''}
         ${s.status === 'draft' ? `
