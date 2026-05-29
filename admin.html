@@ -939,23 +939,48 @@
       const el = document.getElementById('orders-content');
       el.innerHTML = '<div class="spinner"></div>';
 
-      const { data: orders, error } = await supabase
-        .from('bitesync_orders')
-        .select(`
-          id, status, items_subtotal, delivery_share, final_total, paid_status, order_notes, submitted_at,
-          bitesync_members(full_name),
-          bitesync_order_items(
-            id, quantity, unit_price, line_total, item_notes,
-            bitesync_session_items(name, category)
-          )
-        `)
-        .eq('session_id', sessionId)
-        .order('submitted_at');
+      const [{ data: session }, { data: orders, error }] = await Promise.all([
+        supabase.from('bitesync_sessions').select('delivery_fee, status').eq('id', sessionId).single(),
+        supabase.from('bitesync_orders')
+          .select(`
+            id, status, items_subtotal, delivery_share, final_total, paid_status, order_notes, submitted_at,
+            bitesync_members(full_name),
+            bitesync_order_items(
+              id, quantity, unit_price, line_total, item_notes,
+              bitesync_session_items(name, category)
+            )
+          `)
+          .eq('session_id', sessionId)
+          .order('submitted_at'),
+      ]);
 
-      if (error)        { el.innerHTML = '<div class="empty">Failed to load orders.</div>'; return; }
+      if (error)           { el.innerHTML = '<div class="empty">Failed to load orders.</div>'; return; }
       if (!orders?.length) { el.innerHTML = '<div class="empty">No orders placed yet for this session.</div>'; return; }
 
       el.innerHTML = '';
+
+      // Delivery fee split card
+      const fee = +(session?.delivery_fee || 0);
+      if (fee > 0) {
+        const perPerson   = fee / orders.length;
+        const alreadySplit = orders.some(o => +(o.delivery_share || 0) > 0);
+        const splitCard   = document.createElement('div');
+        splitCard.className = 'card';
+        splitCard.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+            <div>
+              <div style="font-weight:700;">Delivery Fee: $${fee.toFixed(2)}</div>
+              <div style="font-size:13px;color:#7A5C42;">÷ ${orders.length} orders = $${perPerson.toFixed(2)} each</div>
+              ${alreadySplit ? '<div style="font-size:12px;color:#27AE60;margin-top:4px;">✓ Already split</div>' : ''}
+            </div>
+            <button class="btn btn-primary btn-sm" id="btn-split-delivery"
+              onclick="splitDelivery('${sessionId}', ${fee}, ${orders.length})">
+              ${alreadySplit ? 'Re-split' : 'Split Now'}
+            </button>
+          </div>`;
+        el.appendChild(splitCard);
+      }
+
       let grandTotal = 0;
 
       for (const o of orders) {
@@ -1023,6 +1048,27 @@
       await supabase.from('bitesync_orders').update(upd).eq('id', orderId);
       const sid = document.getElementById('orders-picker').value;
       if (sid) loadOrders(sid);
+    };
+
+    window.splitDelivery = async (sessionId, fee, count) => {
+      const btn = document.getElementById('btn-split-delivery');
+      btn.disabled = true; btn.textContent = 'Splitting…';
+
+      const share = Math.round((fee / count) * 100) / 100;
+
+      const { data: orders } = await supabase
+        .from('bitesync_orders').select('id, items_subtotal').eq('session_id', sessionId);
+
+      if (!orders?.length) { btn.disabled = false; return; }
+
+      await Promise.all(orders.map(o =>
+        supabase.from('bitesync_orders').update({
+          delivery_share: share,
+          final_total:    Math.round((+(o.items_subtotal) + share) * 100) / 100,
+        }).eq('id', o.id)
+      ));
+
+      loadOrders(sessionId);
     };
 
     // ── Helpers ───────────────────────────────────────────────────

@@ -228,6 +228,25 @@
     .footer-total-amount { font-size: 20px; font-weight: 800; color: #E07856; }
     .footer-btn { flex: 1; min-height: 48px; border-radius: 12px; font-size: 15px; }
 
+    /* Closed session view */
+    .closed-banner {
+      width: 100%;
+      background: #F3E8DC;
+      border-radius: 16px;
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .closed-banner-title { font-size: 18px; font-weight: 800; }
+    .closed-banner-sub   { font-size: 14px; color: #7A5C42; margin-top: 2px; }
+    .closed-status-chip  {
+      display: inline-flex; align-items: center;
+      background: rgba(61,40,23,.12); border-radius: 20px;
+      padding: 4px 12px; font-size: 12px; font-weight: 700; color: #3D2817;
+      width: fit-content; margin-top: 6px;
+    }
+
     /* Submitted order */
     .submitted-item {
       display: flex; justify-content: space-between; align-items: baseline;
@@ -402,6 +421,20 @@
       document.getElementById('admin-link').style.display = me.is_admin ? 'flex' : 'none';
       show('home');
       loadActiveSession();
+      subscribeToSessions();
+    }
+
+    // ── Realtime ──────────────────────────────────────────────────────
+    let realtimeChannel = null;
+    function subscribeToSessions() {
+      realtimeChannel?.unsubscribe();
+      realtimeChannel = supabase
+        .channel(`group-${me.group_id}`)
+        .on('postgres_changes', {
+          event: 'UPDATE', schema: 'public', table: 'bitesync_sessions',
+          filter: `group_id=eq.${me.group_id}`,
+        }, () => loadActiveSession())
+        .subscribe();
     }
 
     // ── Session loading ───────────────────────────────────────────────
@@ -420,6 +453,31 @@
         .limit(1);
 
       if (!sessions?.length) {
+        // Check for a recent closed/delivered/settled session the member ordered in
+        const { data: recent } = await supabase
+          .from('bitesync_sessions')
+          .select('id, label, status, delivery_fee, restaurant_id, bitesync_restaurants(name)')
+          .eq('group_id', me.group_id)
+          .in('status', ['closed', 'delivered', 'settled'])
+          .order('created_at', { ascending: false })
+          .limit(1);
+
+        if (recent?.length) {
+          const { data: myOrders } = await supabase
+            .from('bitesync_orders')
+            .select('id, items_subtotal, delivery_share, final_total, paid_status, bitesync_order_items(quantity, line_total, bitesync_session_items(name))')
+            .eq('session_id', recent[0].id)
+            .eq('member_id', me.id)
+            .limit(1);
+
+          if (myOrders?.length) {
+            document.getElementById('sticky-footer')?.remove();
+            renderClosedSession(recent[0], myOrders[0]);
+            return;
+          }
+        }
+
+        document.getElementById('sticky-footer')?.remove();
         area.innerHTML = `
           <div class="no-session">
             <div class="no-session-emoji">☕</div>
@@ -456,12 +514,14 @@
 
       renderSession(existingOrder);
 
-      // Live deadline countdown
+      // Live deadline countdown — auto-reloads view when deadline passes
       if (activeSession.order_deadline) {
         countdownTimer = setInterval(() => {
           const el = document.getElementById('deadline-countdown');
-          if (el) el.textContent = countdownStr(new Date(activeSession.order_deadline));
-          else clearInterval(countdownTimer);
+          if (!el) { clearInterval(countdownTimer); return; }
+          const remaining = new Date(activeSession.order_deadline) - Date.now();
+          if (remaining <= 0) { clearInterval(countdownTimer); loadActiveSession(); return; }
+          el.textContent = countdownStr(new Date(activeSession.order_deadline));
         }, 30_000);
       }
     }
@@ -545,6 +605,60 @@
         if (item) t += (+item.price) * qty;
       }
       return t;
+    }
+
+    // ── Closed / delivered / settled session view ─────────────────────
+    function renderClosedSession(session, order) {
+      const area     = document.getElementById('session-area');
+      const restName = session.bitesync_restaurants?.name || 'Restaurant';
+      const items    = order.bitesync_order_items || [];
+      const subtotal = +(order.items_subtotal || 0);
+      const delivery = +(order.delivery_share  || 0);
+      const total    = +(order.final_total     || 0);
+
+      const statusMeta = {
+        closed:    { icon: '⏳', label: 'Order received — being prepared' },
+        delivered: { icon: '📦', label: 'Delivered! Time to settle up.' },
+        settled:   { icon: '✅', label: 'All settled.' },
+      }[session.status] || { icon: '📋', label: session.status };
+
+      let html = `
+        <div class="closed-banner">
+          <div class="closed-banner-title">🍽 ${x(restName)}</div>
+          <div class="closed-banner-sub">${statusMeta.icon} ${statusMeta.label}</div>
+          <div class="closed-status-chip">${session.status}</div>
+        </div>
+        <div style="width:100%;">
+          <div class="cat-header">Your order</div>
+          ${items.map(oi => `
+            <div class="submitted-item">
+              <span class="submitted-item-qty">${oi.quantity}×</span>
+              <span class="submitted-item-name">${x(oi.bitesync_session_items?.name || '—')}</span>
+              <span style="white-space:nowrap;">$${(+oi.line_total).toFixed(2)}</span>
+            </div>`).join('')}
+          <div class="submitted-total">
+            <span>Subtotal</span><span>$${subtotal.toFixed(2)}</span>
+          </div>`;
+
+      if (delivery) {
+        html += `
+          <div class="submitted-item" style="color:#7A5C42;font-size:13px;padding-top:6px;">
+            <span class="submitted-item-name">Delivery share</span>
+            <span>$${delivery.toFixed(2)}</span>
+          </div>
+          <div class="submitted-total" style="color:#E07856;font-size:17px;">
+            <span>Your total</span><span>$${total.toFixed(2)}</span>
+          </div>`;
+      }
+
+      if (order.paid_status === 'paid') {
+        html += `<div style="margin-top:14px;text-align:center;font-size:14px;color:#27AE60;font-weight:700;">✓ Marked as paid</div>`;
+      } else if (session.status === 'delivered' || session.status === 'settled') {
+        html += `<div style="margin-top:14px;text-align:center;font-size:14px;color:#E07856;font-weight:600;">💸 Please settle up with the admin</div>`;
+      }
+
+      html += `</div>`;
+      area.innerHTML = html;
     }
 
     // ── Qty controls ──────────────────────────────────────────────────
