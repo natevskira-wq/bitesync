@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
@@ -41,6 +41,24 @@
       margin-top: -12px;
     }
 
+    /* Lang toggle */
+    .lang-toggle {
+      position: fixed;
+      top: 12px;
+      inset-inline-end: 12px;
+      z-index: 200;
+      background: rgba(255,255,255,0.92);
+      border: 1.5px solid #E8D5C4;
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #7A5C42;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+      font-family: inherit;
+    }
+
     /* Screens */
     .screen { width: 100%; display: none; flex-direction: column; align-items: center; gap: 14px; }
     .screen.active { display: flex; }
@@ -78,6 +96,7 @@
       padding-right: 40px; cursor: pointer;
     }
     select:focus { background-color: white; }
+    [dir="rtl"] select { background-position: left 12px center; padding-right: 14px; padding-left: 40px; }
 
     .checkbox-row { display: flex; flex-direction: row; align-items: center; gap: 10px; cursor: pointer; padding: 2px 0; }
     .checkbox-row input[type="checkbox"] { width: 20px; height: 20px; flex-shrink: 0; accent-color: #E07856; cursor: pointer; }
@@ -96,6 +115,7 @@
     .btn-secondary { background: white; color: #E07856; border: 2px solid #E07856; }
     .btn-ghost     { background: transparent; color: #7A5C42; font-size: 14px; font-weight: 600; min-height: 44px; }
     .btn-sm        { min-height: 40px; font-size: 14px; border-radius: 10px; padding: 0 16px; }
+    .btn-success   { background: #27AE60; color: white; }
 
     /* Error */
     .error-msg {
@@ -121,13 +141,10 @@
 
     .waiting-inner { display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; }
 
-    /* ── Home screen ── */
+    /* Home */
     .home-topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-      gap: 10px;
+      display: flex; align-items: center; justify-content: space-between;
+      width: 100%; gap: 10px;
     }
     .home-greeting { font-size: 22px; font-weight: 800; flex: 1; }
     #admin-link {
@@ -137,8 +154,7 @@
 
     /* No session */
     .no-session {
-      width: 100%;
-      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      width: 100%; display: flex; flex-direction: column; align-items: center; gap: 10px;
       padding: 40px 24px; text-align: center;
     }
     .no-session-emoji { font-size: 52px; }
@@ -147,43 +163,31 @@
 
     /* Session banner */
     .session-banner {
-      width: 100%;
-      background: #E07856;
-      color: white;
-      border-radius: 16px;
-      padding: 16px 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
+      width: 100%; background: #E07856; color: white;
+      border-radius: 16px; padding: 16px 18px;
+      display: flex; flex-direction: column; gap: 4px;
     }
     .session-restaurant { font-size: 18px; font-weight: 800; }
     .session-deadline   { font-size: 13px; opacity: .85; }
     .session-badge {
-      margin-top: 6px;
-      background: rgba(255,255,255,.25);
-      border-radius: 20px;
-      padding: 4px 12px;
-      font-size: 12px;
-      font-weight: 700;
-      width: fit-content;
+      margin-top: 6px; background: rgba(255,255,255,.25); border-radius: 20px;
+      padding: 4px 12px; font-size: 12px; font-weight: 700; width: fit-content;
     }
+    .session-banner.urgent   { background: #C5623C; }
+    .session-banner.critical { background: #B83C2B; animation: pulse-urgent 1.2s ease-in-out infinite; }
+    @keyframes pulse-urgent { 0%,100% { opacity:1; } 50% { opacity:.82; } }
 
     /* Order form */
     .order-form { width: 100%; display: flex; flex-direction: column; gap: 0; padding-bottom: 100px; }
 
     .cat-header {
       font-size: 11px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: .7px; color: #B09880;
-      padding: 16px 0 8px;
+      letter-spacing: .7px; color: #B09880; padding: 16px 0 8px;
     }
 
     .order-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 12px 0;
-      border-bottom: 1px solid #F3E8DC;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; padding: 12px 0; border-bottom: 1px solid #F3E8DC;
     }
     .order-row-info { flex: 1; min-width: 0; }
     .order-row-name  { font-size: 15px; font-weight: 600; }
@@ -203,73 +207,40 @@
     .qty-btn.has-qty  { border-color: #E07856; background: #E07856; color: white; }
     .qty-val { font-size: 17px; font-weight: 700; min-width: 24px; text-align: center; }
 
-    /* Deadline urgency */
-    .session-banner.urgent   { background: #C5623C; }
-    .session-banner.critical { background: #B83C2B; animation: pulse-urgent 1.2s ease-in-out infinite; }
-    @keyframes pulse-urgent { 0%,100% { opacity:1; } 50% { opacity:.82; } }
-
-    /* Item-level notes (appears when qty > 0) */
-    .item-notes-row {
-      padding: 0 0 10px;
-      margin-top: -4px;
-      border-bottom: 1px solid #F3E8DC;
-    }
+    /* Item notes */
+    .item-notes-row { padding: 0 0 10px; margin-top: -4px; border-bottom: 1px solid #F3E8DC; }
     .item-notes-input {
-      height: 36px !important;
-      border-radius: 8px !important;
-      padding: 0 10px !important;
-      font-size: 13px !important;
-      color: #7A5C42 !important;
+      height: 36px !important; border-radius: 8px !important;
+      padding: 0 10px !important; font-size: 13px !important; color: #7A5C42 !important;
     }
 
-    /* Whole-order notes */
-    .order-notes-section {
-      padding: 16px 0 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
+    /* Order notes */
+    .order-notes-section { padding: 16px 0 8px; display: flex; flex-direction: column; gap: 6px; }
     .order-notes-label {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .6px;
-      color: #B09880;
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .6px; color: #B09880;
     }
 
     /* Sticky footer */
     .sticky-footer {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      background: white;
-      border-top: 1.5px solid #E8D5C4;
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: white; border-top: 1.5px solid #E8D5C4;
       box-shadow: 0 -4px 20px rgba(61,40,23,.10);
-      padding: 12px 16px 24px;
-      z-index: 50;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      max-width: 390px;
-      margin: 0 auto;
-      left: 50%; transform: translateX(-50%);
-      width: 100%;
+      padding: 12px 16px 24px; z-index: 50;
+      display: flex; align-items: center; gap: 12px;
+      max-width: 390px; margin: 0 auto;
+      left: 50%; transform: translateX(-50%); width: 100%;
     }
-    .footer-total {
-      display: flex; flex-direction: column; gap: 1px; flex-shrink: 0;
-    }
-    .footer-total-label { font-size: 11px; color: #B09880; font-weight: 600; }
+    [dir="rtl"] .sticky-footer { transform: translateX(50%); }
+    .footer-total { display: flex; flex-direction: column; gap: 1px; flex-shrink: 0; }
+    .footer-total-label  { font-size: 11px; color: #B09880; font-weight: 600; }
     .footer-total-amount { font-size: 20px; font-weight: 800; color: #E07856; }
     .footer-btn { flex: 1; min-height: 48px; border-radius: 12px; font-size: 15px; }
 
-    /* Closed session view */
+    /* Closed / state banner */
     .closed-banner {
-      width: 100%;
-      background: #F3E8DC;
-      border-radius: 16px;
-      padding: 16px 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
+      width: 100%; background: #F3E8DC; border-radius: 16px;
+      padding: 16px 18px; display: flex; flex-direction: column; gap: 4px;
     }
     .closed-banner-title { font-size: 18px; font-weight: 800; }
     .closed-banner-sub   { font-size: 14px; color: #7A5C42; margin-top: 2px; }
@@ -280,65 +251,101 @@
       width: fit-content; margin-top: 6px;
     }
 
-    /* Submitted order */
+    /* Submitted items */
     .submitted-item {
       display: flex; justify-content: space-between; align-items: baseline;
       font-size: 14px; padding: 6px 0; border-bottom: 1px solid #F3E8DC;
     }
     .submitted-item-name { flex: 1; }
-    .submitted-item-qty  { color: #7A5C42; font-size: 13px; margin-right: 6px; }
+    .submitted-item-qty  { color: #7A5C42; font-size: 13px; margin-inline-end: 6px; }
     .submitted-total {
       display: flex; justify-content: space-between;
       font-weight: 800; font-size: 16px; color: #E07856;
-      padding-top: 10px; margin-top: 4px;
-      border-top: 1.5px solid #E8D5C4;
+      padding-top: 10px; margin-top: 4px; border-top: 1.5px solid #E8D5C4;
     }
+
+    /* InstaPay card */
+    .instapay-card { align-items: center; gap: 20px; padding: 28px 24px; }
+    .instapay-amount {
+      font-size: 52px; font-weight: 900; color: #E07856;
+      line-height: 1; letter-spacing: -1px;
+    }
+    .instapay-unit { font-size: 20px; font-weight: 700; color: #E07856; margin-top: -6px; }
+    .instapay-number {
+      font-size: 24px; font-weight: 800; color: #3D2817;
+      letter-spacing: 1px; margin-top: 4px; text-align: center; word-break: break-all;
+    }
+    .instapay-label { font-size: 13px; color: #B09880; text-align: center; }
+    .instapay-name  { font-size: 15px; font-weight: 700; color: #7A5C42; text-align: center; }
+    .instapay-copy-row { display: flex; gap: 10px; width: 100%; }
+    .instapay-copy-row .btn { font-size: 14px; min-height: 48px; }
+
+    /* Delivered banner */
+    .delivered-banner {
+      width: 100%; background: #1E40AF; color: white;
+      border-radius: 16px; padding: 18px;
+      display: flex; flex-direction: column; gap: 6px; align-items: center; text-align: center;
+    }
+    .delivered-banner-title { font-size: 20px; font-weight: 800; }
+    .delivered-banner-sub   { font-size: 14px; opacity: .85; }
+
+    /* Payment confirmed */
+    .paid-banner {
+      width: 100%; background: #D1FAE5;
+      border-radius: 16px; padding: 20px 18px;
+      display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center;
+    }
+    .paid-banner-title { font-size: 18px; font-weight: 800; color: #065F46; }
+    .paid-banner-sub   { font-size: 14px; color: #065F46; opacity: .8; }
   </style>
 </head>
 <body>
+
+  <button class="lang-toggle" id="lang-toggle-btn" onclick="toggleLang()">AR</button>
+
   <div class="app">
 
     <div class="wordmark">BiteSync</div>
-    <div class="tagline">Group breakfast, made easy</div>
+    <div class="tagline" id="lbl-tagline">Group breakfast, made easy</div>
 
-    <!-- ─── Checking ─── -->
+    <!-- Checking -->
     <div id="screen-checking" class="screen active">
       <div class="spinner"></div>
-      <div class="check-text">Loading…</div>
+      <div class="check-text" id="lbl-loading">Loading…</div>
     </div>
 
-    <!-- ─── Entry choice ─── -->
+    <!-- Entry choice -->
     <div id="screen-entry" class="screen">
       <div class="card">
-        <div class="card-title">Welcome!</div>
-        <div class="card-sub">Join your group breakfast order or sign in on a new device.</div>
+        <div class="card-title" id="lbl-welcome">Welcome!</div>
+        <div class="card-sub" id="lbl-welcome-sub">Join your group breakfast order or sign in on a new device.</div>
         <button class="btn btn-primary" id="btn-go-register">First time? Register</button>
-        <div class="divider"><span>or</span></div>
+        <div class="divider"><span id="lbl-or">or</span></div>
         <button class="btn btn-secondary" id="btn-go-claim">Already registered, new device</button>
       </div>
     </div>
 
-    <!-- ─── Register ─── -->
+    <!-- Register -->
     <div id="screen-register" class="screen">
       <div class="card">
-        <div class="card-title">Create your account</div>
-        <div class="card-sub">An admin will approve you before you can order.</div>
+        <div class="card-title" id="lbl-create-account">Create your account</div>
+        <div class="card-sub" id="lbl-need-approval">An admin will approve you before you can order.</div>
         <form id="form-register" novalidate style="display:contents;">
           <div class="field">
-            <span class="field-label">Full name</span>
-            <input type="text" id="reg-name" placeholder="Jane Smith" autocomplete="name" required>
+            <span class="field-label" id="lbl-full-name">Full name</span>
+            <input type="text" id="reg-name" autocomplete="name" required>
           </div>
           <div class="field">
-            <span class="field-label">Phone number</span>
-            <input type="tel" id="reg-phone" placeholder="+1 555 000 0000" autocomplete="tel" required>
+            <span class="field-label" id="lbl-phone">Phone number</span>
+            <input type="tel" id="reg-phone" placeholder="+201000000000" autocomplete="tel" required>
           </div>
           <div class="field">
-            <span class="field-label">WhatsApp number</span>
-            <input type="tel" id="reg-whatsapp" placeholder="+1 555 000 0000" autocomplete="tel" required>
+            <span class="field-label" id="lbl-whatsapp">WhatsApp number</span>
+            <input type="tel" id="reg-whatsapp" placeholder="+201000000000" autocomplete="tel" required>
           </div>
           <label class="checkbox-row">
             <input type="checkbox" id="same-as-phone">
-            <span>WhatsApp is same as phone number</span>
+            <span id="lbl-same-as-phone">WhatsApp is same as phone number</span>
           </label>
           <div id="reg-error" class="error-msg" style="display:none;"></div>
           <button type="submit" class="btn btn-primary" id="btn-register">Register</button>
@@ -347,30 +354,30 @@
       <button class="btn btn-ghost" id="btn-back-from-register">← Back</button>
     </div>
 
-    <!-- ─── Waiting for approval ─── -->
+    <!-- Waiting for approval -->
     <div id="screen-waiting" class="screen">
       <div class="card">
         <div class="waiting-inner">
           <div class="spinner"></div>
-          <div class="card-title">Pending approval</div>
-          <div class="card-sub">An admin will approve your account soon. This page checks every 10 seconds — no need to refresh.</div>
+          <div class="card-title" id="lbl-pending">Pending approval</div>
+          <div class="card-sub" id="lbl-pending-sub">An admin will approve your account soon. This page checks every 10 seconds — no need to refresh.</div>
         </div>
       </div>
     </div>
 
-    <!-- ─── New device claim ─── -->
+    <!-- Claim -->
     <div id="screen-claim" class="screen">
       <div class="card">
-        <div class="card-title">Sign in on this device</div>
-        <div class="card-sub">Select your name and enter your registered phone number.</div>
+        <div class="card-title" id="lbl-sign-in">Sign in on this device</div>
+        <div class="card-sub" id="lbl-sign-in-sub">Select your name and enter your registered phone number.</div>
         <form id="form-claim" novalidate style="display:contents;">
           <div class="field">
-            <span class="field-label">Your name</span>
+            <span class="field-label" id="lbl-your-name">Your name</span>
             <select id="claim-name"><option value="">Loading members…</option></select>
           </div>
           <div class="field">
-            <span class="field-label">Registered phone number</span>
-            <input type="tel" id="claim-phone" placeholder="+1 555 000 0000" autocomplete="tel" required>
+            <span class="field-label" id="lbl-reg-phone">Registered phone number</span>
+            <input type="tel" id="claim-phone" placeholder="+201000000000" autocomplete="tel" required>
           </div>
           <div id="claim-error" class="error-msg" style="display:none;"></div>
           <button type="submit" class="btn btn-primary" id="btn-claim">Continue</button>
@@ -379,7 +386,7 @@
       <button class="btn btn-ghost" id="btn-back-from-claim">← Back</button>
     </div>
 
-    <!-- ─── Home (ordering) ─── -->
+    <!-- Home -->
     <div id="screen-home" class="screen">
       <div class="home-topbar">
         <div id="home-greeting" class="home-greeting">Hi! 👋</div>
@@ -390,7 +397,7 @@
       </div>
     </div>
 
-  </div><!-- /.app -->
+  </div>
 
   <script type="module">
     import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -401,15 +408,218 @@
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // ── Global state ─────────────────────────────────────────────────
-    let me            = null;  // {id, full_name, is_admin, group_id}
+    // ── Translations ──────────────────────────────────────────────────
+    const STRINGS = {
+      en: {
+        tagline: 'Group breakfast, made easy',
+        loading: 'Loading…',
+        welcome: 'Welcome!',
+        welcomeSub: 'Join your group breakfast order or sign in on a new device.',
+        firstTime: 'First time? Register',
+        alreadyReg: 'Already registered, new device',
+        or: 'or',
+        createAccount: 'Create your account',
+        needApproval: 'An admin will approve you before you can order.',
+        fullName: 'Full name',
+        phone: 'Phone number',
+        whatsapp: 'WhatsApp number',
+        sameAsPhone: 'WhatsApp is same as phone number',
+        register: 'Register',
+        back: '← Back',
+        pending: 'Pending approval',
+        pendingSub: 'An admin will approve your account soon. This page checks every 10 seconds — no need to refresh.',
+        signIn: 'Sign in on this device',
+        signInSub: 'Select your name and enter your registered phone number.',
+        yourName: 'Your name',
+        regPhone: 'Registered phone number',
+        continue: 'Continue',
+        noSession: 'No active session',
+        noSessionSub: "The admin hasn't opened an ordering session yet. Check back soon!",
+        cancelled: 'Session cancelled',
+        cancelledSub: ' was cancelled. The admin will open a new one soon.',
+        orderBy: 'Order by',
+        orderPlaced: '✓ Order placed — you can still edit below',
+        noItems: 'No items available for this session yet.',
+        orderNotes: 'Order notes (optional)',
+        orderNotesPh: 'E.g. Leave at reception, ring twice…',
+        specialReq: 'Special requests (e.g. no onions)',
+        total: 'Total',
+        place: 'Place Order',
+        update: 'Update Order',
+        deadlinePassed: '⏰ Ordering deadline has passed',
+        waitingAdmin: 'Waiting for admin to close',
+        yourOrder: 'Your order',
+        subtotal: 'Subtotal',
+        deliveryShare: 'Delivery share',
+        yourTotal: 'Your total',
+        markedPaid: '✓ Marked as paid',
+        pleaseSettle: '💸 Please settle up with the admin',
+        didntOrder: "You didn't place an order for this session.",
+        closedMsg: 'Order received — being prepared',
+        deliveredMsg: 'Delivered! Time to settle up.',
+        settledMsg: 'All done.',
+        settleTitle: 'Time to Pay 💳',
+        sendExactly: 'Send exactly',
+        toOn: 'to',
+        onInstapay: 'on InstaPay',
+        copyAmount: 'Copy Amount',
+        copyNumber: 'Copy Number',
+        paymentRecorded: 'Payment Recorded ✅',
+        paymentRecordedSub: 'The admin has recorded your payment. Thank you!',
+        exempt: 'You are exempt from payment.',
+        hi: 'Hi',
+        admin: '⚙ Admin',
+        pastOrders: '📋 Past Orders',
+        noAdminInstapay: 'Ask the admin for their InstaPay number to settle.',
+        youOwe: 'You owe',
+        exempt2: '🎉 You are exempt',
+        exemptSub: 'The admin has marked you as exempt from this payment.',
+        hangTight: 'Hang tight!',
+        hangTightSub: 'Your order is in. We\'ll let you know when it\'s delivered.',
+        deliveredTitle: '📦 Order delivered!',
+        deliveredSub: 'The food has arrived.',
+      },
+      ar: {
+        tagline: 'طلبات الفطار الجماعي بسهولة',
+        loading: 'جارٍ التحميل…',
+        welcome: 'أهلاً!',
+        welcomeSub: 'انضم لطلب الفطار الجماعي أو سجّل دخولك من جهاز جديد.',
+        firstTime: 'للمرة الأولى؟ سجّل الآن',
+        alreadyReg: 'مسجّل مسبقاً، جهاز جديد',
+        or: 'أو',
+        createAccount: 'إنشاء حساب',
+        needApproval: 'سيوافق المسؤول على حسابك قبل أن تتمكن من الطلب.',
+        fullName: 'الاسم الكامل',
+        phone: 'رقم الهاتف',
+        whatsapp: 'رقم واتساب',
+        sameAsPhone: 'واتساب هو نفس رقم الهاتف',
+        register: 'تسجيل',
+        back: 'رجوع →',
+        pending: 'في انتظار الموافقة',
+        pendingSub: 'سيوافق المسؤول على حسابك قريباً. هذه الصفحة تتحقق كل 10 ثوانٍ — لا داعي للتحديث.',
+        signIn: 'تسجيل الدخول من هذا الجهاز',
+        signInSub: 'اختر اسمك وأدخل رقم هاتفك المسجل.',
+        yourName: 'اسمك',
+        regPhone: 'رقم الهاتف المسجل',
+        continue: 'متابعة',
+        noSession: 'لا توجد جلسة نشطة',
+        noSessionSub: 'لم يفتح المسؤول جلسة طلب بعد. تحقق لاحقاً!',
+        cancelled: 'تم إلغاء الجلسة',
+        cancelledSub: ' تم إلغاؤها. سيفتح المسؤول جلسة جديدة قريباً.',
+        orderBy: 'اطلب قبل',
+        orderPlaced: '✓ تم تقديم طلبك — يمكنك التعديل أدناه',
+        noItems: 'لا توجد عناصر متاحة لهذه الجلسة حتى الآن.',
+        orderNotes: 'ملاحظات الطلب (اختياري)',
+        orderNotesPh: 'مثال: اتركه عند الاستقبال…',
+        specialReq: 'طلبات خاصة (مثال: بدون بصل)',
+        total: 'الإجمالي',
+        place: 'تقديم الطلب',
+        update: 'تحديث الطلب',
+        deadlinePassed: '⏰ انتهى وقت الطلب',
+        waitingAdmin: 'في انتظار المسؤول',
+        yourOrder: 'طلبك',
+        subtotal: 'المجموع الفرعي',
+        deliveryShare: 'حصة التوصيل',
+        yourTotal: 'إجماليك',
+        markedPaid: '✓ تم تسجيل الدفع',
+        pleaseSettle: '💸 يرجى السداد للمسؤول',
+        didntOrder: 'لم تقدم طلباً لهذه الجلسة.',
+        closedMsg: 'تم استلام الطلب — جارٍ التحضير',
+        deliveredMsg: 'وصل الطلب! حان وقت الدفع.',
+        settledMsg: 'تمت التسوية.',
+        settleTitle: 'حان وقت الدفع 💳',
+        sendExactly: 'أرسل بالضبط',
+        toOn: 'إلى',
+        onInstapay: 'على InstaPay',
+        copyAmount: 'نسخ المبلغ',
+        copyNumber: 'نسخ الرقم',
+        paymentRecorded: 'تم تسجيل الدفع ✅',
+        paymentRecordedSub: 'سجّل المسؤول دفعتك. شكراً!',
+        exempt: 'أنت معفى من الدفع.',
+        hi: 'مرحباً',
+        admin: '⚙ لوحة التحكم',
+        pastOrders: '📋 طلبات سابقة',
+        noAdminInstapay: 'اسأل المسؤول عن رقم InstaPay الخاص به للتسوية.',
+        youOwe: 'المبلغ المطلوب',
+        exempt2: '🎉 أنت معفى',
+        exemptSub: 'قام المسؤول بإعفائك من هذه الدفعة.',
+        hangTight: 'انتظر قليلاً!',
+        hangTightSub: 'تم استلام طلبك. سنُعلمك عند وصوله.',
+        deliveredTitle: '📦 وصل الطلب!',
+        deliveredSub: 'وصل الطعام.',
+      }
+    };
+
+    let lang = localStorage.getItem('bitesync_lang') || 'en';
+    function t(k) { return (STRINGS[lang] || STRINGS.en)[k] || STRINGS.en[k] || k; }
+
+    window.toggleLang = () => {
+      lang = lang === 'en' ? 'ar' : 'en';
+      localStorage.setItem('bitesync_lang', lang);
+      applyLang();
+      applyTranslations();
+      if (me) {
+        if (activeSession !== null || currentScreen === 'home') loadActiveSession();
+      }
+    };
+
+    let currentScreen = 'checking';
+
+    function applyLang() {
+      document.documentElement.lang = lang;
+      document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+      const btn = document.getElementById('lang-toggle-btn');
+      if (btn) btn.textContent = lang === 'en' ? 'AR' : 'EN';
+    }
+
+    function applyTranslations() {
+      const ids = {
+        'lbl-tagline':        'tagline',
+        'lbl-loading':        'loading',
+        'lbl-welcome':        'welcome',
+        'lbl-welcome-sub':    'welcomeSub',
+        'btn-go-register':    'firstTime',
+        'btn-go-claim':       'alreadyReg',
+        'lbl-or':             'or',
+        'lbl-create-account': 'createAccount',
+        'lbl-need-approval':  'needApproval',
+        'lbl-full-name':      'fullName',
+        'lbl-phone':          'phone',
+        'lbl-whatsapp':       'whatsapp',
+        'lbl-same-as-phone':  'sameAsPhone',
+        'btn-register':       'register',
+        'btn-back-from-register': 'back',
+        'lbl-pending':        'pending',
+        'lbl-pending-sub':    'pendingSub',
+        'lbl-sign-in':        'signIn',
+        'lbl-sign-in-sub':    'signInSub',
+        'lbl-your-name':      'yourName',
+        'lbl-reg-phone':      'regPhone',
+        'btn-claim':          'continue',
+        'btn-back-from-claim':'back',
+      };
+      for (const [id, key] of Object.entries(ids)) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = t(key);
+      }
+      if (me) {
+        document.getElementById('home-greeting').textContent = `${t('hi')} ${me.full_name}! 👋`;
+        const al = document.getElementById('admin-link');
+        if (al) al.textContent = t('admin');
+      }
+    }
+
+    applyLang();
+
+    // ── Global state ──────────────────────────────────────────────────
+    let me            = null;
     let activeSession = null;
     let sessionItems  = [];
-    let cart          = new Map(); // sessionItemId → quantity
-    let itemNotes     = new Map(); // sessionItemId → note string
+    let cart          = new Map();
+    let itemNotes     = new Map();
     let countdownTimer = null;
 
-    // ── Screen management ─────────────────────────────────────────────
+    // ── Screens ───────────────────────────────────────────────────────
     const screens = {
       checking: document.getElementById('screen-checking'),
       entry:    document.getElementById('screen-entry'),
@@ -420,15 +630,17 @@
     };
 
     function show(name) {
+      currentScreen = name;
       Object.values(screens).forEach(s => s.classList.remove('active'));
       screens[name].classList.add('active');
     }
 
     function showErr(el, msg) { el.textContent = msg; el.style.display = 'block'; }
-    function hideErr(el)      { el.style.display = 'none'; }
+    function hideErr(el) { el.style.display = 'none'; }
 
     // ── Init ──────────────────────────────────────────────────────────
     async function init() {
+      applyTranslations();
       const memberId = localStorage.getItem('bitesync_member_id');
       if (!memberId) { show('entry'); return; }
 
@@ -450,8 +662,9 @@
     init();
 
     function goHome() {
-      document.getElementById('home-greeting').textContent = `Hi ${me.full_name}! 👋`;
+      document.getElementById('home-greeting').textContent = `${t('hi')} ${me.full_name}! 👋`;
       document.getElementById('admin-link').style.display = me.is_admin ? 'flex' : 'none';
+      document.getElementById('admin-link').textContent = t('admin');
       show('home');
       loadActiveSession();
       subscribeToSessions();
@@ -470,185 +683,171 @@
         .subscribe();
     }
 
-    // ── Session loading ───────────────────────────────────────────────
+    // ── Cairo TZ helpers ──────────────────────────────────────────────
+    function todayCairo() {
+      return new Date().toLocaleDateString('sv-SE', { timeZone: 'Africa/Cairo' });
+    }
+    function dateCairo(iso) {
+      return new Date(iso).toLocaleDateString('sv-SE', { timeZone: 'Africa/Cairo' });
+    }
+    function fmtTimeCairo(iso) {
+      return new Date(iso).toLocaleTimeString('en-EG', {
+        hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Cairo'
+      });
+    }
+
+    // ── Session loading — strict state machine (BUG 4, 5) ─────────────
     async function loadActiveSession() {
       const area = document.getElementById('session-area');
       area.innerHTML = '<div style="display:flex;justify-content:center;padding:32px 0;"><div class="spinner"></div></div>';
-
       clearInterval(countdownTimer);
+      document.getElementById('sticky-footer')?.remove();
 
       const { data: sessions } = await supabase
         .from('bitesync_sessions')
-        .select('id, label, status, order_deadline, delivery_fee, restaurant_id, bitesync_restaurants(name)')
+        .select('id, label, status, order_deadline, delivery_fee, restaurant_id, created_at, bitesync_restaurants(name)')
         .eq('group_id', me.group_id)
-        .eq('status', 'open')
         .order('created_at', { ascending: false })
         .limit(1);
 
-      if (!sessions?.length) {
-        // Check for a recent closed/delivered/settled session the member ordered in
-        const { data: recent } = await supabase
-          .from('bitesync_sessions')
-          .select('id, label, status, delivery_fee, restaurant_id, bitesync_restaurants(name)')
-          .eq('group_id', me.group_id)
-          .in('status', ['closed', 'delivered', 'settled'])
-          .order('created_at', { ascending: false })
-          .limit(1);
+      const session = sessions?.[0];
 
-        if (recent?.length) {
-          const { data: myOrders } = await supabase
-            .from('bitesync_orders')
-            .select('id, items_subtotal, delivery_share, final_total, paid_status, order_notes, bitesync_order_items(quantity, line_total, item_notes, bitesync_session_items(name))')
-            .eq('session_id', recent[0].id)
-            .eq('member_id', me.id)
-            .limit(1);
+      if (!session) { renderNoSession(); return; }
 
-          if (myOrders?.length) {
-            document.getElementById('sticky-footer')?.remove();
-            renderClosedSession(recent[0], myOrders[0]);
-            return;
-          }
-        }
-
-        document.getElementById('sticky-footer')?.remove();
-
-        // Check for a session cancelled within the last 24 h + member order history
-        const yesterday = new Date(Date.now() - 86400000).toISOString();
-        const [{ data: cancelled }, { data: history }] = await Promise.all([
-          supabase.from('bitesync_sessions')
-            .select('label, bitesync_restaurants(name)')
-            .eq('group_id', me.group_id)
-            .eq('status', 'cancelled')
-            .gte('created_at', yesterday)
-            .order('created_at', { ascending: false })
-            .limit(1),
-          supabase.from('bitesync_orders')
-            .select(`id, items_subtotal, final_total, submitted_at,
-              bitesync_sessions(label, status, bitesync_restaurants(name)),
-              bitesync_order_items(quantity, bitesync_session_items(name))`)
-            .eq('member_id', me.id)
-            .order('submitted_at', { ascending: false })
-            .limit(10),
-        ]);
-
-        const pastOrders = (history || [])
-          .filter(o => ['settled','delivered','closed'].includes(o.bitesync_sessions?.status))
-          .slice(0, 5);
-
-        let noSessionHtml;
-        if (cancelled?.length) {
-          const restName2  = cancelled[0].bitesync_restaurants?.name || 'Restaurant';
-          const sessLabel2 = cancelled[0].label ? `"${x(cancelled[0].label)}" at ` : '';
-          noSessionHtml = `
-            <div class="no-session" style="background:#FDF0EE;border-radius:16px;">
-              <div class="no-session-emoji">😔</div>
-              <div class="no-session-title">Session cancelled</div>
-              <div class="no-session-sub">${sessLabel2}${x(restName2)} was cancelled. The admin will open a new one soon.</div>
-            </div>`;
-        } else {
-          noSessionHtml = `
-            <div class="no-session">
-              <div class="no-session-emoji">☕</div>
-              <div class="no-session-title">No active session</div>
-              <div class="no-session-sub">The admin hasn't opened an ordering session yet. Check back soon!</div>
-            </div>`;
-        }
-
-        let html = noSessionHtml;
-
-        if (pastOrders.length) {
-          const rows = pastOrders.map(o => {
-            const sess    = o.bitesync_sessions;
-            const rest    = x(sess?.bitesync_restaurants?.name || '—');
-            const label   = sess?.label ? `${x(sess.label)} · ` : '';
-            const items   = o.bitesync_order_items || [];
-            const summary = items.slice(0,3).map(oi => `${oi.quantity}× ${x(oi.bitesync_session_items?.name||'?')}`).join(', ');
-            const more    = items.length > 3 ? ` +${items.length-3} more` : '';
-            const total   = +(o.final_total || o.items_subtotal || 0);
-            return `<div style="padding:10px 0;border-bottom:1px solid #F3E8DC;">
-              <div style="font-size:14px;font-weight:700;">${label}${rest}</div>
-              <div style="font-size:13px;color:#7A5C42;margin-top:2px;">${summary}${more}</div>
-              <div style="font-size:12px;color:#B09880;margin-top:3px;">$${total.toFixed(2)} · ${timeAgo(o.submitted_at)}</div>
-            </div>`;
-          }).join('');
-          html += `<div class="card" style="width:100%;">
-            <div style="font-size:15px;font-weight:700;margin-bottom:2px;">📋 Past Orders</div>
-            ${rows}
-          </div>`;
-        }
-
-        area.innerHTML = html;
-        return;
+      // BUG 5: settled/cancelled from a previous calendar day → no active session
+      const sessionDay = dateCairo(session.created_at);
+      const today      = todayCairo();
+      const isOldDay   = sessionDay < today;
+      if (isOldDay && (session.status === 'settled' || session.status === 'cancelled')) {
+        renderNoSession(); return;
       }
 
-      activeSession = sessions[0];
+      activeSession = session;
 
-      const [{ data: items }, { data: existingOrders }] = await Promise.all([
-        supabase.from('bitesync_session_items')
-          .select('id, name, category, price')
-          .eq('session_id', activeSession.id)
-          .order('category', { nullsFirst: true })
-          .order('name'),
-        supabase.from('bitesync_orders')
-          .select('id, status, items_subtotal, order_notes, bitesync_order_items(id, session_item_id, quantity, item_notes)')
-          .eq('session_id', activeSession.id)
-          .eq('member_id', me.id)
-          .limit(1),
-      ]);
+      // Fetch member's order for this session
+      const { data: myOrders } = await supabase
+        .from('bitesync_orders')
+        .select(`id, status, items_subtotal, delivery_share, final_total, paid_status, order_notes,
+          bitesync_order_items(id, session_item_id, quantity, item_notes, line_total, bitesync_session_items(name))`)
+        .eq('session_id', session.id)
+        .eq('member_id', me.id)
+        .limit(1);
 
-      sessionItems = items || [];
-      const existingOrder = existingOrders?.[0] || null;
+      const myOrder = myOrders?.[0] || null;
 
-      cart.clear();
-      itemNotes.clear();
-      if (existingOrder) {
-        for (const oi of existingOrder.bitesync_order_items || []) {
-          if (oi.quantity > 0) cart.set(oi.session_item_id, oi.quantity);
-          if (oi.item_notes)   itemNotes.set(oi.session_item_id, oi.item_notes);
-        }
-      }
+      // BUG 4: strict status → screen mapping
+      switch (session.status) {
+        case 'draft':
+          renderNoSession();
+          break;
 
-      renderSession(existingOrder);
+        case 'open': {
+          const { data: items } = await supabase
+            .from('bitesync_session_items')
+            .select('id, name, category, price')
+            .eq('session_id', session.id)
+            .order('category', { nullsFirst: true })
+            .order('name');
 
-      // Live deadline countdown — auto-reloads view when deadline passes
-      if (activeSession.order_deadline) {
-        countdownTimer = setInterval(() => {
-          const el = document.getElementById('deadline-countdown');
-          if (!el) { clearInterval(countdownTimer); return; }
-          const remaining = new Date(activeSession.order_deadline) - Date.now();
-          if (remaining <= 0) { clearInterval(countdownTimer); loadActiveSession(); return; }
-          el.textContent = countdownStr(new Date(activeSession.order_deadline));
-          const banner = document.getElementById('session-banner');
-          if (banner) {
-            banner.className = 'session-banner' +
-              (remaining < 5*60*1000 ? ' critical' : remaining < 30*60*1000 ? ' urgent' : '');
+          sessionItems = items || [];
+          cart.clear(); itemNotes.clear();
+          if (myOrder) {
+            for (const oi of myOrder.bitesync_order_items || []) {
+              if (oi.quantity > 0) cart.set(oi.session_item_id, oi.quantity);
+              if (oi.item_notes)   itemNotes.set(oi.session_item_id, oi.item_notes);
+            }
           }
-        }, 30_000);
+
+          const deadline = session.order_deadline ? new Date(session.order_deadline) : null;
+          if (deadline && deadline <= Date.now()) {
+            renderDeadlinePassed(myOrder);
+          } else {
+            renderSession(myOrder);
+            if (deadline) {
+              countdownTimer = setInterval(() => {
+                const el = document.getElementById('deadline-countdown');
+                if (!el) { clearInterval(countdownTimer); return; }
+                const remaining = new Date(session.order_deadline) - Date.now();
+                if (remaining <= 0) { clearInterval(countdownTimer); loadActiveSession(); return; }
+                el.textContent = countdownStr(new Date(session.order_deadline));
+                const banner = document.getElementById('session-banner');
+                if (banner) {
+                  banner.className = 'session-banner' +
+                    (remaining < 5*60*1000 ? ' critical' : remaining < 30*60*1000 ? ' urgent' : '');
+                }
+              }, 30_000);
+            }
+          }
+          break;
+        }
+
+        case 'closed':
+          renderStateView(session, myOrder, 'closed');
+          break;
+
+        case 'delivered':
+          renderStateView(session, myOrder, 'delivered');
+          break;
+
+        case 'settled':
+          await renderSettledSession(session, myOrder);
+          break;
+
+        case 'cancelled':
+          renderCancelledSession(session);
+          break;
+
+        default:
+          renderNoSession();
       }
     }
 
-    // ── Render session UI ─────────────────────────────────────────────
+    // ── No session ────────────────────────────────────────────────────
+    function renderNoSession() {
+      const area = document.getElementById('session-area');
+      area.innerHTML = `
+        <div class="no-session">
+          <div class="no-session-emoji">☕</div>
+          <div class="no-session-title">${t('noSession')}</div>
+          <div class="no-session-sub">${t('noSessionSub')}</div>
+        </div>`;
+    }
+
+    // ── Cancelled session screen ──────────────────────────────────────
+    function renderCancelledSession(session) {
+      const area = document.getElementById('session-area');
+      const restName = session.bitesync_restaurants?.name || 'Restaurant';
+      area.innerHTML = `
+        <div class="no-session" style="background:#FDF0EE;border-radius:16px;">
+          <div class="no-session-emoji">😔</div>
+          <div class="no-session-title">${t('cancelled')}</div>
+          <div class="no-session-sub">${x(restName)}${t('cancelledSub')}</div>
+        </div>`;
+    }
+
+    // ── Open session order form ───────────────────────────────────────
     function renderSession(existingOrder) {
       const area     = document.getElementById('session-area');
       const restName = activeSession.bitesync_restaurants?.name || 'Restaurant';
       const deadline = activeSession.order_deadline ? new Date(activeSession.order_deadline) : null;
       const hasOrder = !!existingOrder;
 
-      if (deadline && deadline <= Date.now()) { renderDeadlinePassed(existingOrder); return; }
-
-      // Banner — colour shifts when deadline is approaching
       const msLeft  = deadline ? deadline - Date.now() : Infinity;
       const urgency = msLeft < 5*60*1000 ? ' critical' : msLeft < 30*60*1000 ? ' urgent' : '';
+
+      // BUG 3: use Cairo TZ for deadline display
+      const deadlineDisplay = deadline
+        ? `${t('orderBy')} ${fmtTimeCairo(deadline.toISOString())} · <span id="deadline-countdown">${countdownStr(deadline)}</span>`
+        : '';
 
       let html = `
         <div class="session-banner${urgency}" id="session-banner">
           <div class="session-restaurant">🍽 ${x(restName)}</div>
-          ${deadline ? `<div class="session-deadline">Order by ${deadline.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} · <span id="deadline-countdown">${countdownStr(deadline)}</span></div>` : ''}
-          ${hasOrder ? '<div class="session-badge">✓ Order placed — you can still edit below</div>' : ''}
+          ${deadline ? `<div class="session-deadline">${deadlineDisplay}</div>` : ''}
+          ${hasOrder ? `<div class="session-badge">${t('orderPlaced')}</div>` : ''}
         </div>
         <div class="order-form" id="order-form">`;
 
-      // Group items by category
       const grouped = new Map();
       for (const item of sessionItems) {
         const cat = item.category || 'Other';
@@ -657,7 +856,7 @@
       }
 
       if (!sessionItems.length) {
-        html += '<div style="padding:24px 0;text-align:center;color:#B09880;font-size:14px;">No items available for this session yet.</div>';
+        html += `<div style="padding:24px 0;text-align:center;color:#B09880;font-size:14px;">${t('noItems')}</div>`;
       } else {
         for (const [cat, items] of grouped) {
           html += `<div class="cat-header">${x(cat)}</div>`;
@@ -668,7 +867,7 @@
               <div class="order-row">
                 <div class="order-row-info">
                   <div class="order-row-name">${x(item.name)}</div>
-                  <div class="order-row-price">$${(+item.price).toFixed(2)}</div>
+                  <div class="order-row-price">${(+item.price).toFixed(2)} EGP</div>
                 </div>
                 <div class="qty-control">
                   <button class="qty-btn" id="minus-${item.id}" onclick="changeQty('${item.id}',-1)" ${qty===0?'disabled':''}>−</button>
@@ -678,8 +877,7 @@
               </div>
               <div class="item-notes-row" id="notes-row-${item.id}" style="display:${qty>0?'':'none'};">
                 <input type="text" class="item-notes-input" id="item-notes-${item.id}"
-                  placeholder="Special requests (e.g. no onions)"
-                  value="${x(note)}">
+                  placeholder="${t('specialReq')}" value="${x(note)}">
               </div>`;
           }
         }
@@ -687,132 +885,206 @@
 
       html += `
           <div class="order-notes-section">
-            <div class="order-notes-label">Order notes (optional)</div>
+            <div class="order-notes-label">${t('orderNotes')}</div>
             <input type="text" id="order-notes-input"
-              placeholder="E.g. Leave at reception, ring twice…"
+              placeholder="${t('orderNotesPh')}"
               value="${x(existingOrder?.order_notes || '')}">
           </div>
         </div>`;
 
       area.innerHTML = html;
-
-      // Sticky footer
       renderFooter(hasOrder);
     }
 
     function renderFooter(hasOrder) {
       document.getElementById('sticky-footer')?.remove();
-
       const footer = document.createElement('div');
       footer.className = 'sticky-footer';
       footer.id = 'sticky-footer';
       footer.innerHTML = `
         <div class="footer-total">
-          <div class="footer-total-label">Total</div>
-          <div class="footer-total-amount" id="footer-total-amount">$${calcTotal().toFixed(2)}</div>
+          <div class="footer-total-label">${t('total')}</div>
+          <div class="footer-total-amount" id="footer-total-amount">${calcTotal().toFixed(2)} EGP</div>
         </div>
         <button class="btn btn-primary footer-btn" id="btn-submit" onclick="submitOrder()">
-          ${hasOrder ? 'Update Order' : 'Place Order'}
+          ${hasOrder ? t('update') : t('place')}
         </button>`;
       document.body.appendChild(footer);
     }
 
     function calcTotal() {
-      let t = 0;
+      let total = 0;
       for (const [id, qty] of cart) {
         const item = sessionItems.find(i => i.id === id);
-        if (item) t += (+item.price) * qty;
+        if (item) total += (+item.price) * qty;
       }
-      return t;
+      return total;
     }
 
-    // ── Closed / delivered / settled session view ─────────────────────
-    function renderClosedSession(session, order) {
+    // ── Closed / Delivered state view ─────────────────────────────────
+    function renderStateView(session, myOrder, status) {
       const area     = document.getElementById('session-area');
       const restName = session.bitesync_restaurants?.name || 'Restaurant';
+
+      if (status === 'closed') {
+        const bannerHtml = `
+          <div class="closed-banner" style="background:#FFF3CD;">
+            <div class="closed-banner-title" style="color:#7D5A00;">⏳ ${t('hangTight')}</div>
+            <div class="closed-banner-sub" style="color:#7D5A00;">${t('hangTightSub')}</div>
+          </div>`;
+
+        if (!myOrder) {
+          area.innerHTML = bannerHtml + `<div style="text-align:center;padding:20px 0;font-size:14px;color:#B09880;">${t('didntOrder')}</div>`;
+          return;
+        }
+        area.innerHTML = bannerHtml + orderSummaryHtml(myOrder, session, false);
+        return;
+      }
+
+      if (status === 'delivered') {
+        const total    = +(myOrder?.final_total || myOrder?.items_subtotal || 0);
+        const bannerHtml = `
+          <div class="delivered-banner">
+            <div class="delivered-banner-title">${t('deliveredTitle')}</div>
+            <div class="delivered-banner-sub">${t('deliveredSub')}</div>
+            ${myOrder ? `<div style="margin-top:8px;font-size:22px;font-weight:900;">${total.toFixed(2)} EGP</div>` : ''}
+          </div>`;
+
+        if (!myOrder) {
+          area.innerHTML = bannerHtml + `<div style="text-align:center;padding:20px 0;font-size:14px;color:#B09880;">${t('didntOrder')}</div>`;
+          return;
+        }
+        area.innerHTML = bannerHtml + orderSummaryHtml(myOrder, session, true);
+        return;
+      }
+    }
+
+    // ── Settled — InstaPay screen (BUG 1) ────────────────────────────
+    async function renderSettledSession(session, myOrder) {
+      const area = document.getElementById('session-area');
+
+      if (!myOrder) { renderNoSession(); return; }
+
+      // Exempt
+      if (myOrder.paid_status === 'exempt') {
+        area.innerHTML = `
+          <div class="paid-banner" style="background:#F0FDF4;">
+            <div class="paid-banner-title" style="color:#166534;">${t('exempt2')}</div>
+            <div class="paid-banner-sub" style="color:#166534;">${t('exemptSub')}</div>
+          </div>
+          ${orderSummaryHtml(myOrder, session, false)}`;
+        return;
+      }
+
+      // Already paid
+      if (myOrder.paid_status === 'paid') {
+        area.innerHTML = `
+          <div class="paid-banner">
+            <div class="paid-banner-title">${t('paymentRecorded')}</div>
+            <div class="paid-banner-sub">${t('paymentRecordedSub')}</div>
+          </div>
+          ${orderSummaryHtml(myOrder, session, false)}`;
+        return;
+      }
+
+      // Fetch admin instapay number (BUG 1)
+      const { data: admins } = await supabase
+        .from('bitesync_members')
+        .select('full_name, instapay_number')
+        .eq('group_id', me.group_id)
+        .eq('is_admin', true)
+        .not('instapay_number', 'is', null)
+        .limit(1);
+
+      const admin = admins?.[0];
+      const total = +(myOrder.final_total || myOrder.items_subtotal || 0);
+
+      let html = `
+        <div class="closed-banner" style="background:#E07856;">
+          <div class="closed-banner-title" style="color:white;">🍽 ${x(session.bitesync_restaurants?.name || 'Restaurant')}</div>
+          <div class="closed-banner-sub" style="color:rgba(255,255,255,.85);">${t('settleTitle')}</div>
+        </div>
+        <div class="card instapay-card">
+          <div style="text-align:center;">
+            <div class="instapay-label">${t('youOwe')}</div>
+            <div class="instapay-amount">${total.toFixed(2)}</div>
+            <div class="instapay-unit">EGP</div>
+          </div>`;
+
+      if (admin?.instapay_number) {
+        html += `
+          <div style="text-align:center;width:100%;">
+            <div class="instapay-label">${t('toOn')} <strong>${x(admin.full_name)}</strong> ${t('onInstapay')}</div>
+            <div class="instapay-number">${x(admin.instapay_number)}</div>
+          </div>
+          <div class="instapay-copy-row">
+            <button class="btn btn-secondary" onclick="copyText('${total.toFixed(2)}','amount-copied')">${t('copyAmount')}</button>
+            <button class="btn btn-primary" onclick="copyText('${x(admin.instapay_number)}','number-copied')">${t('copyNumber')}</button>
+          </div>
+          <div id="amount-copied" style="display:none;text-align:center;font-size:13px;color:#27AE60;font-weight:700;">✓ Copied!</div>
+          <div id="number-copied" style="display:none;text-align:center;font-size:13px;color:#27AE60;font-weight:700;">✓ Copied!</div>`;
+      } else {
+        html += `<div style="text-align:center;font-size:14px;color:#7A5C42;">${t('noAdminInstapay')}</div>`;
+      }
+
+      html += `</div>${orderSummaryHtml(myOrder, session, false)}`;
+      area.innerHTML = html;
+    }
+
+    function orderSummaryHtml(order, session, showPaidStatus) {
+      if (!order) return '';
       const items    = order.bitesync_order_items || [];
       const subtotal = +(order.items_subtotal || 0);
       const delivery = +(order.delivery_share  || 0);
       const total    = +(order.final_total     || 0);
 
-      const statusMeta = {
-        closed:    { icon: '⏳', label: 'Order received — being prepared' },
-        delivered: { icon: '📦', label: 'Delivered! Time to settle up.' },
-        settled:   { icon: '✅', label: 'All settled.' },
-      }[session.status] || { icon: '📋', label: session.status };
-
-      let html = `
-        <div class="closed-banner">
-          <div class="closed-banner-title">🍽 ${x(restName)}</div>
-          <div class="closed-banner-sub">${statusMeta.icon} ${statusMeta.label}</div>
-          <div class="closed-status-chip">${session.status}</div>
-        </div>
-        <div style="width:100%;">
-          <div class="cat-header">Your order</div>
-          ${items.map(oi => `
-            <div class="submitted-item">
-              <span class="submitted-item-qty">${oi.quantity}×</span>
-              <span class="submitted-item-name">${x(oi.bitesync_session_items?.name || '—')}</span>
-              <span style="white-space:nowrap;">$${(+oi.line_total).toFixed(2)}</span>
-            </div>
-            ${oi.item_notes ? `<div style="font-size:12px;color:#7A5C42;padding:0 0 6px 18px;">↳ ${x(oi.item_notes)}</div>` : ''}`).join('')}
-          ${order.order_notes ? `<div style="font-size:13px;color:#7A5C42;padding:8px 12px;background:#FFF8F0;border-radius:8px;margin-top:4px;">📝 ${x(order.order_notes)}</div>` : ''}
-          <div class="submitted-total">
-            <span>Subtotal</span><span>$${subtotal.toFixed(2)}</span>
-          </div>`;
+      let html = `<div style="width:100%;">
+        <div class="cat-header">${t('yourOrder')}</div>
+        ${items.map(oi => `
+          <div class="submitted-item">
+            <span class="submitted-item-qty">${oi.quantity}×</span>
+            <span class="submitted-item-name">${x(oi.bitesync_session_items?.name || '—')}</span>
+            <span style="white-space:nowrap;">${(+oi.line_total).toFixed(2)} EGP</span>
+          </div>
+          ${oi.item_notes ? `<div style="font-size:12px;color:#7A5C42;padding:0 0 6px 18px;">↳ ${x(oi.item_notes)}</div>` : ''}`).join('')}
+        ${order.order_notes ? `<div style="font-size:13px;color:#7A5C42;padding:8px 12px;background:#FFF8F0;border-radius:8px;margin-top:4px;">📝 ${x(order.order_notes)}</div>` : ''}
+        <div class="submitted-total"><span>${t('subtotal')}</span><span>${subtotal.toFixed(2)} EGP</span></div>`;
 
       if (delivery) {
         html += `
           <div class="submitted-item" style="color:#7A5C42;font-size:13px;padding-top:6px;">
-            <span class="submitted-item-name">Delivery share</span>
-            <span>$${delivery.toFixed(2)}</span>
+            <span class="submitted-item-name">${t('deliveryShare')}</span>
+            <span>${delivery.toFixed(2)} EGP</span>
           </div>
           <div class="submitted-total" style="color:#E07856;font-size:17px;">
-            <span>Your total</span><span>$${total.toFixed(2)}</span>
+            <span>${t('yourTotal')}</span><span>${total.toFixed(2)} EGP</span>
           </div>`;
       }
 
-      if (order.paid_status === 'paid') {
-        html += `<div style="margin-top:14px;text-align:center;font-size:14px;color:#27AE60;font-weight:700;">✓ Marked as paid</div>`;
-      } else if (session.status === 'delivered' || session.status === 'settled') {
-        html += `<div style="margin-top:14px;text-align:center;font-size:14px;color:#E07856;font-weight:600;">💸 Please settle up with the admin</div>`;
+      if (showPaidStatus && order.paid_status === 'paid') {
+        html += `<div style="margin-top:14px;text-align:center;font-size:14px;color:#27AE60;font-weight:700;">${t('markedPaid')}</div>`;
       }
 
       html += `</div>`;
-      area.innerHTML = html;
+      return html;
     }
 
     // ── Deadline-passed locked view ───────────────────────────────────
     function renderDeadlinePassed(existingOrder) {
-      document.getElementById('sticky-footer')?.remove();
       const area     = document.getElementById('session-area');
       const restName = activeSession.bitesync_restaurants?.name || 'Restaurant';
 
       let html = `
         <div class="closed-banner">
           <div class="closed-banner-title">🍽 ${x(restName)}</div>
-          <div class="closed-banner-sub">⏰ Ordering deadline has passed</div>
-          <div class="closed-status-chip">Waiting for admin to close</div>
+          <div class="closed-banner-sub">${t('deadlinePassed')}</div>
+          <div class="closed-status-chip">${t('waitingAdmin')}</div>
         </div>`;
 
       if (existingOrder) {
-        const items    = existingOrder.bitesync_order_items || [];
-        const subtotal = +(existingOrder.items_subtotal || 0);
-        html += `
-          <div style="width:100%;">
-            <div class="cat-header">Your order</div>
-            ${items.map(oi => `
-              <div class="submitted-item">
-                <span class="submitted-item-qty">${oi.quantity}×</span>
-                <span class="submitted-item-name">${x(oi.bitesync_session_items?.name || '—')}</span>
-                <span style="white-space:nowrap;">$${(+oi.line_total).toFixed(2)}</span>
-              </div>
-              ${oi.item_notes ? `<div style="font-size:12px;color:#7A5C42;padding:0 0 6px 18px;">↳ ${x(oi.item_notes)}</div>` : ''}
-            `).join('')}
-            <div class="submitted-total"><span>Total</span><span>$${subtotal.toFixed(2)}</span></div>
-          </div>`;
+        html += orderSummaryHtml(existingOrder, activeSession, false);
       } else {
-        html += `<div style="text-align:center;padding:20px 0;font-size:14px;color:#B09880;">You didn't place an order for this session.</div>`;
+        html += `<div style="text-align:center;padding:20px 0;font-size:14px;color:#B09880;">${t('didntOrder')}</div>`;
       }
 
       area.innerHTML = html;
@@ -833,52 +1105,41 @@
       if (notesRow) notesRow.style.display = next > 0 ? '' : 'none';
 
       const totalEl = document.getElementById('footer-total-amount');
-      if (totalEl) totalEl.textContent = `$${calcTotal().toFixed(2)}`;
+      if (totalEl) totalEl.textContent = `${calcTotal().toFixed(2)} EGP`;
     };
 
     // ── Submit / update order ─────────────────────────────────────────
     window.submitOrder = async () => {
       const itemEntries = [...cart.entries()].filter(([,q]) => q > 0);
-      if (!itemEntries.length) { alert('Please select at least one item.'); return; }
+      if (!itemEntries.length) { alert(lang === 'ar' ? 'اختر عنصراً واحداً على الأقل.' : 'Please select at least one item.'); return; }
       if (activeSession?.order_deadline && new Date(activeSession.order_deadline) <= new Date()) {
-        alert('The ordering deadline has passed. Orders are no longer accepted.');
+        alert(lang === 'ar' ? 'انتهى وقت الطلب.' : 'The ordering deadline has passed. Orders are no longer accepted.');
         return;
       }
 
       const btn = document.getElementById('btn-submit');
-      btn.disabled = true; btn.textContent = 'Saving…';
+      btn.disabled = true; btn.textContent = lang === 'ar' ? 'جارٍ الحفظ…' : 'Saving…';
 
       const orderNotes = document.getElementById('order-notes-input')?.value.trim() || null;
       const subtotal   = calcTotal();
 
-      // Check for existing order
       const { data: existing } = await supabase
-        .from('bitesync_orders')
-        .select('id')
-        .eq('session_id', activeSession.id)
-        .eq('member_id', me.id)
-        .maybeSingle();
+        .from('bitesync_orders').select('id')
+        .eq('session_id', activeSession.id).eq('member_id', me.id).maybeSingle();
 
       let orderId;
       if (existing) {
         await supabase.from('bitesync_orders').update({
-          items_subtotal: subtotal,
-          final_total:    subtotal,
-          order_notes:    orderNotes,
-          submitted_at:   new Date().toISOString(),
-          status:         'submitted',
+          items_subtotal: subtotal, final_total: subtotal,
+          order_notes: orderNotes, submitted_at: new Date().toISOString(), status: 'submitted',
         }).eq('id', existing.id);
         orderId = existing.id;
         await supabase.from('bitesync_order_items').delete().eq('order_id', orderId);
       } else {
         const { data: newOrder } = await supabase.from('bitesync_orders').insert({
-          session_id:     activeSession.id,
-          member_id:      me.id,
-          status:         'submitted',
-          items_subtotal: subtotal,
-          final_total:    subtotal,
-          order_notes:    orderNotes,
-          submitted_at:   new Date().toISOString(),
+          session_id: activeSession.id, member_id: me.id, status: 'submitted',
+          items_subtotal: subtotal, final_total: subtotal,
+          order_notes: orderNotes, submitted_at: new Date().toISOString(),
         }).select('id').single();
         orderId = newOrder.id;
       }
@@ -886,28 +1147,38 @@
       const orderItems = itemEntries.map(([sessionItemId, quantity]) => {
         const item  = sessionItems.find(i => i.id === sessionItemId);
         const notes = document.getElementById(`item-notes-${sessionItemId}`)?.value.trim() || null;
-        return {
-          order_id:        orderId,
-          session_item_id: sessionItemId,
-          quantity,
-          unit_price:  +(item.price),
-          line_total:  +(item.price) * quantity,
-          item_notes:  notes,
-        };
+        return { order_id: orderId, session_item_id: sessionItemId, quantity,
+          unit_price: +(item.price), line_total: +(item.price) * quantity, item_notes: notes };
       });
 
       await supabase.from('bitesync_order_items').insert(orderItems);
-
       btn.disabled = false;
       loadActiveSession();
+    };
+
+    // ── Copy helper ───────────────────────────────────────────────────
+    window.copyText = async (text, feedbackId) => {
+      try { await navigator.clipboard.writeText(text); } catch (_) {}
+      if (feedbackId) {
+        const el = document.getElementById(feedbackId);
+        if (el) {
+          el.style.display = 'block';
+          setTimeout(() => el.style.display = 'none', 2000);
+        }
+      }
     };
 
     // ── Helpers ───────────────────────────────────────────────────────
     function countdownStr(deadline) {
       const diff = deadline - Date.now();
-      if (diff <= 0) return 'Closed';
+      if (diff <= 0) return lang === 'ar' ? 'انتهى' : 'Closed';
       const h = Math.floor(diff / 3600000);
       const m = Math.floor((diff % 3600000) / 60000);
+      if (lang === 'ar') {
+        if (h >= 24) return `${Math.floor(h/24)} يوم`;
+        if (h > 0)   return `${h}س ${m}د`;
+        return `${m} دقيقة`;
+      }
       if (h >= 24) return `${Math.floor(h/24)}d left`;
       if (h > 0)   return `${h}h ${m}m left`;
       return `${m}m left`;
@@ -918,18 +1189,10 @@
       return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
-    function timeAgo(iso) {
-      const m = Math.floor((Date.now() - new Date(iso)) / 60000);
-      if (m < 60)   return `${m}m ago`;
-      if (m < 1440) return `${Math.floor(m/60)}h ago`;
-      return `${Math.floor(m/1440)}d ago`;
-    }
-
     // ── Entry navigation ──────────────────────────────────────────────
     document.getElementById('btn-go-register').addEventListener('click', () => show('register'));
     document.getElementById('btn-go-claim').addEventListener('click', async () => {
-      show('claim');
-      await loadActiveMembers();
+      show('claim'); await loadActiveMembers();
     });
     document.getElementById('btn-back-from-register').addEventListener('click', () => show('entry'));
     document.getElementById('btn-back-from-claim').addEventListener('click', () => show('entry'));
@@ -953,17 +1216,20 @@
       const whatsapp = cbSame.checked ? phone : inWhatsapp.value.trim();
 
       hideErr(errEl);
-      if (!fullName || !phone || !whatsapp) { showErr(errEl, 'Please fill in all fields.'); return; }
+      if (!fullName || !phone || !whatsapp) {
+        showErr(errEl, lang === 'ar' ? 'يرجى ملء جميع الحقول.' : 'Please fill in all fields.');
+        return;
+      }
 
       const btn = document.getElementById('btn-register');
-      btn.disabled = true; btn.textContent = 'Registering…';
+      btn.disabled = true; btn.textContent = lang === 'ar' ? 'جارٍ التسجيل…' : 'Registering…';
 
       const { data: grp, error: grpErr } = await supabase
         .from('bitesync_groups').select('id').eq('group_code', GROUP_CODE).single();
 
       if (grpErr || !grp) {
-        showErr(errEl, 'Group not found. Contact your admin.');
-        btn.disabled = false; btn.textContent = 'Register';
+        showErr(errEl, lang === 'ar' ? 'المجموعة غير موجودة. تواصل مع المسؤول.' : 'Group not found. Contact your admin.');
+        btn.disabled = false; btn.textContent = t('register');
         return;
       }
 
@@ -973,8 +1239,11 @@
           group_id: grp.id, status: 'pending', is_admin: false,
         }).select('id').single();
 
-      btn.disabled = false; btn.textContent = 'Register';
-      if (insErr) { showErr(errEl, 'Registration failed. You may already be registered.'); return; }
+      btn.disabled = false; btn.textContent = t('register');
+      if (insErr) {
+        showErr(errEl, lang === 'ar' ? 'فشل التسجيل. ربما أنت مسجل بالفعل.' : 'Registration failed. You may already be registered.');
+        return;
+      }
       startWaiting(member.id);
     });
 
@@ -989,9 +1258,7 @@
 
     async function checkApproval(memberId) {
       const { data } = await supabase
-        .from('bitesync_members')
-        .select('status, full_name, is_admin, group_id')
-        .eq('id', memberId).single();
+        .from('bitesync_members').select('status, full_name, is_admin, group_id').eq('id', memberId).single();
 
       if (data?.status === 'active') {
         clearInterval(pollTimer); pollTimer = null;
@@ -1004,10 +1271,10 @@
     // ── Claim flow ────────────────────────────────────────────────────
     async function loadActiveMembers() {
       const sel = document.getElementById('claim-name');
-      sel.innerHTML = '<option value="">Loading…</option>';
+      sel.innerHTML = `<option value="">${lang === 'ar' ? 'جارٍ التحميل…' : 'Loading…'}</option>`;
       const { data } = await supabase
         .from('bitesync_members').select('full_name').eq('status','active').order('full_name');
-      sel.innerHTML = '<option value="">Select your name…</option>' +
+      sel.innerHTML = `<option value="">${lang === 'ar' ? 'اختر اسمك…' : 'Select your name…'}</option>` +
         (data||[]).map(m=>`<option value="${x(m.full_name)}">${x(m.full_name)}</option>`).join('');
     }
 
@@ -1019,18 +1286,23 @@
       const btn      = document.getElementById('btn-claim');
 
       hideErr(errEl);
-      if (!fullName || !phone) { showErr(errEl, 'Please select your name and enter your phone number.'); return; }
+      if (!fullName || !phone) {
+        showErr(errEl, lang === 'ar' ? 'يرجى اختيار اسمك وإدخال رقم الهاتف.' : 'Please select your name and enter your phone number.');
+        return;
+      }
 
-      btn.disabled = true; btn.textContent = 'Checking…';
+      btn.disabled = true; btn.textContent = lang === 'ar' ? 'جارٍ التحقق…' : 'Checking…';
 
       const { data } = await supabase
-        .from('bitesync_members')
-        .select('id, full_name, is_admin, group_id')
+        .from('bitesync_members').select('id, full_name, is_admin, group_id')
         .eq('full_name', fullName).eq('phone_number', phone).eq('status','active');
 
-      btn.disabled = false; btn.textContent = 'Continue';
+      btn.disabled = false; btn.textContent = t('continue');
 
-      if (!data?.length) { showErr(errEl, "Name and phone don't match. Try again or contact admin."); return; }
+      if (!data?.length) {
+        showErr(errEl, lang === 'ar' ? 'الاسم والهاتف غير متطابقَين. حاول مجدداً أو تواصل مع المسؤول.' : "Name and phone don't match. Try again or contact admin.");
+        return;
+      }
 
       localStorage.setItem('bitesync_member_id', data[0].id);
       me = data[0];

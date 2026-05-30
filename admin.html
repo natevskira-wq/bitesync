@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
@@ -14,148 +14,86 @@
       min-height: 100dvh;
     }
 
-    /* ── Header ── */
     .header {
-      background: #E07856;
-      color: white;
-      padding: 0 16px;
-      height: 52px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      background: #E07856; color: white; padding: 0 16px;
+      height: 52px; display: flex; align-items: center;
+      justify-content: space-between; position: sticky; top: 0; z-index: 100;
     }
     .header-title { font-size: 17px; font-weight: 800; letter-spacing: -0.3px; }
     .header-back  { font-size: 14px; font-weight: 600; color: rgba(255,255,255,.85); text-decoration: none; }
     .header-back:hover { color: white; }
 
-    /* ── Tab bar ── */
+    .lang-toggle-admin {
+      font-size: 13px; font-weight: 700; color: rgba(255,255,255,.85);
+      background: transparent; border: 1.5px solid rgba(255,255,255,.4);
+      border-radius: 20px; padding: 3px 12px; cursor: pointer; font-family: inherit;
+    }
+
     .tab-bar {
-      display: flex;
-      background: white;
+      display: flex; background: white;
       border-bottom: 1.5px solid #E8D5C4;
-      position: sticky;
-      top: 52px;
-      z-index: 99;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
+      position: sticky; top: 52px; z-index: 99;
+      overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;
     }
     .tab-bar::-webkit-scrollbar { display: none; }
-
     .tab-btn {
-      flex: 1;
-      min-width: 82px;
-      padding: 13px 10px;
-      border: none;
-      border-bottom: 2.5px solid transparent;
-      background: transparent;
-      font-family: inherit;
-      font-size: 13px;
-      font-weight: 600;
-      color: #7A5C42;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: color .15s, border-color .15s;
+      flex: 1; min-width: 80px; padding: 13px 10px;
+      border: none; border-bottom: 2.5px solid transparent;
+      background: transparent; font-family: inherit;
+      font-size: 13px; font-weight: 600; color: #7A5C42;
+      cursor: pointer; white-space: nowrap; transition: color .15s, border-color .15s;
     }
     .tab-btn.active { color: #E07856; border-bottom-color: #E07856; }
 
-    /* ── Panels ── */
     .tab-panel {
-      display: none;
-      flex-direction: column;
-      gap: 14px;
-      padding: 16px;
-      max-width: 640px;
-      margin: 0 auto;
-      padding-bottom: 40px;
+      display: none; flex-direction: column; gap: 14px;
+      padding: 16px; max-width: 640px; margin: 0 auto; padding-bottom: 40px;
     }
     .tab-panel.active { display: flex; }
 
-    /* ── Card ── */
     .card {
-      background: white;
-      border-radius: 14px;
-      padding: 18px;
+      background: white; border-radius: 14px; padding: 18px;
       box-shadow: 0 2px 12px rgba(61,40,23,.07);
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+      display: flex; flex-direction: column; gap: 12px;
     }
-    .card-header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 10px;
-    }
+    .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
     .card-title { font-size: 16px; font-weight: 700; }
     .card-sub   { font-size: 13px; color: #7A5C42; line-height: 1.5; }
 
-    /* ── Section label ── */
     .section-label {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .7px;
-      color: #B09880;
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .7px; color: #B09880;
     }
 
-    /* ── Form ── */
     .field { display: flex; flex-direction: column; gap: 5px; }
     .field-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: #7A5C42; }
 
-    input[type="text"],
-    input[type="tel"],
-    input[type="number"],
-    input[type="datetime-local"],
-    select,
-    textarea {
-      width: 100%;
-      min-height: 44px;
-      border: 1.5px solid #E8D5C4;
-      border-radius: 10px;
-      padding: 10px 12px;
-      font-size: 15px;
-      font-family: inherit;
-      color: #3D2817;
-      background: #FFF8F0;
-      outline: none;
-      -webkit-appearance: none;
-      appearance: none;
+    input[type="text"], input[type="tel"], input[type="number"],
+    input[type="datetime-local"], select, textarea {
+      width: 100%; min-height: 44px;
+      border: 1.5px solid #E8D5C4; border-radius: 10px;
+      padding: 10px 12px; font-size: 15px; font-family: inherit;
+      color: #3D2817; background: #FFF8F0; outline: none;
+      -webkit-appearance: none; appearance: none;
       transition: border-color .15s, background .15s;
     }
     textarea { min-height: 68px; resize: vertical; }
     input:focus, select:focus, textarea:focus { border-color: #E07856; background: white; }
+    input:disabled, select:disabled { opacity: .5; cursor: not-allowed; }
 
     select {
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237A5C42' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 12px center;
-      background-color: #FFF8F0;
-      padding-right: 40px;
-      cursor: pointer;
+      background-repeat: no-repeat; background-position: right 12px center;
+      background-color: #FFF8F0; padding-right: 40px; cursor: pointer;
     }
     select:focus { background-color: white; }
+    [dir="rtl"] select { background-position: left 12px center; padding-right: 12px; padding-left: 40px; }
 
-    /* ── Buttons ── */
     .btn {
-      min-height: 44px;
-      border: none;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 700;
-      font-family: inherit;
-      cursor: pointer;
-      padding: 0 18px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      transition: opacity .15s, transform .1s;
-      white-space: nowrap;
-      flex-shrink: 0;
+      min-height: 44px; border: none; border-radius: 10px;
+      font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer;
+      padding: 0 18px; display: inline-flex; align-items: center; justify-content: center;
+      gap: 6px; transition: opacity .15s, transform .1s; white-space: nowrap; flex-shrink: 0;
     }
     .btn:active  { transform: scale(0.96); }
     .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
@@ -169,15 +107,9 @@
     .btn-sm        { min-height: 36px; font-size: 13px; border-radius: 8px; padding: 0 13px; }
     .btn-full      { width: 100%; }
 
-    /* ── Badges ── */
     .badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 3px 9px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 700;
-      white-space: nowrap;
+      display: inline-flex; align-items: center;
+      padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap;
     }
     .badge-pending   { background: #FEF3C7; color: #92400E; }
     .badge-active    { background: #D1FAE5; color: #065F46; }
@@ -189,30 +121,22 @@
     .badge-cancelled { background: #F3F4F6; color: #6B7280; }
     .badge-unpaid    { background: #FEE2E2; color: #991B1B; }
     .badge-paid      { background: #D1FAE5; color: #065F46; }
+    .badge-exempt    { background: #E0E7FF; color: #3730A3; }
     .badge-admin     { background: #FDE68A; color: #92400E; font-size: 10px; }
 
-    /* ── Member rows ── */
     .member-row {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 11px 0;
-      border-bottom: 1px solid #F3E8DC;
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 10px; padding: 11px 0; border-bottom: 1px solid #F3E8DC;
     }
     .member-row:last-child { border-bottom: none; }
     .member-info  { flex: 1; min-width: 0; }
     .member-name  { font-size: 15px; font-weight: 700; }
     .member-detail { font-size: 12px; color: #7A5C42; margin-top: 2px; }
-    .member-actions { display: flex; gap: 6px; align-items: center; }
+    .member-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 
-    /* ── Menu item rows ── */
     .menu-item-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 9px 0;
-      border-bottom: 1px solid #F3E8DC;
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 0; border-bottom: 1px solid #F3E8DC;
     }
     .menu-item-row:last-child { border-bottom: none; }
     .menu-item-info  { flex: 1; min-width: 0; }
@@ -220,137 +144,122 @@
     .menu-item-cat   { font-size: 12px; color: #B09880; }
     .menu-item-price { font-size: 14px; font-weight: 700; color: #E07856; white-space: nowrap; }
 
-    /* ── Toggle switch ── */
     .toggle {
-      width: 38px;
-      height: 22px;
-      background: #E8D5C4;
-      border-radius: 11px;
-      position: relative;
-      cursor: pointer;
-      border: none;
-      transition: background .2s;
-      flex-shrink: 0;
+      width: 38px; height: 22px; background: #E8D5C4;
+      border-radius: 11px; position: relative; cursor: pointer;
+      border: none; transition: background .2s; flex-shrink: 0;
     }
     .toggle.on { background: #27AE60; }
     .toggle::after {
-      content: '';
-      position: absolute;
-      width: 16px; height: 16px;
-      background: white;
-      border-radius: 50%;
-      top: 3px; left: 3px;
-      transition: left .2s;
+      content: ''; position: absolute; width: 16px; height: 16px;
+      background: white; border-radius: 50%; top: 3px; left: 3px; transition: left .2s;
     }
     .toggle.on::after { left: 19px; }
 
-    /* ── Session item checkboxes ── */
     .item-check-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 9px 0;
-      border-bottom: 1px solid #F3E8DC;
-      cursor: pointer;
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 0; border-bottom: 1px solid #F3E8DC; cursor: pointer;
     }
     .item-check-row:last-child { border-bottom: none; }
-    .item-check-row input[type="checkbox"] {
-      width: 18px; height: 18px;
-      accent-color: #E07856;
-      flex-shrink: 0;
-      cursor: pointer;
-    }
+    .item-check-row input[type="checkbox"] { width: 18px; height: 18px; accent-color: #E07856; flex-shrink: 0; cursor: pointer; }
     .item-check-label { flex: 1; font-size: 14px; }
     .item-check-price { font-size: 13px; font-weight: 700; color: #E07856; }
 
-    /* ── Order lines ── */
     .order-line {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      font-size: 14px;
-      padding: 3px 0;
-      gap: 8px;
+      display: flex; justify-content: space-between; align-items: baseline;
+      font-size: 14px; padding: 3px 0; gap: 8px;
     }
     .order-line-name { flex: 1; }
-    .order-line-qty  { color: #7A5C42; font-size: 13px; margin-right: 4px; }
+    .order-line-qty  { color: #7A5C42; font-size: 13px; margin-inline-end: 4px; }
     .order-total {
-      display: flex;
-      justify-content: space-between;
-      font-weight: 700;
-      font-size: 15px;
-      padding-top: 10px;
-      margin-top: 6px;
-      border-top: 1.5px solid #E8D5C4;
+      display: flex; justify-content: space-between; font-weight: 700; font-size: 15px;
+      padding-top: 10px; margin-top: 6px; border-top: 1.5px solid #E8D5C4;
     }
 
-    /* ── Inline form ── */
     .form-section { display: none; flex-direction: column; gap: 12px; }
     .form-section.open { display: flex; }
 
-    /* ── WhatsApp prompt banner ── */
     .wa-prompt-banner {
-      display: none;
-      background: #FFF3E0;
-      border-bottom: 1.5px solid #FFB74D;
-      padding: 12px 16px;
-      flex-direction: column;
-      gap: 10px;
-      max-width: 640px;
-      margin: 0 auto;
-      width: 100%;
+      display: none; background: #FFF3E0; border-bottom: 1.5px solid #FFB74D;
+      padding: 12px 16px; flex-direction: column; gap: 10px;
+      max-width: 640px; margin: 0 auto; width: 100%;
     }
     .wa-prompt-banner.visible { display: flex; }
     .wa-prompt-title { font-size: 14px; font-weight: 700; color: #E65100; }
     .wa-prompt-sub   { font-size: 13px; color: #7A5C42; }
 
-    /* ── Misc ── */
     hr { border: none; border-top: 1px solid #F3E8DC; }
 
     .error-msg {
-      font-size: 13px;
-      color: #B83C2B;
-      background: #FDF0EE;
-      border-radius: 8px;
-      padding: 10px 12px;
+      font-size: 13px; color: #B83C2B; background: #FDF0EE;
+      border-radius: 8px; padding: 10px 12px;
     }
 
     .empty {
-      text-align: center;
-      padding: 28px 16px;
-      color: #B09880;
-      font-size: 14px;
+      text-align: center; padding: 28px 16px; color: #B09880; font-size: 14px;
     }
 
     .spinner {
-      width: 32px; height: 32px;
-      border: 3px solid #E8D5C4;
-      border-top-color: #E07856;
-      border-radius: 50%;
-      animation: spin .75s linear infinite;
-      margin: 20px auto;
+      width: 32px; height: 32px; border: 3px solid #E8D5C4; border-top-color: #E07856;
+      border-radius: 50%; animation: spin .75s linear infinite; margin: 20px auto;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── Loading overlay ── */
     #loading-overlay {
-      position: fixed; inset: 0;
-      background: #FFF8F0;
-      display: flex; align-items: center; justify-content: center;
-      z-index: 200;
+      position: fixed; inset: 0; background: #FFF8F0;
+      display: flex; align-items: center; justify-content: center; z-index: 200;
     }
     #loading-overlay.hidden { display: none; }
 
-    /* ── Access denied ── */
     #access-denied {
-      padding: 60px 24px;
-      text-align: center;
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      gap: 14px;
+      padding: 60px 24px; text-align: center; display: none;
+      flex-direction: column; align-items: center; gap: 14px;
     }
     #access-denied.visible { display: flex; }
+
+    /* Past sessions archive */
+    .archive-toggle {
+      display: flex; align-items: center; justify-content: space-between;
+      background: white; border-radius: 10px; padding: 12px 16px;
+      cursor: pointer; border: 1.5px solid #E8D5C4; gap: 10px; user-select: none;
+    }
+    .archive-toggle-label { font-size: 14px; font-weight: 700; color: #7A5C42; }
+    .archive-toggle-arrow { font-size: 12px; color: #B09880; transition: transform .2s; }
+    .archive-toggle.open .archive-toggle-arrow { transform: rotate(180deg); }
+    #past-sessions-list { display: none; flex-direction: column; gap: 10px; }
+    #past-sessions-list.open { display: flex; }
+    .past-session-card {
+      background: white; border-radius: 12px; padding: 14px 16px;
+      box-shadow: 0 1px 8px rgba(61,40,23,.05);
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      cursor: pointer; border: 1.5px solid #F3E8DC;
+      transition: border-color .15s;
+    }
+    .past-session-card:hover { border-color: #E07856; }
+
+    /* Payment status segmented control (3-way) */
+    .pay-seg {
+      display: inline-flex; border-radius: 8px; overflow: hidden;
+      border: 1.5px solid #E8D5C4; flex-shrink: 0;
+    }
+    .pay-seg button {
+      min-height: 30px; border: none; font-family: inherit; font-size: 12px;
+      font-weight: 700; padding: 0 10px; cursor: pointer; transition: background .15s, color .15s;
+      background: #FFF8F0; color: #7A5C42;
+    }
+    .pay-seg button + button { border-left: 1px solid #E8D5C4; }
+    [dir="rtl"] .pay-seg button + button { border-left: none; border-right: 1px solid #E8D5C4; }
+    .pay-seg button.active-unpaid { background: #FEE2E2; color: #991B1B; }
+    .pay-seg button.active-paid   { background: #D1FAE5; color: #065F46; }
+    .pay-seg button.active-exempt { background: #E0E7FF; color: #3730A3; }
+
+    /* Orders session label */
+    #orders-session-label {
+      background: white; border-radius: 10px; padding: 12px 16px;
+      font-weight: 700; font-size: 14px; color: #3D2817;
+      border: 1.5px solid #E8D5C4; display: none;
+    }
+    #orders-session-label.visible { display: block; }
   </style>
 </head>
 <body>
@@ -372,87 +281,34 @@
   <div id="admin-shell" style="display:none;">
 
     <div class="header">
-      <a href="index.html" class="header-back">← My Order</a>
+      <a href="index.html" class="header-back" id="hdr-back">← My Order</a>
       <div class="header-title">Admin</div>
-      <div style="width:72px;"></div>
+      <button class="lang-toggle-admin" id="admin-lang-btn" onclick="toggleLang()">AR</button>
     </div>
 
     <div class="tab-bar">
-      <button class="tab-btn active" data-tab="members">Members</button>
-      <button class="tab-btn" data-tab="restaurants">Restaurants</button>
-      <button class="tab-btn" data-tab="sessions">Sessions</button>
-      <button class="tab-btn" data-tab="orders">Orders</button>
+      <button class="tab-btn active" data-tab="sessions" id="tab-btn-sessions">Sessions</button>
+      <button class="tab-btn" data-tab="orders"   id="tab-btn-orders">Orders</button>
+      <button class="tab-btn" data-tab="members"  id="tab-btn-members">Members</button>
+      <button class="tab-btn" data-tab="restaurants" id="tab-btn-restaurants">Restaurants</button>
     </div>
 
-    <!-- WhatsApp number prompt (shown if admin has no WA number set) -->
     <div id="wa-prompt-banner" class="wa-prompt-banner">
-      <div class="wa-prompt-title">📲 Set your WhatsApp number</div>
-      <div class="wa-prompt-sub">Needed to send order summaries to the restaurant.</div>
+      <div class="wa-prompt-title">📲 Set your WhatsApp &amp; InstaPay numbers</div>
+      <div class="wa-prompt-sub">WhatsApp is needed to send order summaries. InstaPay lets members pay you easily.</div>
       <div style="display:flex;gap:8px;align-items:center;">
-        <input type="tel" id="admin-wa-input" placeholder="+1 555 000 0000" style="flex:1;min-height:40px;">
-        <button class="btn btn-primary btn-sm" onclick="saveAdminWA()">Save</button>
+        <input type="tel" id="admin-wa-input" placeholder="WhatsApp (+201…)" style="flex:1;min-height:40px;">
+        <input type="text" id="admin-instapay-input" placeholder="InstaPay (01…)" style="flex:1;min-height:40px;">
+        <button class="btn btn-primary btn-sm" onclick="saveAdminProfile()">Save</button>
         <button class="btn btn-ghost btn-sm" onclick="dismissWAPrompt()">Later</button>
       </div>
     </div>
 
-    <!-- ══════════════════════════════════════
-         MEMBERS
-    ══════════════════════════════════════ -->
-    <div id="tab-members" class="tab-panel active">
-
-      <div class="section-label">Pending Approval</div>
-      <div id="pending-list"><div class="spinner"></div></div>
-
-      <div class="section-label">Active Members</div>
-      <div class="card" style="padding:6px 18px;">
-        <div id="active-list"><div class="spinner"></div></div>
-      </div>
-
-    </div>
-
-    <!-- ══════════════════════════════════════
-         RESTAURANTS
-    ══════════════════════════════════════ -->
-    <div id="tab-restaurants" class="tab-panel">
-
+    <!-- SESSIONS -->
+    <div id="tab-sessions" class="tab-panel active">
       <div class="card">
         <div class="card-header">
-          <div class="card-title">Restaurants</div>
-          <button class="btn btn-primary btn-sm" id="btn-toggle-rest">+ Add</button>
-        </div>
-        <div id="form-add-rest" class="form-section">
-          <div class="field">
-            <span class="field-label">Name</span>
-            <input type="text" id="rest-name" placeholder="Sunrise Café">
-          </div>
-          <div class="field">
-            <span class="field-label">Phone numbers (comma-separated)</span>
-            <input type="text" id="rest-phones" placeholder="+1 555 000 0000">
-          </div>
-          <div class="field">
-            <span class="field-label">Notes (optional)</span>
-            <textarea id="rest-notes" placeholder="Min order, delivery info…"></textarea>
-          </div>
-          <div id="rest-error" class="error-msg" style="display:none;"></div>
-          <div style="display:flex;gap:8px;">
-            <button class="btn btn-primary" id="btn-save-rest">Save</button>
-            <button class="btn btn-ghost" id="btn-cancel-rest">Cancel</button>
-          </div>
-        </div>
-      </div>
-
-      <div id="restaurant-list"><div class="spinner"></div></div>
-
-    </div>
-
-    <!-- ══════════════════════════════════════
-         SESSIONS
-    ══════════════════════════════════════ -->
-    <div id="tab-sessions" class="tab-panel">
-
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">Sessions</div>
+          <div class="card-title" id="lbl-sessions-title">Sessions</div>
           <button class="btn btn-primary btn-sm" id="btn-toggle-session">+ New</button>
         </div>
         <div id="form-new-session" class="form-section">
@@ -466,7 +322,8 @@
           </div>
           <div class="field">
             <span class="field-label">Order deadline</span>
-            <input type="datetime-local" id="sess-deadline">
+            <input type="datetime-local" id="sess-deadline"
+              oninput="autoFillLabel(this.value,'sess-label')">
           </div>
           <div class="field">
             <span class="field-label">Delivery address (optional)</span>
@@ -486,26 +343,77 @@
 
       <div id="session-list"><div class="spinner"></div></div>
 
+      <!-- Past sessions archive (BUG 8) -->
+      <div id="past-sessions-section" style="display:none;flex-direction:column;gap:10px;">
+        <div class="archive-toggle" id="archive-toggle" onclick="toggleArchive()">
+          <span class="archive-toggle-label" id="archive-toggle-label">▾ Past Sessions</span>
+          <span class="archive-toggle-arrow">▾</span>
+        </div>
+        <div id="past-sessions-list"></div>
+      </div>
+
     </div>
 
-    <!-- ══════════════════════════════════════
-         ORDERS
-    ══════════════════════════════════════ -->
+    <!-- ORDERS (BUG 9: no picker, auto-load) -->
     <div id="tab-orders" class="tab-panel">
+      <div id="orders-session-label"></div>
+      <div id="orders-content">
+        <div class="empty">Loading…</div>
+      </div>
+    </div>
 
-      <div class="card">
-        <div class="field">
-          <span class="field-label">Session</span>
-          <select id="orders-picker"><option value="">Choose a session…</option></select>
+    <!-- MEMBERS -->
+    <div id="tab-members" class="tab-panel">
+
+      <!-- Admin profile quick-edit -->
+      <div class="card" style="background:#FFF8F0;border:1.5px solid #E8D5C4;">
+        <div style="font-size:14px;font-weight:700;" id="lbl-my-profile">My Profile</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-secondary btn-sm" onclick="editMyProfile()">✏ WhatsApp / InstaPay</button>
         </div>
       </div>
-      <div id="orders-content">
-        <div class="empty">Select a session above to view orders.</div>
+
+      <div class="section-label" id="lbl-pending-label">Pending Approval</div>
+      <div id="pending-list"><div class="spinner"></div></div>
+
+      <div class="section-label" id="lbl-active-label">Active Members</div>
+      <div class="card" style="padding:6px 18px;">
+        <div id="active-list"><div class="spinner"></div></div>
       </div>
 
     </div>
 
-  </div><!-- /admin-shell -->
+    <!-- RESTAURANTS -->
+    <div id="tab-restaurants" class="tab-panel">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title" id="lbl-rest-title">Restaurants</div>
+          <button class="btn btn-primary btn-sm" id="btn-toggle-rest">+ Add</button>
+        </div>
+        <div id="form-add-rest" class="form-section">
+          <div class="field">
+            <span class="field-label">Name</span>
+            <input type="text" id="rest-name" placeholder="Sunrise Café">
+          </div>
+          <div class="field">
+            <span class="field-label">Phone numbers (comma-separated)</span>
+            <input type="text" id="rest-phones" placeholder="+201000000000">
+          </div>
+          <div class="field">
+            <span class="field-label">Notes (optional)</span>
+            <textarea id="rest-notes" placeholder="Min order, delivery info…"></textarea>
+          </div>
+          <div id="rest-error" class="error-msg" style="display:none;"></div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-primary" id="btn-save-rest">Save</button>
+            <button class="btn btn-ghost" id="btn-cancel-rest">Cancel</button>
+          </div>
+        </div>
+      </div>
+      <div id="restaurant-list"><div class="spinner"></div></div>
+    </div>
+
+  </div>
 
   <script type="module">
     import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -518,6 +426,61 @@
 
     let adminMember = null;
     let groupId     = null;
+    let activeOrdersSessionId = null; // BUG 9: track which session orders tab shows
+
+    // ── Language (BUG 2) ──────────────────────────────────────────────
+    let lang = localStorage.getItem('bitesync_lang') || 'en';
+
+    const ADM = {
+      en: {
+        back: '← My Order', sessions: 'Sessions', orders: 'Orders',
+        members: 'Members', restaurants: 'Restaurants',
+        noSession: 'No active session', noSessionSub: 'No open or closed sessions right now.',
+        pending: 'Pending Approval', active: 'Active Members', myProfile: 'My Profile',
+        pastLabel: 'Past Sessions', noOrders: 'No orders yet.',
+        splitFirst: 'Split delivery fee before marking paid',
+        markPaid: 'Mark Paid', unmark: 'Unmark', markExempt: 'Exempt', markUnpaid: 'Unpaid',
+        sessTitle: 'Sessions', restTitle: 'Restaurants',
+      },
+      ar: {
+        back: 'طلبي →', sessions: 'الجلسات', orders: 'الطلبات',
+        members: 'الأعضاء', restaurants: 'المطاعم',
+        noSession: 'لا توجد جلسة نشطة', noSessionSub: 'لا توجد جلسات مفتوحة أو مغلقة حالياً.',
+        pending: 'في انتظار الموافقة', active: 'الأعضاء النشطون', myProfile: 'ملفي الشخصي',
+        pastLabel: 'الجلسات السابقة', noOrders: 'لا توجد طلبات بعد.',
+        splitFirst: 'قسّم رسوم التوصيل أولاً قبل تحديد الدفع',
+        markPaid: 'تم الدفع', unmark: 'إلغاء', markExempt: 'معفى', markUnpaid: 'لم يدفع',
+        sessTitle: 'الجلسات', restTitle: 'المطاعم',
+      }
+    };
+    function ta(k) { return (ADM[lang] || ADM.en)[k] || ADM.en[k] || k; }
+
+    window.toggleLang = () => {
+      lang = lang === 'en' ? 'ar' : 'en';
+      localStorage.setItem('bitesync_lang', lang);
+      applyLang();
+    };
+
+    function applyLang() {
+      document.documentElement.lang = lang;
+      document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+      const btn = document.getElementById('admin-lang-btn');
+      if (btn) btn.textContent = lang === 'en' ? 'AR' : 'EN';
+      const back = document.getElementById('hdr-back');
+      if (back) back.textContent = ta('back');
+      // Update tab labels
+      const tmap = {sessions:'sessions',orders:'orders',members:'members',restaurants:'restaurants'};
+      for (const [tab, key] of Object.entries(tmap)) {
+        const el = document.getElementById(`tab-btn-${tab}`);
+        if (el) el.textContent = ta(key);
+      }
+      const el = id => document.getElementById(id);
+      if (el('lbl-my-profile')) el('lbl-my-profile').textContent = ta('myProfile');
+      if (el('lbl-pending-label')) el('lbl-pending-label').textContent = ta('pending');
+      if (el('lbl-active-label')) el('lbl-active-label').textContent = ta('active');
+    }
+
+    applyLang();
 
     // ── Auth guard ────────────────────────────────────────────────────
     async function init() {
@@ -526,9 +489,8 @@
 
       const { data, error } = await supabase
         .from('bitesync_members')
-        .select('id, full_name, is_admin, group_id, whatsapp_number')
-        .eq('id', memberId)
-        .single();
+        .select('id, full_name, is_admin, group_id, whatsapp_number, instapay_number')
+        .eq('id', memberId).single();
 
       if (error || !data || !data.is_admin) return deny();
 
@@ -538,11 +500,13 @@
       document.getElementById('loading-overlay').classList.add('hidden');
       document.getElementById('admin-shell').style.display = 'block';
 
-      if (!adminMember.whatsapp_number) {
+      if (!adminMember.whatsapp_number || !adminMember.instapay_number) {
+        document.getElementById('admin-wa-input').value = adminMember.whatsapp_number || '';
+        document.getElementById('admin-instapay-input').value = adminMember.instapay_number || '';
         document.getElementById('wa-prompt-banner').classList.add('visible');
       }
 
-      loadMembers();
+      loadSessions();
     }
 
     function deny() {
@@ -557,9 +521,36 @@
       btn.addEventListener('click', () => {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
         document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === `tab-${btn.dataset.tab}`));
-        ({ members: loadMembers, restaurants: loadRestaurants, sessions: loadSessions, orders: loadOrdersPicker })[btn.dataset.tab]?.();
+        ({ members: loadMembers, restaurants: loadRestaurants, sessions: loadSessions, orders: loadOrdersTab })[btn.dataset.tab]?.();
       });
     });
+
+    // ── Cairo TZ helpers (BUG 3) ──────────────────────────────────────
+    function todayCairo() {
+      return new Date().toLocaleDateString('sv-SE', { timeZone: 'Africa/Cairo' });
+    }
+    function dateCairo(iso) {
+      return new Date(iso).toLocaleDateString('sv-SE', { timeZone: 'Africa/Cairo' });
+    }
+
+    // BUG 3: Fixed toInputDatetime uses Cairo TZ explicitly
+    function toInputDatetime(iso) {
+      if (!iso) return '';
+      const s = new Date(iso).toLocaleString('sv-SE', { timeZone: 'Africa/Cairo' });
+      return s.slice(0, 16).replace(' ', 'T');
+    }
+
+    // BUG 6: Auto-fill label when deadline changes
+    window.autoFillLabel = (deadlineValue, targetLabelId) => {
+      if (!deadlineValue) return;
+      const el = document.getElementById(targetLabelId);
+      if (!el || el.dataset.manuallyEdited === '1') return;
+      const d = new Date(deadlineValue);
+      const label = d.toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-EG', {
+        weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Africa/Cairo'
+      });
+      el.value = label;
+    };
 
     // ════════════════════════════════════════════════════════════════
     // MEMBERS
@@ -567,9 +558,8 @@
     async function loadMembers() {
       const { data } = await supabase
         .from('bitesync_members')
-        .select('id, full_name, phone_number, whatsapp_number, status, is_admin, joined_at')
-        .eq('group_id', groupId)
-        .order('joined_at');
+        .select('id, full_name, phone_number, whatsapp_number, instapay_number, status, is_admin, joined_at')
+        .eq('group_id', groupId).order('joined_at');
 
       if (!data) return;
       renderPending(data.filter(m => m.status === 'pending'));
@@ -586,7 +576,7 @@
         <div class="card" style="gap:10px;">
           <div>
             <div class="member-name">${x(m.full_name)}</div>
-            <div class="member-detail">📞 ${x(m.phone_number)}${m.whatsapp_number && m.whatsapp_number !== m.phone_number ? ` · WhatsApp ${x(m.whatsapp_number)}` : ''}</div>
+            <div class="member-detail">📞 ${x(m.phone_number)}</div>
             <div class="member-detail">Requested ${ago(m.joined_at)}</div>
           </div>
           <div style="display:flex;gap:8px;">
@@ -604,8 +594,9 @@
           <div class="member-info">
             <div class="member-name">${x(m.full_name)}${m.is_admin ? ' <span class="badge badge-admin">Admin</span>' : ''}</div>
             <div class="member-detail">📞 ${x(m.phone_number)}</div>
+            ${m.instapay_number ? `<div class="member-detail">💳 ${x(m.instapay_number)}</div>` : ''}
           </div>
-          ${m.id === adminMember.id ? `<button class="btn btn-ghost btn-sm" style="font-size:12px;min-height:32px;" onclick="editMyWA()" title="Edit your WhatsApp number">✏ WA</button>` : ''}
+          ${m.id === adminMember.id ? `<button class="btn btn-ghost btn-sm" style="font-size:12px;min-height:32px;" onclick="editMyProfile()">✏ Edit</button>` : ''}
         </div>`).join('');
     }
 
@@ -620,14 +611,17 @@
       loadMembers();
     };
 
-    // ── WhatsApp prompt ────────────────────────────────────────────────
-    window.saveAdminWA = async () => {
-      const num = document.getElementById('admin-wa-input').value.trim();
-      if (!num) { alert('Please enter a WhatsApp number.'); return; }
-      const { error } = await supabase.from('bitesync_members')
-        .update({ whatsapp_number: num }).eq('id', adminMember.id);
+    window.saveAdminProfile = async () => {
+      const wa       = document.getElementById('admin-wa-input').value.trim();
+      const instapay = document.getElementById('admin-instapay-input').value.trim();
+      if (!wa && !instapay) { alert('Enter at least one number.'); return; }
+      const upd = {};
+      if (wa)       upd.whatsapp_number  = wa;
+      if (instapay) upd.instapay_number  = instapay;
+      const { error } = await supabase.from('bitesync_members').update(upd).eq('id', adminMember.id);
       if (error) { alert('Failed to save. Try again.'); return; }
-      adminMember.whatsapp_number = num;
+      if (wa)       adminMember.whatsapp_number  = wa;
+      if (instapay) adminMember.instapay_number  = instapay;
       document.getElementById('wa-prompt-banner').classList.remove('visible');
     };
 
@@ -635,19 +629,17 @@
       document.getElementById('wa-prompt-banner').classList.remove('visible');
     };
 
-    window.editMyWA = () => {
-      const input = document.getElementById('admin-wa-input');
-      if (adminMember.whatsapp_number) input.value = adminMember.whatsapp_number;
+    window.editMyProfile = () => {
+      document.getElementById('admin-wa-input').value       = adminMember.whatsapp_number  || '';
+      document.getElementById('admin-instapay-input').value = adminMember.instapay_number  || '';
       document.getElementById('wa-prompt-banner').classList.add('visible');
-      input.focus();
+      document.getElementById('admin-wa-input').focus();
     };
 
+    // Jump to orders tab from sessions
     window.viewOrders = async (sessionId) => {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === 'orders'));
       document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-orders'));
-      await loadOrdersPicker();
-      const picker = document.getElementById('orders-picker');
-      picker.value = sessionId;
       await loadOrders(sessionId);
     };
 
@@ -675,19 +667,14 @@
       const name   = document.getElementById('rest-name').value.trim();
       const phones = document.getElementById('rest-phones').value.trim().split(',').map(p=>p.trim()).filter(Boolean);
       const notes  = document.getElementById('rest-notes').value.trim();
-
       errEl.style.display = 'none';
       if (!name) { errEl.textContent = 'Restaurant name is required.'; errEl.style.display = 'block'; return; }
-
       const btn = document.getElementById('btn-save-rest');
       btn.disabled = true; btn.textContent = 'Saving…';
-
       const { error } = await supabase.from('bitesync_restaurants').insert({
         name, phones, notes: notes || null,
-        created_by_group_id:  groupId,
-        created_by_member_id: adminMember.id,
+        created_by_group_id: groupId, created_by_member_id: adminMember.id,
       });
-
       btn.disabled = false; btn.textContent = 'Save';
       if (error) { errEl.textContent = 'Save failed. Try again.'; errEl.style.display = 'block'; return; }
       document.getElementById('btn-cancel-rest').click();
@@ -697,15 +684,9 @@
     async function loadRestaurants() {
       const el = document.getElementById('restaurant-list');
       el.innerHTML = '<div class="spinner"></div>';
-
-      const { data } = await supabase
-        .from('bitesync_restaurants')
-        .select('id, name, phones, notes')
-        .eq('created_by_group_id', groupId)
-        .order('name');
-
+      const { data } = await supabase.from('bitesync_restaurants')
+        .select('id, name, phones, notes').eq('created_by_group_id', groupId).order('name');
       if (!data?.length) { el.innerHTML = '<div class="empty">No restaurants yet.</div>'; return; }
-
       el.innerHTML = '';
       for (const r of data) {
         const card = document.createElement('div');
@@ -726,7 +707,7 @@
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
               <input type="text"   id="mi-name-${r.id}"  placeholder="Item name" style="flex:2;min-width:120px;">
               <input type="text"   id="mi-cat-${r.id}"   placeholder="Category"  style="flex:1;min-width:90px;">
-              <input type="number" id="mi-price-${r.id}" placeholder="Price"     style="width:80px;" min="0" step="0.01">
+              <input type="number" id="mi-price-${r.id}" placeholder="Price EGP" style="width:90px;" min="0" step="0.01">
             </div>
             <button class="btn btn-primary btn-sm" onclick="addItem('${r.id}')">+ Add Item</button>
           </div>`;
@@ -735,7 +716,7 @@
     }
 
     window.toggleMenu = async (rid) => {
-      const sec = document.getElementById(`menu-section-${rid}`);
+      const sec  = document.getElementById(`menu-section-${rid}`);
       const open = sec.style.display !== 'none';
       sec.style.display = open ? 'none' : 'flex';
       document.getElementById(`menu-btn-${rid}`).textContent = open ? '▾ Menu' : '▴ Hide';
@@ -744,13 +725,9 @@
 
     async function loadMenuItems(rid) {
       const el = document.getElementById(`menu-items-${rid}`);
-      const { data } = await supabase
-        .from('bitesync_menu_items')
-        .select('id, name, category, price, is_available')
-        .eq('restaurant_id', rid)
-        .order('category', { nullsFirst: true })
-        .order('name');
-
+      const { data } = await supabase.from('bitesync_menu_items')
+        .select('id, name, category, price, is_available').eq('restaurant_id', rid)
+        .order('category', { nullsFirst: true }).order('name');
       if (!data?.length) { el.innerHTML = '<div class="card-sub" style="color:#B09880;">No items yet.</div>'; return; }
       el.innerHTML = data.map(item => `
         <div>
@@ -759,18 +736,16 @@
               <div class="menu-item-name">${x(item.name)}</div>
               ${item.category ? `<div class="menu-item-cat">${x(item.category)}</div>` : ''}
             </div>
-            <div class="menu-item-price">$${(+item.price).toFixed(2)}</div>
-            <button class="btn btn-ghost btn-sm" style="min-height:30px;padding:0 8px;font-size:15px;" title="Edit item" onclick="toggleEditItem('${item.id}')">✏</button>
-            <button class="btn btn-ghost btn-sm" style="min-height:30px;padding:0 8px;font-size:15px;color:#E74C3C;" title="Delete item" onclick="deleteItem('${item.id}','${rid}')">🗑</button>
-            <button class="toggle ${item.is_available?'on':''}"
-              title="${item.is_available?'Available — click to disable':'Unavailable — click to enable'}"
-              onclick="toggleAvail('${item.id}',${item.is_available},'${rid}')"></button>
+            <div class="menu-item-price">${(+item.price).toFixed(2)} EGP</div>
+            <button class="btn btn-ghost btn-sm" style="min-height:30px;padding:0 8px;" title="Edit" onclick="toggleEditItem('${item.id}')">✏</button>
+            <button class="btn btn-ghost btn-sm" style="min-height:30px;padding:0 8px;color:#E74C3C;" title="Delete" onclick="deleteItem('${item.id}','${rid}')">🗑</button>
+            <button class="toggle ${item.is_available?'on':''}" onclick="toggleAvail('${item.id}',${item.is_available},'${rid}')"></button>
           </div>
           <div id="edit-item-${item.id}" style="display:none;flex-direction:column;gap:8px;padding:6px 0 12px;">
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
-              <input type="text"   id="ei-name-${item.id}"  value="${x(item.name)}"               placeholder="Name"     style="flex:2;min-width:120px;">
-              <input type="text"   id="ei-cat-${item.id}"   value="${x(item.category||'')}"        placeholder="Category" style="flex:1;min-width:90px;">
-              <input type="number" id="ei-price-${item.id}" value="${(+item.price).toFixed(2)}"    placeholder="Price"    style="width:80px;" min="0" step="0.01">
+              <input type="text"   id="ei-name-${item.id}"  value="${x(item.name)}"            placeholder="Name"     style="flex:2;min-width:120px;">
+              <input type="text"   id="ei-cat-${item.id}"   value="${x(item.category||'')}"    placeholder="Category" style="flex:1;min-width:90px;">
+              <input type="number" id="ei-price-${item.id}" value="${(+item.price).toFixed(2)}" placeholder="Price"   style="width:80px;" min="0" step="0.01">
             </div>
             <div style="display:flex;gap:6px;">
               <button class="btn btn-primary btn-sm" onclick="saveItem('${item.id}','${rid}')">Save</button>
@@ -782,8 +757,7 @@
 
     window.toggleEditItem = (id) => {
       const el = document.getElementById(`edit-item-${id}`);
-      if (!el) return;
-      el.style.display = el.style.display === 'none' ? 'flex' : 'none';
+      if (el) el.style.display = el.style.display === 'none' ? 'flex' : 'none';
     };
 
     window.saveItem = async (id, rid) => {
@@ -791,9 +765,7 @@
       const cat   = document.getElementById(`ei-cat-${id}`).value.trim();
       const price = parseFloat(document.getElementById(`ei-price-${id}`).value) || 0;
       if (!name) { alert('Name is required.'); return; }
-      await supabase.from('bitesync_menu_items').update({
-        name, category: cat || null, price,
-      }).eq('id', id);
+      await supabase.from('bitesync_menu_items').update({ name, category: cat || null, price }).eq('id', id);
       loadMenuItems(rid);
     };
 
@@ -814,19 +786,16 @@
       const cat   = document.getElementById(`mi-cat-${rid}`).value.trim();
       const price = parseFloat(document.getElementById(`mi-price-${rid}`).value) || 0;
       if (!name) { alert('Item name is required.'); return; }
-
       const { error } = await supabase.from('bitesync_menu_items').insert({
         restaurant_id: rid, name, category: cat || null, price, is_available: true,
       });
       if (error) { alert('Failed to add item.'); return; }
-      document.getElementById(`mi-name-${rid}`).value  = '';
-      document.getElementById(`mi-cat-${rid}`).value   = '';
-      document.getElementById(`mi-price-${rid}`).value = '';
+      ['mi-name-','mi-cat-','mi-price-'].forEach(p => document.getElementById(p+rid).value = '');
       loadMenuItems(rid);
     };
 
     // ════════════════════════════════════════════════════════════════
-    // SESSIONS
+    // SESSIONS (BUG 8: archive)
     // ════════════════════════════════════════════════════════════════
     let sessFormOpen = false;
 
@@ -841,27 +810,32 @@
           supabase.from('bitesync_restaurants').select('id,name').eq('created_by_group_id', groupId).order('name'),
           supabase.from('bitesync_sessions')
             .select('delivery_address, delivery_address_notes')
-            .eq('group_id', groupId)
-            .not('delivery_address', 'is', null)
-            .order('created_at', { ascending: false })
-            .limit(1),
+            .eq('group_id', groupId).not('delivery_address', 'is', null)
+            .order('created_at', { ascending: false }).limit(1),
         ]);
         sel.innerHTML = '<option value="">Select restaurant…</option>' +
           (rests||[]).map(r=>`<option value="${r.id}">${x(r.name)}</option>`).join('');
-        const d = new Date(); d.setDate(d.getDate()+1); d.setHours(9,0,0,0);
-        document.getElementById('sess-deadline').value = d.toISOString().slice(0,16);
-        // Auto-fill label with tomorrow's weekday if blank
+
+        // Default deadline: tomorrow 09:00 Cairo time
+        const now = new Date();
+        const tomorrowCairo = new Date(now.toLocaleDateString('sv-SE', {timeZone:'Africa/Cairo'}) + 'T09:00:00');
+        tomorrowCairo.setDate(tomorrowCairo.getDate() + 1);
+        document.getElementById('sess-deadline').value = toInputDatetime(tomorrowCairo.toISOString());
+
         const labelEl = document.getElementById('sess-label');
-        if (!labelEl.value) {
-          const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-          labelEl.value = `${days[d.getDay()]} Breakfast`;
-        }
-        // Auto-fill address from most recent session
+        labelEl.dataset.manuallyEdited = '';
+        autoFillLabel(document.getElementById('sess-deadline').value, 'sess-label');
+
         if (lastSess?.[0]) {
-          document.getElementById('sess-address').value = lastSess[0].delivery_address || '';
+          document.getElementById('sess-address').value       = lastSess[0].delivery_address || '';
           document.getElementById('sess-address-notes').value = lastSess[0].delivery_address_notes || '';
         }
       }
+    });
+
+    // Track manual label edits so auto-fill stops overriding
+    document.getElementById('sess-label').addEventListener('input', function() {
+      this.dataset.manuallyEdited = '1';
     });
 
     document.getElementById('btn-cancel-session').addEventListener('click', () => {
@@ -886,12 +860,13 @@
       const btn = document.getElementById('btn-create-session');
       btn.disabled = true; btn.textContent = 'Creating…';
 
+      // BUG 3: save deadline as proper ISO with timezone conversion
       const { error } = await supabase.from('bitesync_sessions').insert({
         group_id:               groupId,
         restaurant_id:          restId,
         label:                  label || null,
         status:                 'draft',
-        order_deadline:         deadline || null,
+        order_deadline:         deadline ? new Date(deadline).toISOString() : null,
         delivery_address:       address || null,
         delivery_address_notes: addressNotes || null,
         created_by:             adminMember.id,
@@ -909,38 +884,80 @@
 
       const { data } = await supabase
         .from('bitesync_sessions')
-        .select('id, label, status, order_deadline, delivery_fee, delivery_address, delivery_address_notes, restaurant_id, bitesync_restaurants(name)')
+        .select('id, label, status, order_deadline, delivery_fee, delivery_address, delivery_address_notes, restaurant_id, created_at, bitesync_restaurants(name)')
         .eq('group_id', groupId)
         .order('created_at', { ascending: false });
 
       if (!data?.length) { el.innerHTML = '<div class="empty">No sessions yet.</div>'; return; }
 
+      const today    = todayCairo();
+      const active   = data.filter(s => dateCairo(s.created_at) >= today && !['settled','cancelled'].includes(s.status));
+      const past     = data.filter(s => !active.includes(s));
+
       el.innerHTML = '';
-      for (const s of data) {
-        const card = buildSessionCard(s);
-        el.appendChild(card);
-        if (s.status === 'draft') loadSessionItemPicker(s.id, s.restaurant_id);
+      if (!active.length) {
+        const empty = document.createElement('div');
+        empty.className = 'empty';
+        empty.textContent = ta('noSession');
+        el.appendChild(empty);
+      } else {
+        for (const s of active) {
+          const card = buildSessionCard(s);
+          el.appendChild(card);
+          if (s.status === 'draft') loadSessionItemPicker(s.id, s.restaurant_id);
+        }
+        // Live order counts on open sessions
+        const openIds = active.filter(s => s.status === 'open').map(s => s.id);
+        if (openIds.length) {
+          const counts = await Promise.all(
+            openIds.map(id => supabase.from('bitesync_orders').select('id', { count: 'exact', head: true }).eq('session_id', id))
+          );
+          openIds.forEach((id, i) => {
+            const badge = document.getElementById(`order-count-${id}`);
+            if (badge) badge.textContent = `${counts[i].count ?? 0} ordered`;
+          });
+        }
       }
 
-      // Populate live order count badges on open sessions
-      const openIds = data.filter(s => s.status === 'open').map(s => s.id);
-      if (openIds.length) {
-        const counts = await Promise.all(
-          openIds.map(id => supabase.from('bitesync_orders')
-            .select('id', { count: 'exact', head: true })
-            .eq('session_id', id))
-        );
-        openIds.forEach((id, i) => {
-          const badge = document.getElementById(`order-count-${id}`);
-          if (badge) badge.textContent = `${counts[i].count ?? 0} ordered`;
-        });
+      // BUG 8: Past sessions archive section
+      const archiveSection = document.getElementById('past-sessions-section');
+      if (past.length) {
+        archiveSection.style.display = 'flex';
+        const archLabel = document.getElementById('archive-toggle-label');
+        archLabel.textContent = `${ta('pastLabel')} (${past.length})`;
+
+        const pastList = document.getElementById('past-sessions-list');
+        pastList.innerHTML = past.map(s => {
+          const name     = s.label || `Session ${s.id.slice(0,6)}`;
+          const restName = s.bitesync_restaurants?.name || '—';
+          const dateStr  = dateCairo(s.created_at);
+          return `
+            <div class="past-session-card" onclick="viewOrders('${s.id}')">
+              <div style="min-width:0;">
+                <div style="font-size:14px;font-weight:700;">${x(name)}</div>
+                <div style="font-size:12px;color:#7A5C42;margin-top:2px;">${x(restName)} · ${dateStr}</div>
+              </div>
+              <span class="badge badge-${s.status}">${s.status}</span>
+            </div>`;
+        }).join('');
+      } else {
+        archiveSection.style.display = 'none';
       }
     }
+
+    window.toggleArchive = () => {
+      const toggle = document.getElementById('archive-toggle');
+      const list   = document.getElementById('past-sessions-list');
+      toggle.classList.toggle('open');
+      list.classList.toggle('open');
+    };
 
     function buildSessionCard(s) {
       const name     = s.label || `Session ${s.id.slice(0,6)}`;
       const restName = s.bitesync_restaurants?.name || '—';
-      const deadline = s.order_deadline ? new Date(s.order_deadline).toLocaleString([], {dateStyle:'short',timeStyle:'short'}) : '—';
+      const deadline = s.order_deadline
+        ? new Date(s.order_deadline).toLocaleString('en-EG', { dateStyle:'short', timeStyle:'short', timeZone:'Africa/Cairo' })
+        : '—';
 
       const card = document.createElement('div');
       card.className = 'card';
@@ -955,11 +972,11 @@
                     <button class="btn btn-danger btn-sm"  onclick="cancelSession('${s.id}')">✕ Cancel</button>`,
         closed:    `<button class="btn btn-secondary btn-sm" onclick="viewOrders('${s.id}')">📋 Orders</button>
                     <button class="btn btn-secondary btn-sm" onclick="reopenSession('${s.id}')">↩ Reopen</button>
-                    <button class="btn btn-primary btn-sm" onclick="deliverSession('${s.id}')">📦 Mark Delivered</button>
-                    <button class="btn btn-danger btn-sm"  onclick="cancelSession('${s.id}')">✕ Cancel</button>`,
-        delivered: `<button class="btn btn-success btn-sm" onclick="settleSession('${s.id}')">✓ Settle</button>`,
-        settled:   '',
-        cancelled: '',
+                    <button class="btn btn-primary btn-sm"   onclick="deliverSession('${s.id}')">📦 Mark Delivered</button>
+                    <button class="btn btn-danger btn-sm"    onclick="cancelSession('${s.id}')">✕ Cancel</button>`,
+        delivered: `<button class="btn btn-secondary btn-sm" onclick="viewOrders('${s.id}')">📋 Orders</button>
+                    <button class="btn btn-success btn-sm"   onclick="settleSession('${s.id}')">✓ Settle</button>`,
+        settled: '', cancelled: '',
       }[s.status] || '';
 
       card.innerHTML = `
@@ -968,7 +985,7 @@
             <div class="card-title">${x(name)}</div>
             <div class="card-sub">${x(restName)} · Deadline: ${deadline}</div>
             ${s.delivery_address ? `<div class="card-sub">📍 ${x(s.delivery_address)}${s.delivery_address_notes ? ` — ${x(s.delivery_address_notes)}` : ''}</div>` : ''}
-            ${s.delivery_fee ? `<div class="card-sub">Delivery fee: $${(+s.delivery_fee).toFixed(2)}</div>` : ''}
+            ${s.delivery_fee ? `<div class="card-sub">Delivery fee: ${(+s.delivery_fee).toFixed(2)} EGP</div>` : ''}
           </div>
           <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
             <span class="badge badge-${s.status}">${s.status}</span>
@@ -979,10 +996,16 @@
         ${['draft','open'].includes(s.status) ? `
           <div id="edit-session-${s.id}" style="display:none;flex-direction:column;gap:10px;">
             <hr>
-            <div class="field"><span class="field-label">Label</span><input type="text" id="es-label-${s.id}" value="${x(s.label||'')}"></div>
-            <div class="field"><span class="field-label">Deadline</span><input type="datetime-local" id="es-deadline-${s.id}" value="${toInputDatetime(s.order_deadline)}"></div>
-            <div class="field"><span class="field-label">Delivery address</span><input type="text" id="es-address-${s.id}" value="${x(s.delivery_address||'')}"></div>
-            <div class="field"><span class="field-label">Address notes</span><input type="text" id="es-address-notes-${s.id}" value="${x(s.delivery_address_notes||'')}"></div>
+            <div class="field"><span class="field-label">Label</span>
+              <input type="text" id="es-label-${s.id}" value="${x(s.label||'')}"
+                oninput="this.dataset.manuallyEdited='1'"></div>
+            <div class="field"><span class="field-label">Deadline</span>
+              <input type="datetime-local" id="es-deadline-${s.id}" value="${toInputDatetime(s.order_deadline)}"
+                oninput="autoFillLabel(this.value,'es-label-${s.id}')"></div>
+            <div class="field"><span class="field-label">Delivery address</span>
+              <input type="text" id="es-address-${s.id}" value="${x(s.delivery_address||'')}"></div>
+            <div class="field"><span class="field-label">Address notes</span>
+              <input type="text" id="es-address-notes-${s.id}" value="${x(s.delivery_address_notes||'')}"></div>
             <div style="display:flex;gap:6px;">
               <button class="btn btn-primary btn-sm" onclick="saveSession('${s.id}')">Save</button>
               <button class="btn btn-ghost btn-sm"   onclick="toggleEditSession('${s.id}')">Cancel</button>
@@ -1001,26 +1024,17 @@
 
     async function loadSessionItemPicker(sessionId, restaurantId) {
       const el = document.getElementById(`sitems-${sessionId}`);
-
       const [{ data: items }, { data: existing }] = await Promise.all([
         supabase.from('bitesync_menu_items')
-          .select('id, name, category, price')
-          .eq('restaurant_id', restaurantId)
-          .eq('is_available', true)
-          .order('category', { nullsFirst: true })
-          .order('name'),
-        supabase.from('bitesync_session_items')
-          .select('menu_item_id')
-          .eq('session_id', sessionId),
+          .select('id, name, category, price').eq('restaurant_id', restaurantId)
+          .eq('is_available', true).order('category', { nullsFirst: true }).order('name'),
+        supabase.from('bitesync_session_items').select('menu_item_id').eq('session_id', sessionId),
       ]);
-
       if (!items?.length) {
-        el.innerHTML = '<div class="card-sub" style="color:#B09880;">No available items for this restaurant — add some in the Restaurants tab first.</div>';
+        el.innerHTML = '<div class="card-sub" style="color:#B09880;">No available items — add some in Restaurants tab first.</div>';
         return;
       }
-
       const checked = new Set((existing||[]).map(e => e.menu_item_id));
-
       el.innerHTML = items.map(item => `
         <label class="item-check-row">
           <input type="checkbox"
@@ -1031,7 +1045,7 @@
           <span class="item-check-label">
             ${x(item.name)}${item.category ? ` <span style="color:#B09880;font-size:12px;">${x(item.category)}</span>` : ''}
           </span>
-          <span class="item-check-price">$${(+item.price).toFixed(2)}</span>
+          <span class="item-check-price">${(+item.price).toFixed(2)} EGP</span>
         </label>`).join('');
     }
 
@@ -1039,8 +1053,7 @@
       const { sid, mid, name, cat, price } = cb.dataset;
       if (cb.checked) {
         await supabase.from('bitesync_session_items').insert({
-          session_id: sid, menu_item_id: mid,
-          name, category: cat || null, price: parseFloat(price),
+          session_id: sid, menu_item_id: mid, name, category: cat || null, price: parseFloat(price),
         });
       } else {
         await supabase.from('bitesync_session_items').delete().eq('session_id', sid).eq('menu_item_id', mid);
@@ -1077,9 +1090,8 @@
       if (!actionsDiv) return;
       actionsDiv.innerHTML = `
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;width:100%;">
-          <div style="font-size:13px;font-weight:600;color:#7A5C42;flex-basis:100%;">Enter delivery fee (restaurant told you):</div>
-          <input type="number" id="fee-input-${id}" placeholder="0.00" min="0" step="0.01"
-            style="width:130px;" />
+          <div style="font-size:13px;font-weight:600;color:#7A5C42;flex-basis:100%;">Enter delivery fee (EGP):</div>
+          <input type="number" id="fee-input-${id}" placeholder="0.00" min="0" step="0.01" style="width:130px;" />
           <button class="btn btn-primary btn-sm" onclick="confirmDeliver('${id}')">✓ Confirm Delivery</button>
           <button class="btn btn-ghost btn-sm" onclick="loadSessions()">Cancel</button>
         </div>`;
@@ -1089,8 +1101,7 @@
     window.confirmDeliver = async (id) => {
       const fee = parseFloat(document.getElementById(`fee-input-${id}`)?.value) || 0;
       await supabase.from('bitesync_sessions').update({
-        status:       'delivered',
-        delivery_fee: fee > 0 ? fee : null,
+        status: 'delivered', delivery_fee: fee > 0 ? fee : null,
       }).eq('id', id);
       loadSessions();
     };
@@ -1106,14 +1117,25 @@
       el.style.display = el.style.display === 'none' ? 'flex' : 'none';
     };
 
+    // BUG 3 + BUG 6: saveSession with proper ISO deadline + label auto-update
     window.saveSession = async (id) => {
       const label        = document.getElementById(`es-label-${id}`).value.trim();
       const deadline     = document.getElementById(`es-deadline-${id}`).value;
       const address      = document.getElementById(`es-address-${id}`).value.trim();
       const addressNotes = document.getElementById(`es-address-notes-${id}`).value.trim();
+
+      // BUG 6: auto-generate label from deadline if label is empty
+      let finalLabel = label;
+      if (!finalLabel && deadline) {
+        finalLabel = new Date(deadline).toLocaleDateString('en-EG', {
+          weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Africa/Cairo'
+        });
+      }
+
       await supabase.from('bitesync_sessions').update({
-        label:                  label || null,
-        order_deadline:         deadline || null,
+        label:                  finalLabel || null,
+        // BUG 3: convert datetime-local (treated as local time) to UTC ISO
+        order_deadline:         deadline ? new Date(deadline).toISOString() : null,
         delivery_address:       address || null,
         delivery_address_notes: addressNotes || null,
       }).eq('id', id);
@@ -1121,35 +1143,36 @@
     };
 
     // ════════════════════════════════════════════════════════════════
-    // ORDERS
+    // ORDERS (BUG 9: no picker, auto-load active session)
     // ════════════════════════════════════════════════════════════════
-    async function loadOrdersPicker() {
-      const sel = document.getElementById('orders-picker');
+    // BUG 9: auto-load most recent non-settled/non-cancelled session
+    async function loadOrdersTab() {
+      const el = document.getElementById('orders-content');
+      el.innerHTML = '<div class="spinner"></div>';
+
       const { data } = await supabase
         .from('bitesync_sessions')
         .select('id, label, status, bitesync_restaurants(name)')
         .eq('group_id', groupId)
-        .neq('status', 'draft')
-        .order('created_at', { ascending: false });
+        .not('status', 'in', '("draft","settled","cancelled")')
+        .order('created_at', { ascending: false })
+        .limit(1);
 
-      sel.innerHTML = '<option value="">Choose a session…</option>' +
-        (data||[]).map(s => {
-          const label = s.label || `Session ${s.id.slice(0,6)}`;
-          return `<option value="${s.id}">${x(label)} — ${x(s.bitesync_restaurants?.name||'?')} (${s.status})</option>`;
-        }).join('');
+      if (!data?.length) {
+        const lbl = document.getElementById('orders-session-label');
+        lbl.classList.remove('visible');
+        el.innerHTML = `<div class="empty">${ta('noSession')}</div>`;
+        return;
+      }
+
+      await loadOrders(data[0].id);
     }
 
-    document.getElementById('orders-picker').addEventListener('change', async e => {
-      const id = e.target.value;
-      if (!id) { document.getElementById('orders-content').innerHTML = '<div class="empty">Select a session above to view orders.</div>'; return; }
-      await loadOrders(id);
-    });
-
-    // Cached data for WhatsApp export
     let waSessionData = null;
     let waOrdersData  = null;
 
     async function loadOrders(sessionId) {
+      activeOrdersSessionId = sessionId;
       const el = document.getElementById('orders-content');
       el.innerHTML = '<div class="spinner"></div>';
 
@@ -1158,41 +1181,37 @@
           .select('delivery_fee, status, label, restaurant_id, delivery_address, delivery_address_notes, bitesync_restaurants(name, phones)')
           .eq('id', sessionId).single(),
         supabase.from('bitesync_orders')
-          .select(`
-            id, member_id, excluded_from_delivery, status, items_subtotal, delivery_share, final_total, paid_status, order_notes, submitted_at,
+          .select(`id, member_id, excluded_from_delivery, status, items_subtotal, delivery_share, final_total, paid_status, order_notes, submitted_at,
             bitesync_members(full_name),
-            bitesync_order_items(
-              id, quantity, unit_price, line_total, item_notes,
-              bitesync_session_items(name, category)
-            )
-          `)
-          .eq('session_id', sessionId)
-          .order('submitted_at'),
-        supabase.from('bitesync_members')
-          .select('id, full_name')
-          .eq('group_id', groupId)
-          .eq('status', 'active')
-          .order('full_name'),
+            bitesync_order_items(id, quantity, unit_price, line_total, item_notes, bitesync_session_items(name, category))`)
+          .eq('session_id', sessionId).order('submitted_at'),
+        supabase.from('bitesync_members').select('id, full_name').eq('group_id', groupId).eq('status', 'active').order('full_name'),
       ]);
 
-      if (error)           { el.innerHTML = '<div class="empty">Failed to load orders.</div>'; return; }
+      if (error) { el.innerHTML = '<div class="empty">Failed to load orders.</div>'; return; }
+
+      // Update session label at top of orders tab
+      const lbl = document.getElementById('orders-session-label');
+      const sessName = session?.label || `Session`;
+      const restName = session?.bitesync_restaurants?.name || '';
+      lbl.textContent = `${sessName}${restName ? ` · ${restName}` : ''} (${session?.status || ''})`;
+      lbl.classList.add('visible');
 
       el.innerHTML = '';
       waSessionData = session;
       waOrdersData  = orders || [];
 
-      // WhatsApp export card
+      const isReadOnly = ['settled','cancelled'].includes(session?.status);
+
+      // WhatsApp export
       const waCard = document.createElement('div');
       waCard.className = 'card';
       const restPhone = session?.bitesync_restaurants?.phones?.[0];
-      const waHint = restPhone
-        ? `Will open WhatsApp to ${x(restPhone)}`
-        : 'No restaurant phone on file — message will be copied to clipboard';
       waCard.innerHTML = `
         <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
           <div>
             <div style="font-weight:700;font-size:15px;">📲 Send to Restaurant</div>
-            <div style="font-size:12px;color:#7A5C42;margin-top:3px;">${waHint}</div>
+            <div style="font-size:12px;color:#7A5C42;margin-top:3px;">${restPhone ? `Will open WhatsApp to ${x(restPhone)}` : 'No restaurant phone — message copied to clipboard'}</div>
           </div>
           <button class="btn btn-success btn-sm" onclick="exportWhatsApp()">Send via WA</button>
         </div>`;
@@ -1201,28 +1220,31 @@
       if (!orders?.length) {
         const empty = document.createElement('div');
         empty.className = 'empty';
-        empty.textContent = 'No orders placed yet for this session.';
+        empty.textContent = ta('noOrders');
         el.appendChild(empty);
       } else {
-        // Delivery fee split card
         const fee = +(session?.delivery_fee || 0);
-        if (fee > 0) {
+
+        // BUG 7: check if split has been done
+        const anyHasDeliveryShare = orders.some(o => +(o.delivery_share || 0) > 0);
+        const feeSplitDone = fee <= 0 || anyHasDeliveryShare;
+
+        // Delivery fee split card
+        if (fee > 0 && !isReadOnly) {
           const excludedCount = orders.filter(o => o.excluded_from_delivery).length;
           const includedCount = orders.length - excludedCount;
           const perPerson     = includedCount > 0 ? fee / includedCount : 0;
-          const alreadySplit  = orders.some(o => +(o.delivery_share || 0) > 0);
           const splitCard     = document.createElement('div');
           splitCard.className = 'card';
           splitCard.innerHTML = `
             <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
               <div>
-                <div style="font-weight:700;">Delivery Fee: $${fee.toFixed(2)}</div>
-                <div style="font-size:13px;color:#7A5C42;">÷ ${includedCount} order${includedCount!==1?'s':''} = $${perPerson.toFixed(2)} each${excludedCount > 0 ? ` · ${excludedCount} excluded` : ''}</div>
-                ${alreadySplit ? '<div style="font-size:12px;color:#27AE60;margin-top:4px;">✓ Already split</div>' : ''}
+                <div style="font-weight:700;">Delivery Fee: ${fee.toFixed(2)} EGP</div>
+                <div style="font-size:13px;color:#7A5C42;">÷ ${includedCount} order${includedCount!==1?'s':''} = ${perPerson.toFixed(2)} EGP each${excludedCount > 0 ? ` · ${excludedCount} excluded` : ''}</div>
+                ${anyHasDeliveryShare ? '<div style="font-size:12px;color:#27AE60;margin-top:4px;">✓ Already split</div>' : '<div style="font-size:12px;color:#E67E22;margin-top:4px;">⚠ Not yet split — split before marking paid</div>'}
               </div>
-              <button class="btn btn-primary btn-sm" id="btn-split-delivery"
-                onclick="splitDelivery('${sessionId}', ${fee})">
-                ${alreadySplit ? 'Re-split' : 'Split Now'}
+              <button class="btn btn-primary btn-sm" id="btn-split-delivery" onclick="splitDelivery('${sessionId}', ${fee})">
+                ${anyHasDeliveryShare ? 'Re-split' : 'Split Now'}
               </button>
             </div>`;
           el.appendChild(splitCard);
@@ -1247,38 +1269,47 @@
                 <div class="order-line-name">
                   <span class="order-line-qty">${oi.quantity}×</span>${x(iname)}
                   ${icat ? `<span style="color:#B09880;font-size:12px;"> ${x(icat)}</span>` : ''}
-                  ${oi.item_notes ? `<div style="font-size:12px;color:#7A5C42;margin-left:18px;">↳ ${x(oi.item_notes)}</div>` : ''}
+                  ${oi.item_notes ? `<div style="font-size:12px;color:#7A5C42;margin-inline-start:18px;">↳ ${x(oi.item_notes)}</div>` : ''}
                 </div>
-                <div style="font-weight:600;white-space:nowrap;">$${(+oi.line_total).toFixed(2)}</div>
+                <div style="font-weight:600;white-space:nowrap;">${(+oi.line_total).toFixed(2)} EGP</div>
               </div>`;
           }).join('');
+
+          // BUG 7: payment controls — 3-way segmented control, disabled until fee is split
+          const payControls = isReadOnly ? `<span class="badge badge-${o.paid_status}">${o.paid_status}</span>` : (() => {
+            const disabled = (fee > 0 && !feeSplitDone) ? 'disabled title="' + ta('splitFirst') + '"' : '';
+            return `
+              <div class="pay-seg">
+                <button class="${o.paid_status==='unpaid'?'active-unpaid':''}" ${disabled}
+                  onclick="setPaidStatus('${o.id}','unpaid','${sessionId}')">Unpaid</button>
+                <button class="${o.paid_status==='paid'?'active-paid':''}" ${disabled}
+                  onclick="setPaidStatus('${o.id}','paid','${sessionId}')">Paid</button>
+                <button class="${o.paid_status==='exempt'?'active-exempt':''}" ${disabled}
+                  onclick="setPaidStatus('${o.id}','exempt','${sessionId}')">Exempt</button>
+              </div>`;
+          })();
 
           card.innerHTML = `
             <div class="card-header">
               <div class="card-title">${x(name)}</div>
               <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-                <span class="badge badge-${o.paid_status}">${o.paid_status}</span>
-                <button class="btn btn-sm ${o.paid_status==='paid'?'btn-neutral':'btn-success'}"
-                  onclick="togglePaid('${o.id}','${o.paid_status}')">
-                  ${o.paid_status==='paid' ? 'Unmark' : 'Mark Paid'}
-                </button>
+                ${payControls}
+                ${!isReadOnly ? `
                 <button class="btn btn-sm btn-ghost" style="font-size:12px;min-height:30px;padding:0 9px;${o.excluded_from_delivery?'color:#E67E22;font-weight:700;':''}"
-                  onclick="toggleExclude('${o.id}',${o.excluded_from_delivery})"
+                  onclick="toggleExclude('${o.id}',${o.excluded_from_delivery},'${sessionId}')"
                   title="${o.excluded_from_delivery?'Excluded from delivery split':'Include in delivery split'}">
-                  ${o.excluded_from_delivery ? '🚫 Excluded' : '÷ In split'}
-                </button>
+                  ${o.excluded_from_delivery ? '🚫 Excl' : '÷ Split'}
+                </button>` : ''}
               </div>
             </div>
             ${lines}
             ${o.order_notes ? `<div style="font-size:13px;color:#7A5C42;margin-top:4px;">📝 ${x(o.order_notes)}</div>` : ''}
-            <div class="order-total">
-              <span>Subtotal</span><span>$${(+o.items_subtotal).toFixed(2)}</span>
-            </div>
+            <div class="order-total"><span>Subtotal</span><span>${(+o.items_subtotal).toFixed(2)} EGP</span></div>
             ${o.excluded_from_delivery
               ? `<div style="font-size:12px;color:#B09880;padding-top:4px;font-style:italic;">Not included in delivery split</div>`
-              : o.delivery_share ? `<div class="order-line" style="color:#7A5C42;font-size:13px;padding-top:4px;"><span>Delivery share</span><span>$${(+o.delivery_share).toFixed(2)}</span></div>` : ''}
+              : o.delivery_share ? `<div class="order-line" style="color:#7A5C42;font-size:13px;padding-top:4px;"><span>Delivery share</span><span>${(+o.delivery_share).toFixed(2)} EGP</span></div>` : ''}
             <div style="display:flex;justify-content:space-between;font-weight:800;font-size:16px;color:#E07856;margin-top:4px;">
-              <span>Total</span><span>$${total.toFixed(2)}</span>
+              <span>Total</span><span>${total.toFixed(2)} EGP</span>
             </div>`;
 
           el.appendChild(card);
@@ -1286,17 +1317,16 @@
 
         const summary = document.createElement('div');
         summary.className = 'card';
-        const unpaidCount = orders.filter(o => o.paid_status !== 'paid').length;
+        const unpaidCount = orders.filter(o => o.paid_status === 'unpaid').length;
         summary.innerHTML = `
           <div style="display:flex;justify-content:space-between;font-weight:800;font-size:17px;">
             <span>Session Total</span>
-            <span style="color:#E07856;">$${grandTotal.toFixed(2)}</span>
+            <span style="color:#E07856;">${grandTotal.toFixed(2)} EGP</span>
           </div>
           <div style="font-size:13px;color:#7A5C42;">${orders.length} order${orders.length!==1?'s':''}</div>
-          ${unpaidCount > 0 ? `<button class="btn btn-success btn-sm btn-full" onclick="markAllPaid('${sessionId}')">✓ Mark All ${unpaidCount} Paid</button>` : ''}`;
+          ${(!isReadOnly && unpaidCount > 0) ? `<button class="btn btn-success btn-sm btn-full" onclick="markAllPaid('${sessionId}')">✓ Mark All ${unpaidCount} Paid</button>` : ''}`;
         el.appendChild(summary);
 
-        // Who hasn't ordered yet
         if (allMembers?.length) {
           const orderedIds = new Set(orders.map(o => o.member_id));
           const notYet = allMembers.filter(m => !orderedIds.has(m.id));
@@ -1312,25 +1342,38 @@
       }
     }
 
-    window.togglePaid = async (orderId, cur) => {
-      const next = cur === 'paid' ? 'unpaid' : 'paid';
-      const upd  = { paid_status: next };
-      if (next === 'paid') upd.paid_at = new Date().toISOString();
+    // BUG 7: 3-way payment status setter
+    window.setPaidStatus = async (orderId, newStatus, sessionId) => {
+      const upd = { paid_status: newStatus };
+      if (newStatus === 'paid') upd.paid_at = new Date().toISOString();
       await supabase.from('bitesync_orders').update(upd).eq('id', orderId);
-      const sid = document.getElementById('orders-picker').value;
-      if (sid) loadOrders(sid);
+      loadOrders(sessionId);
     };
 
+    // BUG 7: splitDelivery warns if any orders are paid, then resets before splitting
     window.splitDelivery = async (sessionId, fee) => {
       const btn = document.getElementById('btn-split-delivery');
-      btn.disabled = true; btn.textContent = 'Splitting…';
+      btn.disabled = true; btn.textContent = 'Checking…';
 
       const { data: orders } = await supabase
-        .from('bitesync_orders')
-        .select('id, items_subtotal, excluded_from_delivery')
+        .from('bitesync_orders').select('id, items_subtotal, excluded_from_delivery, paid_status')
         .eq('session_id', sessionId);
 
       if (!orders?.length) { btn.disabled = false; return; }
+
+      // BUG 7: warn if any paid orders will have their totals changed
+      const paidOrders = orders.filter(o => o.paid_status === 'paid');
+      if (paidOrders.length > 0) {
+        const ok = confirm(
+          `${paidOrders.length} order${paidOrders.length !== 1 ? 's are' : ' is'} already marked as paid.\n\n` +
+          `Resplitting will change their totals. Reset all payment marks to unpaid first?`
+        );
+        if (!ok) { btn.disabled = false; btn.textContent = 'Re-split'; return; }
+        // Reset all to unpaid
+        await Promise.all(orders.map(o =>
+          supabase.from('bitesync_orders').update({ paid_status: 'unpaid', paid_at: null }).eq('id', o.id)
+        ));
+      }
 
       const eligible = orders.filter(o => !o.excluded_from_delivery);
       const share    = eligible.length > 0 ? Math.round((fee / eligible.length) * 100) / 100 : 0;
@@ -1346,17 +1389,14 @@
       loadOrders(sessionId);
     };
 
-    window.toggleExclude = async (orderId, excluded) => {
-      await supabase.from('bitesync_orders')
-        .update({ excluded_from_delivery: !excluded })
-        .eq('id', orderId);
-      const sid = document.getElementById('orders-picker').value;
-      if (sid) loadOrders(sid);
+    window.toggleExclude = async (orderId, excluded, sessionId) => {
+      await supabase.from('bitesync_orders').update({ excluded_from_delivery: !excluded }).eq('id', orderId);
+      loadOrders(sessionId);
     };
 
     window.markAllPaid = async (sessionId) => {
       const { data: unpaid } = await supabase.from('bitesync_orders')
-        .select('id').eq('session_id', sessionId).neq('paid_status', 'paid');
+        .select('id').eq('session_id', sessionId).eq('paid_status', 'unpaid');
       if (!unpaid?.length) return;
       const now = new Date().toISOString();
       await Promise.all(unpaid.map(o =>
@@ -1367,17 +1407,10 @@
 
     // ── WhatsApp export ───────────────────────────────────────────────
     window.exportWhatsApp = async () => {
-      if (!waSessionData || !waOrdersData?.length) {
-        alert('No orders to export.');
-        return;
-      }
-
-      const msg = generateOrderMessage(waSessionData, waOrdersData);
+      if (!waSessionData || !waOrdersData?.length) { alert('No orders to export.'); return; }
+      const msg     = generateOrderMessage(waSessionData, waOrdersData);
       const encoded = encodeURIComponent(msg);
-
-      // Copy to clipboard (best-effort)
       try { await navigator.clipboard.writeText(msg); } catch (_) {}
-
       const phone = waSessionData.bitesync_restaurants?.phones?.[0];
       if (phone) {
         const digits = phone.replace(/[^\d]/g, '');
@@ -1390,12 +1423,11 @@
     function generateOrderMessage(session, orders) {
       const restName = session.bitesync_restaurants?.name || 'Restaurant';
       const label    = session.label ? `${session.label} — ` : '';
-      const date     = new Date().toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
-
-      // Aggregate items across all orders — restaurant just needs totals + notes
-      const itemMap = new Map(); // item name → { qty, notes: [{qty, text}] }
+      const date     = new Date().toLocaleDateString('en-EG', {
+        weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Africa/Cairo'
+      });
+      const itemMap = new Map();
       const allOrderNotes = [];
-
       for (const o of orders) {
         for (const oi of o.bitesync_order_items || []) {
           const iname = oi.bitesync_session_items?.name || '?';
@@ -1406,41 +1438,25 @@
         }
         if (o.order_notes) allOrderNotes.push(o.order_notes);
       }
-
       const address = session.delivery_address
-        ? `\n📍 *${session.delivery_address}*${session.delivery_address_notes ? `\n_${session.delivery_address_notes}_` : ''}`
-        : '';
-
+        ? `\n📍 *${session.delivery_address}*${session.delivery_address_notes ? `\n_${session.delivery_address_notes}_` : ''}` : '';
       let msg = `🍽 *${label}${restName}*\n📅 ${date}${address}\n\n*ORDER SUMMARY*\n`;
-
       for (const [iname, { qty, notes }] of itemMap) {
         msg += `\n• ${qty}× ${iname}`;
-        for (const n of notes) {
-          msg += `\n  _↳ ${n.qty > 1 ? `×${n.qty} ` : ''}${n.text}_`;
-        }
+        for (const n of notes) msg += `\n  _↳ ${n.qty > 1 ? `×${n.qty} ` : ''}${n.text}_`;
       }
-
       if (allOrderNotes.length) {
         msg += `\n\n📝 *Notes:*`;
         for (const note of allOrderNotes) msg += `\n_${note}_`;
       }
-
       const grandTotal = orders.reduce((s, o) => s + +(o.items_subtotal || 0), 0);
       const fee = +(session.delivery_fee || 0);
-      msg += `\n\n📊 *${orders.length} order${orders.length !== 1 ? 's' : ''} | Total: $${grandTotal.toFixed(2)}*`;
-      if (fee > 0) msg += `\n💸 Delivery fee: $${fee.toFixed(2)}`;
-
+      msg += `\n\n📊 *${orders.length} order${orders.length !== 1 ? 's' : ''} | Total: ${grandTotal.toFixed(2)} EGP*`;
+      if (fee > 0) msg += `\n💸 Delivery fee: ${fee.toFixed(2)} EGP`;
       return msg;
     }
 
     // ── Helpers ───────────────────────────────────────────────────
-    function toInputDatetime(iso) {
-      if (!iso) return '';
-      const d = new Date(iso);
-      const pad = n => String(n).padStart(2, '0');
-      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-    }
-
     function x(s) {
       if (s == null) return '';
       return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -1448,7 +1464,7 @@
 
     function ago(iso) {
       const m = Math.floor((Date.now() - new Date(iso)) / 60000);
-      if (m < 60)  return `${m}m ago`;
+      if (m < 60)   return `${m}m ago`;
       if (m < 1440) return `${Math.floor(m/60)}h ago`;
       return `${Math.floor(m/1440)}d ago`;
     }
