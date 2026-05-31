@@ -4,326 +4,601 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>BiteSync · Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    :root {
+      --bg:         #F9F4EF;
+      --surface:    #FFFFFF;
+      --primary:    #C96442;
+      --primary-lt: #FBF0EB;
+      --text:       #1C1007;
+      --text-sec:   #7A5C42;
+      --text-muted: #B09880;
+      --border:     #EDE4DB;
+      --success:    #1A7A4A;
+      --success-bg: #E8F5E9;
+      --info:       #1E40AF;
+      --info-bg:    #DBEAFE;
+      --warn-bg:    #FEF3C7;
+      --warn-text:  #78350F;
+      --shadow:     0 2px 16px rgba(28,16,7,.07);
+      --r-card:     18px;
+      --r-btn:      12px;
+      --r-pill:     999px;
+      --r-sm:       10px;
+    }
+
     body {
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      background: #FFF8F0;
-      color: #3D2817;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100dvh;
     }
 
-    .header {
-      background: #E07856; color: white; padding: 0 16px;
-      height: 52px; display: flex; align-items: center;
-      justify-content: space-between; position: sticky; top: 0; z-index: 100;
-    }
-    .header-title { font-size: 17px; font-weight: 800; letter-spacing: -0.3px; }
-    .header-back  { font-size: 14px; font-weight: 600; color: rgba(255,255,255,.85); text-decoration: none; }
-    .header-back:hover { color: white; }
-
-    .lang-toggle-admin {
-      font-size: 13px; font-weight: 700; color: rgba(255,255,255,.85);
-      background: transparent; border: 1.5px solid rgba(255,255,255,.4);
-      border-radius: 20px; padding: 3px 12px; cursor: pointer; font-family: inherit;
-    }
-
-    .tab-bar {
-      display: flex; background: white;
-      border-bottom: 1.5px solid #E8D5C4;
-      position: sticky; top: 52px; z-index: 99;
-      overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;
-    }
-    .tab-bar::-webkit-scrollbar { display: none; }
-    .tab-btn {
-      flex: 1; min-width: 80px; padding: 13px 10px;
-      border: none; border-bottom: 2.5px solid transparent;
-      background: transparent; font-family: inherit;
-      font-size: 13px; font-weight: 600; color: #7A5C42;
-      cursor: pointer; white-space: nowrap; transition: color .15s, border-color .15s;
-    }
-    .tab-btn.active { color: #E07856; border-bottom-color: #E07856; }
-
-    .tab-panel {
-      display: none; flex-direction: column; gap: 14px;
-      padding: 16px; max-width: 640px; margin: 0 auto; padding-bottom: 40px;
-    }
-    .tab-panel.active { display: flex; }
-
-    .card {
-      background: white; border-radius: 14px; padding: 18px;
-      box-shadow: 0 2px 12px rgba(61,40,23,.07);
-      display: flex; flex-direction: column; gap: 12px;
-    }
-    .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
-    .card-title { font-size: 16px; font-weight: 700; }
-    .card-sub   { font-size: 13px; color: #7A5C42; line-height: 1.5; }
-
-    .section-label {
-      font-size: 11px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: .7px; color: #B09880;
-    }
-
-    .field { display: flex; flex-direction: column; gap: 5px; }
-    .field-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: #7A5C42; }
-
-    input[type="text"], input[type="tel"], input[type="number"],
-    input[type="datetime-local"], select, textarea {
-      width: 100%; min-height: 44px;
-      border: 1.5px solid #E8D5C4; border-radius: 10px;
-      padding: 10px 12px; font-size: 15px; font-family: inherit;
-      color: #3D2817; background: #FFF8F0; outline: none;
-      -webkit-appearance: none; appearance: none;
-      transition: border-color .15s, background .15s;
-    }
-    textarea { min-height: 68px; resize: vertical; }
-    input:focus, select:focus, textarea:focus { border-color: #E07856; background: white; }
-    input:disabled, select:disabled { opacity: .5; cursor: not-allowed; }
-
-    select {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237A5C42' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-      background-repeat: no-repeat; background-position: right 12px center;
-      background-color: #FFF8F0; padding-right: 40px; cursor: pointer;
-    }
-    select:focus { background-color: white; }
-    [dir="rtl"] select { background-position: left 12px center; padding-right: 12px; padding-left: 40px; }
-
-    .btn {
-      min-height: 44px; border: none; border-radius: 10px;
-      font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer;
-      padding: 0 18px; display: inline-flex; align-items: center; justify-content: center;
-      gap: 6px; transition: opacity .15s, transform .1s; white-space: nowrap; flex-shrink: 0;
-    }
-    .btn:active  { transform: scale(0.96); }
-    .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
-    .btn-primary   { background: #E07856; color: white; }
-    .btn-secondary { background: white; color: #E07856; border: 1.5px solid #E07856; }
-    .btn-success   { background: #27AE60; color: white; }
-    .btn-danger    { background: #E74C3C; color: white; }
-    .btn-warning   { background: #E67E22; color: white; }
-    .btn-neutral   { background: #F3E8DC; color: #3D2817; }
-    .btn-ghost     { background: transparent; color: #7A5C42; }
-    .btn-sm        { min-height: 36px; font-size: 13px; border-radius: 8px; padding: 0 13px; }
-    .btn-full      { width: 100%; }
-
-    .badge {
-      display: inline-flex; align-items: center;
-      padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap;
-    }
-    .badge-pending   { background: #FEF3C7; color: #92400E; }
-    .badge-active    { background: #D1FAE5; color: #065F46; }
-    .badge-draft     { background: #F3F4F6; color: #4B5563; }
-    .badge-open      { background: #D1FAE5; color: #065F46; }
-    .badge-closed    { background: #FEE2E2; color: #991B1B; }
-    .badge-delivered { background: #DBEAFE; color: #1E40AF; }
-    .badge-settled   { background: #E0E7FF; color: #3730A3; }
-    .badge-cancelled { background: #F3F4F6; color: #6B7280; }
-    .badge-unpaid    { background: #FEE2E2; color: #991B1B; }
-    .badge-paid      { background: #D1FAE5; color: #065F46; }
-    .badge-exempt    { background: #E0E7FF; color: #3730A3; }
-    .badge-admin     { background: #FDE68A; color: #92400E; font-size: 10px; }
-
-    .member-row {
-      display: flex; align-items: flex-start; justify-content: space-between;
-      gap: 10px; padding: 11px 0; border-bottom: 1px solid #F3E8DC;
-    }
-    .member-row:last-child { border-bottom: none; }
-    .member-info  { flex: 1; min-width: 0; }
-    .member-name  { font-size: 15px; font-weight: 700; }
-    .member-detail { font-size: 12px; color: #7A5C42; margin-top: 2px; }
-    .member-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-
-    .menu-item-row {
-      display: flex; align-items: center; gap: 10px;
-      padding: 9px 0; border-bottom: 1px solid #F3E8DC;
-    }
-    .menu-item-row:last-child { border-bottom: none; }
-    .menu-item-info  { flex: 1; min-width: 0; }
-    .menu-item-name  { font-size: 14px; font-weight: 600; }
-    .menu-item-cat   { font-size: 12px; color: #B09880; }
-    .menu-item-price { font-size: 14px; font-weight: 700; color: #E07856; white-space: nowrap; }
-
-    .toggle {
-      width: 38px; height: 22px; background: #E8D5C4;
-      border-radius: 11px; position: relative; cursor: pointer;
-      border: none; transition: background .2s; flex-shrink: 0;
-    }
-    .toggle.on { background: #27AE60; }
-    .toggle::after {
-      content: ''; position: absolute; width: 16px; height: 16px;
-      background: white; border-radius: 50%; top: 3px; left: 3px; transition: left .2s;
-    }
-    .toggle.on::after { left: 19px; }
-
-    .item-check-row {
-      display: flex; align-items: center; gap: 10px;
-      padding: 9px 0; border-bottom: 1px solid #F3E8DC; cursor: pointer;
-    }
-    .item-check-row:last-child { border-bottom: none; }
-    .item-check-row input[type="checkbox"] { width: 18px; height: 18px; accent-color: #E07856; flex-shrink: 0; cursor: pointer; }
-    .item-check-label { flex: 1; font-size: 14px; }
-    .item-check-price { font-size: 13px; font-weight: 700; color: #E07856; }
-
-    .order-line {
-      display: flex; justify-content: space-between; align-items: baseline;
-      font-size: 14px; padding: 3px 0; gap: 8px;
-    }
-    .order-line-name { flex: 1; }
-    .order-line-qty  { color: #7A5C42; font-size: 13px; margin-inline-end: 4px; }
-    .order-total {
-      display: flex; justify-content: space-between; font-weight: 700; font-size: 15px;
-      padding-top: 10px; margin-top: 6px; border-top: 1.5px solid #E8D5C4;
-    }
-
-    .form-section { display: none; flex-direction: column; gap: 12px; }
-    .form-section.open { display: flex; }
-
-    .wa-prompt-banner {
-      display: none; background: #FFF3E0; border-bottom: 1.5px solid #FFB74D;
-      padding: 12px 16px; flex-direction: column; gap: 10px;
-      max-width: 640px; margin: 0 auto; width: 100%;
-    }
-    .wa-prompt-banner.visible { display: flex; }
-    .wa-prompt-title { font-size: 14px; font-weight: 700; color: #E65100; }
-    .wa-prompt-sub   { font-size: 13px; color: #7A5C42; }
-
-    hr { border: none; border-top: 1px solid #F3E8DC; }
-
-    .error-msg {
-      font-size: 13px; color: #B83C2B; background: #FDF0EE;
-      border-radius: 8px; padding: 10px 12px;
-    }
-
-    .empty {
-      text-align: center; padding: 28px 16px; color: #B09880; font-size: 14px;
-    }
-
-    .spinner {
-      width: 32px; height: 32px; border: 3px solid #E8D5C4; border-top-color: #E07856;
-      border-radius: 50%; animation: spin .75s linear infinite; margin: 20px auto;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
+    /* ── Loading overlay ── */
     #loading-overlay {
-      position: fixed; inset: 0; background: #FFF8F0;
+      position: fixed; inset: 0; background: var(--bg);
       display: flex; align-items: center; justify-content: center; z-index: 200;
+      flex-direction: column; gap: 14px;
     }
     #loading-overlay.hidden { display: none; }
+    .loading-wordmark { font-size: 28px; font-weight: 800; color: var(--primary); letter-spacing: -0.5px; }
 
+    /* ── Access denied ── */
     #access-denied {
       padding: 60px 24px; text-align: center; display: none;
       flex-direction: column; align-items: center; gap: 14px;
     }
     #access-denied.visible { display: flex; }
 
-    /* Past sessions archive */
+    /* ── Admin shell ── */
+    #admin-shell { display: none; }
+
+    /* ── Main content area ── */
+    .admin-main {
+      max-width: 430px;
+      margin: 0 auto;
+      padding-bottom: 72px;
+    }
+
+    /* ── Tab content panels ── */
+    .admin-tab {
+      display: none;
+      flex-direction: column;
+      gap: 14px;
+      padding: 16px;
+    }
+    .admin-tab.active { display: flex; }
+
+    /* ── Tab bar (fixed bottom) ── */
+    .tab-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      height: 64px; background: white;
+      border-top: 1px solid var(--border);
+      display: flex;
+      z-index: 100;
+    }
+    .tab-bar-inner {
+      max-width: 430px; margin: 0 auto; width: 100%;
+      display: flex;
+    }
+    .tab-btn {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 3px; border: none; background: transparent; cursor: pointer; font-family: inherit;
+      font-size: 11px; font-weight: 600; color: var(--text-muted); padding: 0;
+      transition: color .15s;
+    }
+    .tab-btn.active { color: var(--primary); }
+    .tab-icon { font-size: 20px; line-height: 1; }
+
+    /* ── Sub-screens (full overlays) ── */
+    .sub-screen {
+      display: none; position: fixed; inset: 0;
+      background: var(--bg); z-index: 50;
+      overflow-y: auto; -webkit-overflow-scrolling: touch;
+    }
+    .sub-screen.visible { display: block; }
+    .sub-screen-inner {
+      max-width: 430px; margin: 0 auto;
+      padding: 16px 16px 80px;
+      display: flex; flex-direction: column; gap: 14px;
+    }
+    .sub-back {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 15px; font-weight: 600; color: var(--primary);
+      background: none; border: none; cursor: pointer; font-family: inherit; padding: 0;
+    }
+
+    /* ── Page headers ── */
+    .page-header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 10px; padding-top: 4px;
+    }
+    .page-header-left { display: flex; flex-direction: column; gap: 2px; }
+    .page-title    { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+    .page-subtitle { font-size: 13px; color: var(--text-muted); }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface); border-radius: var(--r-card); padding: 18px;
+      box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 12px;
+    }
+    .card-title { font-size: 16px; font-weight: 700; letter-spacing: -0.2px; }
+    .card-sub   { font-size: 13px; color: var(--text-sec); line-height: 1.5; }
+
+    /* ── Section label ── */
+    .section-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .7px; color: var(--text-muted);
+    }
+
+    /* ── Fields ── */
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--text-sec); }
+    .field-hint  { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+    input[type="text"], input[type="tel"], input[type="number"],
+    input[type="datetime-local"], select, textarea {
+      width: 100%; min-height: 44px;
+      border: 1.5px solid var(--border); border-radius: var(--r-btn);
+      padding: 10px 12px; font-size: 15px; font-family: inherit;
+      color: var(--text); background: var(--bg); outline: none;
+      -webkit-appearance: none; appearance: none;
+      transition: border-color .15s, background .15s;
+    }
+    textarea { min-height: 68px; resize: vertical; }
+    input:focus, select:focus, textarea:focus { border-color: var(--primary); background: white; }
+    input:disabled, select:disabled { opacity: .5; cursor: not-allowed; }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237A5C42' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 12px center;
+      background-color: var(--bg); padding-right: 40px; cursor: pointer;
+    }
+    select:focus { background-color: white; }
+    [dir="rtl"] select { background-position: left 12px center; padding-right: 12px; padding-left: 40px; }
+
+    /* ── Buttons ── */
+    .btn {
+      min-height: 44px; border: none; border-radius: var(--r-btn);
+      font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer;
+      padding: 0 18px; display: inline-flex; align-items: center; justify-content: center;
+      gap: 6px; transition: opacity .15s, transform .1s; white-space: nowrap; flex-shrink: 0;
+      text-decoration: none;
+    }
+    .btn:active  { transform: scale(0.96); }
+    .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+    .btn-primary   { background: var(--primary); color: white; }
+    .btn-secondary { background: white; color: var(--primary); border: 1.5px solid var(--primary); }
+    .btn-success   { background: var(--success); color: white; }
+    .btn-danger    { background: #E74C3C; color: white; }
+    .btn-warning   { background: #E67E22; color: white; }
+    .btn-neutral   { background: var(--primary-lt); color: var(--text); }
+    .btn-ghost     { background: transparent; color: var(--text-sec); }
+    .btn-sm        { min-height: 36px; font-size: 12px; border-radius: var(--r-sm); padding: 0 12px; }
+    .btn-full      { width: 100%; }
+    .btn-xl        { min-height: 56px; font-size: 17px; border-radius: var(--r-btn); width: 100%; }
+    .btn-pill      { border-radius: var(--r-pill); }
+    .btn-icon      { min-height: 36px; min-width: 36px; padding: 0; border-radius: 50%; }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-flex; align-items: center;
+      padding: 3px 10px; border-radius: var(--r-pill); font-size: 11px; font-weight: 700; white-space: nowrap;
+    }
+    .badge-pending   { background: var(--warn-bg); color: var(--warn-text); }
+    .badge-active    { background: var(--success-bg); color: var(--success); }
+    .badge-draft     { background: #F3F4F6; color: #4B5563; }
+    .badge-open      { background: var(--success-bg); color: var(--success); }
+    .badge-closed    { background: var(--warn-bg); color: var(--warn-text); }
+    .badge-delivered { background: var(--info-bg); color: var(--info); }
+    .badge-settled   { background: #E0E7FF; color: #3730A3; }
+    .badge-cancelled { background: #F3F4F6; color: #6B7280; }
+    .badge-unpaid    { background: #FEE2E2; color: #991B1B; }
+    .badge-paid      { background: var(--success-bg); color: var(--success); }
+    .badge-exempt    { background: #E0E7FF; color: #3730A3; }
+    .badge-admin     { background: #FDE68A; color: #92400E; font-size: 10px; }
+    .badge-red-dot   { background: #E74C3C; color: white; border-radius: var(--r-pill); padding: 2px 7px; font-size: 11px; font-weight: 700; }
+
+    /* ── Spinner ── */
+    .spinner {
+      width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--primary);
+      border-radius: 50%; animation: spin .75s linear infinite; margin: 20px auto;
+    }
+    .spinner-sm {
+      width: 20px; height: 20px; border: 2.5px solid var(--border); border-top-color: var(--primary);
+      border-radius: 50%; animation: spin .75s linear infinite; flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Error ── */
+    .error-msg {
+      font-size: 13px; color: #B83C2B; background: #FDF0EE;
+      border-radius: var(--r-sm); padding: 10px 12px;
+    }
+
+    .empty {
+      text-align: center; padding: 28px 16px; color: var(--text-muted); font-size: 14px;
+    }
+
+    hr { border: none; border-top: 1px solid var(--border); }
+
+    /* ── Status pipeline ── */
+    .pipeline {
+      display: flex; align-items: center; gap: 0;
+      padding: 4px 0;
+    }
+    .pipeline-step {
+      display: flex; flex-direction: column; align-items: center; gap: 3px; flex: 1;
+      font-size: 10px; font-weight: 600; color: var(--text-muted); text-align: center;
+    }
+    .pipeline-step.done .pipe-dot  { background: var(--text-sec); }
+    .pipeline-step.done .pipe-label { color: var(--text-sec); }
+    .pipeline-step.current .pipe-dot { background: var(--primary); box-shadow: 0 0 0 3px var(--primary-lt); }
+    .pipeline-step.current .pipe-label { color: var(--primary); font-weight: 700; }
+    .pipe-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--border); flex-shrink: 0;
+    }
+    .pipe-line {
+      flex: 1; height: 2px; background: var(--border); margin: 0 -1px; align-self: flex-start; margin-top: 21px;
+    }
+    .pipe-line.done { background: var(--text-sec); }
+
+    /* ── Session card stats ── */
+    .stats-row {
+      display: flex; gap: 0;
+      border: 1.5px solid var(--border); border-radius: var(--r-sm); overflow: hidden;
+    }
+    .stat-item {
+      flex: 1; padding: 10px 8px; text-align: center;
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 2px;
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-val   { font-size: 15px; font-weight: 800; color: var(--text); }
+    .stat-label { font-size: 11px; color: var(--text-muted); }
+
+    /* ── Member rows ── */
+    .member-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 0; border-bottom: 1px solid var(--border);
+    }
+    .member-row:last-child { border-bottom: none; }
+    .member-info  { flex: 1; min-width: 0; }
+    .member-name  { font-size: 15px; font-weight: 700; }
+    .member-detail { font-size: 12px; color: var(--text-sec); margin-top: 2px; }
+    .member-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+
+    /* ── Menu item rows ── */
+    .menu-item-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 0; border-bottom: 1px solid var(--border);
+    }
+    .menu-item-row:last-child { border-bottom: none; }
+    .menu-item-info  { flex: 1; min-width: 0; }
+    .menu-item-name  { font-size: 14px; font-weight: 600; }
+    .menu-item-cat   { font-size: 12px; color: var(--text-muted); }
+    .menu-item-price { font-size: 14px; font-weight: 700; color: var(--primary); white-space: nowrap; }
+
+    /* ── Toggle switch ── */
+    .toggle {
+      width: 38px; height: 22px; background: var(--border);
+      border-radius: 11px; position: relative; cursor: pointer;
+      border: none; transition: background .2s; flex-shrink: 0;
+    }
+    .toggle.on { background: var(--success); }
+    .toggle::after {
+      content: ''; position: absolute; width: 16px; height: 16px;
+      background: white; border-radius: 50%; top: 3px; left: 3px; transition: left .2s;
+    }
+    .toggle.on::after { left: 19px; }
+
+    /* ── Item check row ── */
+    .item-check-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 0; border-bottom: 1px solid var(--border); cursor: pointer;
+    }
+    .item-check-row:last-child { border-bottom: none; }
+    .item-check-row input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary); flex-shrink: 0; cursor: pointer; }
+    .item-check-label { flex: 1; font-size: 14px; }
+    .item-check-price { font-size: 13px; font-weight: 700; color: var(--primary); }
+
+    /* ── Order lines ── */
+    .order-line {
+      display: flex; justify-content: space-between; align-items: baseline;
+      font-size: 14px; padding: 3px 0; gap: 8px;
+    }
+    .order-line-name { flex: 1; }
+    .order-line-qty  { color: var(--text-sec); font-size: 13px; margin-inline-end: 4px; }
+    .order-total {
+      display: flex; justify-content: space-between; font-weight: 700; font-size: 15px;
+      padding-top: 10px; margin-top: 6px; border-top: 1.5px solid var(--border);
+    }
+
+    /* ── Form section collapse ── */
+    .form-section { display: none; flex-direction: column; gap: 12px; }
+    .form-section.open { display: flex; }
+
+    /* ── WA prompt banner ── */
+    .wa-prompt-banner {
+      display: none; background: var(--warn-bg); border: 1.5px solid #FBBF24;
+      border-radius: var(--r-card); padding: 16px;
+      flex-direction: column; gap: 10px;
+    }
+    .wa-prompt-banner.visible { display: flex; }
+    .wa-prompt-title { font-size: 14px; font-weight: 700; color: var(--warn-text); }
+    .wa-prompt-sub   { font-size: 13px; color: var(--text-sec); }
+
+    /* ── 3-way payment segmented control ── */
+    .pay-seg {
+      display: inline-flex; border-radius: var(--r-sm); overflow: hidden;
+      border: 1.5px solid var(--border); flex-shrink: 0;
+    }
+    .pay-seg button {
+      min-height: 32px; border: none; font-family: inherit; font-size: 12px;
+      font-weight: 700; padding: 0 10px; cursor: pointer; transition: background .15s, color .15s;
+      background: var(--bg); color: var(--text-sec);
+    }
+    .pay-seg button + button { border-left: 1px solid var(--border); }
+    [dir="rtl"] .pay-seg button + button { border-left: none; border-right: 1px solid var(--border); }
+    .pay-seg button.active-unpaid { background: #FEE2E2; color: #991B1B; }
+    .pay-seg button.active-paid   { background: var(--success-bg); color: var(--success); }
+    .pay-seg button.active-exempt { background: #E0E7FF; color: #3730A3; }
+
+    /* ── Past sessions ── */
     .archive-toggle {
       display: flex; align-items: center; justify-content: space-between;
-      background: white; border-radius: 10px; padding: 12px 16px;
-      cursor: pointer; border: 1.5px solid #E8D5C4; gap: 10px; user-select: none;
+      background: white; border-radius: var(--r-sm); padding: 12px 16px;
+      cursor: pointer; border: 1.5px solid var(--border); gap: 10px; user-select: none;
     }
-    .archive-toggle-label { font-size: 14px; font-weight: 700; color: #7A5C42; }
-    .archive-toggle-arrow { font-size: 12px; color: #B09880; transition: transform .2s; }
+    .archive-toggle-label { font-size: 14px; font-weight: 700; color: var(--text-sec); }
+    .archive-toggle-arrow { font-size: 12px; color: var(--text-muted); transition: transform .2s; }
     .archive-toggle.open .archive-toggle-arrow { transform: rotate(180deg); }
     #past-sessions-list { display: none; flex-direction: column; gap: 10px; }
     #past-sessions-list.open { display: flex; }
     .past-session-card {
-      background: white; border-radius: 12px; padding: 14px 16px;
-      box-shadow: 0 1px 8px rgba(61,40,23,.05);
+      background: white; border-radius: var(--r-sm); padding: 12px 14px;
+      box-shadow: var(--shadow);
       display: flex; align-items: center; justify-content: space-between; gap: 10px;
-      cursor: pointer; border: 1.5px solid #F3E8DC;
+      cursor: pointer; border: 1.5px solid var(--border);
       transition: border-color .15s;
     }
-    .past-session-card:hover { border-color: #E07856; }
+    .past-session-card:hover { border-color: var(--primary); }
 
-    /* Payment status segmented control (3-way) */
-    .pay-seg {
-      display: inline-flex; border-radius: 8px; overflow: hidden;
-      border: 1.5px solid #E8D5C4; flex-shrink: 0;
+    /* ── Restaurant icon box ── */
+    .rest-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: #F4DDD3; color: var(--primary);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 800; flex-shrink: 0;
     }
-    .pay-seg button {
-      min-height: 30px; border: none; font-family: inherit; font-size: 12px;
-      font-weight: 700; padding: 0 10px; cursor: pointer; transition: background .15s, color .15s;
-      background: #FFF8F0; color: #7A5C42;
-    }
-    .pay-seg button + button { border-left: 1px solid #E8D5C4; }
-    [dir="rtl"] .pay-seg button + button { border-left: none; border-right: 1px solid #E8D5C4; }
-    .pay-seg button.active-unpaid { background: #FEE2E2; color: #991B1B; }
-    .pay-seg button.active-paid   { background: #D1FAE5; color: #065F46; }
-    .pay-seg button.active-exempt { background: #E0E7FF; color: #3730A3; }
 
-    /* Orders session label */
+    /* ── Avatars row (consolidated order) ── */
+    .avatars-row { display: flex; gap: -4px; flex-wrap: wrap; gap: 4px; align-items: center; }
+
+    /* ── Payments sub-screen specifics ── */
+    .payments-fee-card { gap: 10px; }
+    .fee-input-large {
+      width: 100%; height: 64px !important; font-size: 32px !important;
+      font-weight: 800 !important; text-align: center !important; border-radius: var(--r-card) !important;
+      color: var(--primary) !important;
+    }
+    .fee-totals-row {
+      display: flex; gap: 12px;
+    }
+    .fee-total-box {
+      flex: 1; padding: 10px 12px; border-radius: var(--r-sm); text-align: center;
+    }
+    .fee-total-val   { font-size: 18px; font-weight: 700; }
+    .fee-total-label { font-size: 12px; margin-top: 2px; }
+    .fee-collected   { background: var(--success-bg); }
+    .fee-collected .fee-total-val { color: var(--success); }
+    .fee-collected .fee-total-label { color: var(--success); }
+    .fee-outstanding { background: #FEE2E2; }
+    .fee-outstanding .fee-total-val { color: #991B1B; }
+    .fee-outstanding .fee-total-label { color: #991B1B; }
+
+    /* ── Orders tab consolidated view ── */
+    .consolidated-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 0; border-bottom: 1px solid var(--border);
+    }
+    .consolidated-item:last-child { border-bottom: none; }
+    .consolidated-item-info { flex: 1; min-width: 0; }
+    .consolidated-item-name { font-size: 16px; font-weight: 600; }
+    .consolidated-qty { font-size: 16px; font-weight: 800; color: var(--primary); white-space: nowrap; }
+
+    /* ── Lang toggle ── */
+    .lang-toggle {
+      font-size: 12px; font-weight: 700; color: var(--text-sec);
+      background: transparent; border: 1.5px solid var(--border);
+      border-radius: var(--r-pill); padding: 4px 12px; cursor: pointer; font-family: inherit;
+    }
+
+    /* ── Orders session top label ── */
     #orders-session-label {
-      background: white; border-radius: 10px; padding: 12px 16px;
-      font-weight: 700; font-size: 14px; color: #3D2817;
-      border: 1.5px solid #E8D5C4; display: none;
+      background: white; border-radius: var(--r-sm); padding: 10px 14px;
+      font-weight: 700; font-size: 14px; color: var(--text);
+      border: 1.5px solid var(--border); display: none;
     }
     #orders-session-label.visible { display: block; }
   </style>
 </head>
 <body>
 
+  <!-- Loading -->
   <div id="loading-overlay">
-    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
-      <div class="spinner" style="margin:0;"></div>
-      <div style="font-size:14px;color:#7A5C42;">Loading…</div>
-    </div>
+    <div class="spinner" style="margin:0;"></div>
+    <div class="loading-wordmark">BiteSync</div>
   </div>
 
+  <!-- Access denied -->
   <div id="access-denied">
     <div style="font-size:52px;">🚫</div>
     <div style="font-size:22px;font-weight:800;">Admin only</div>
-    <div class="card-sub">You need an admin account to access this page.</div>
-    <a href="index.html" class="btn btn-primary btn-full" style="max-width:280px;">← Back to App</a>
+    <div style="font-size:14px;color:var(--text-sec);">You need an admin account to access this page.</div>
+    <a href="index.html" class="btn btn-primary btn-full" style="max-width:280px;min-height:52px;">← Back to App</a>
   </div>
 
-  <div id="admin-shell" style="display:none;">
+  <!-- Admin shell -->
+  <div id="admin-shell">
 
-    <div class="header">
-      <a href="index.html" class="header-back" id="hdr-back">← My Order</a>
-      <div class="header-title">Admin</div>
-      <button class="lang-toggle-admin" id="admin-lang-btn" onclick="toggleLang()">AR</button>
-    </div>
+    <div class="admin-main">
 
+      <!-- SESSIONS tab -->
+      <div id="screen-sessions" class="admin-tab active">
+        <div class="page-header">
+          <div class="page-header-left">
+            <div class="page-title" id="lbl-sessions-title">Sessions</div>
+            <div class="page-subtitle" id="sessions-location-sub">Loading…</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button class="lang-toggle" id="admin-lang-btn" onclick="toggleLang()">AR</button>
+            <button class="btn btn-ghost btn-sm btn-icon" onclick="loadSessions()" title="Refresh">↻</button>
+          </div>
+        </div>
+
+        <div id="wa-prompt-banner" class="wa-prompt-banner">
+          <div class="wa-prompt-title">📲 Set your WhatsApp &amp; InstaPay numbers</div>
+          <div class="wa-prompt-sub">WhatsApp is needed to send order summaries. InstaPay lets members pay you easily.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+            <input type="tel" id="admin-wa-input" placeholder="WhatsApp (+201…)" style="flex:1;min-width:140px;min-height:40px;">
+            <input type="text" id="admin-instapay-input" placeholder="InstaPay (01…)" style="flex:1;min-width:140px;min-height:40px;">
+            <button class="btn btn-primary btn-sm" onclick="saveAdminProfile()">Save</button>
+            <button class="btn btn-ghost btn-sm" onclick="dismissWAPrompt()">Later</button>
+          </div>
+        </div>
+
+        <div id="session-list"><div class="spinner"></div></div>
+
+        <div id="past-sessions-section" style="display:none;flex-direction:column;gap:10px;">
+          <div class="archive-toggle" id="archive-toggle" onclick="toggleArchive()">
+            <span class="archive-toggle-label" id="archive-toggle-label">▾ Past Sessions</span>
+            <span class="archive-toggle-arrow">▾</span>
+          </div>
+          <div id="past-sessions-list"></div>
+        </div>
+
+        <button class="btn btn-secondary btn-full" id="btn-open-new-session" style="min-height:52px;">+ Create New Session</button>
+      </div>
+
+      <!-- ORDERS tab -->
+      <div id="screen-orders" class="admin-tab">
+        <div class="page-header">
+          <div class="page-header-left">
+            <div class="page-title">Orders</div>
+            <div class="page-subtitle" id="orders-subtitle">Loading…</div>
+          </div>
+        </div>
+        <div id="orders-session-label"></div>
+        <div id="orders-content"><div class="spinner"></div></div>
+      </div>
+
+      <!-- MEMBERS tab -->
+      <div id="screen-members" class="admin-tab">
+        <div class="page-header">
+          <div class="page-header-left">
+            <div class="page-title">Members</div>
+            <div class="page-subtitle" id="members-location-sub">Your team</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="editMyProfile()">✏ My Profile</button>
+        </div>
+
+        <div id="pending-section" style="display:none;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="section-label" id="lbl-pending-label">Pending approvals</span>
+            <span id="pending-badge" class="badge-red-dot" style="display:none;"></span>
+          </div>
+          <div id="pending-list"></div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+          <span class="section-label" id="lbl-active-label">Team</span>
+          <span id="active-count" style="font-size:11px;color:var(--text-muted);font-weight:600;"></span>
+        </div>
+        <div class="card" style="padding:6px 18px;">
+          <div id="active-list"><div class="spinner"></div></div>
+        </div>
+      </div>
+
+      <!-- RESTAURANTS tab -->
+      <div id="screen-restaurants" class="admin-tab">
+        <div class="page-header">
+          <div class="page-header-left">
+            <div class="page-title">Restaurants</div>
+            <div class="page-subtitle">Saved spots</div>
+          </div>
+        </div>
+        <div id="restaurant-list"><div class="spinner"></div></div>
+        <button class="btn btn-secondary btn-full" id="btn-toggle-rest" style="min-height:52px;">+ Add Restaurant</button>
+        <div id="form-add-rest" class="form-section">
+          <div class="card">
+            <div class="card-title">New restaurant</div>
+            <div class="field">
+              <span class="field-label">Name</span>
+              <input type="text" id="rest-name" placeholder="Sunrise Café">
+            </div>
+            <div class="field">
+              <span class="field-label">Phone numbers (comma-separated)</span>
+              <input type="text" id="rest-phones" placeholder="+201000000000">
+            </div>
+            <div class="field">
+              <span class="field-label">Notes (optional)</span>
+              <textarea id="rest-notes" placeholder="Min order, delivery info…"></textarea>
+            </div>
+            <div id="rest-error" class="error-msg" style="display:none;"></div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-primary" id="btn-save-rest">Save</button>
+              <button class="btn btn-ghost" id="btn-cancel-rest">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end admin-main -->
+
+    <!-- Bottom tab bar -->
     <div class="tab-bar">
-      <button class="tab-btn active" data-tab="sessions" id="tab-btn-sessions">Sessions</button>
-      <button class="tab-btn" data-tab="orders"   id="tab-btn-orders">Orders</button>
-      <button class="tab-btn" data-tab="members"  id="tab-btn-members">Members</button>
-      <button class="tab-btn" data-tab="restaurants" id="tab-btn-restaurants">Restaurants</button>
-    </div>
-
-    <div id="wa-prompt-banner" class="wa-prompt-banner">
-      <div class="wa-prompt-title">📲 Set your WhatsApp &amp; InstaPay numbers</div>
-      <div class="wa-prompt-sub">WhatsApp is needed to send order summaries. InstaPay lets members pay you easily.</div>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <input type="tel" id="admin-wa-input" placeholder="WhatsApp (+201…)" style="flex:1;min-height:40px;">
-        <input type="text" id="admin-instapay-input" placeholder="InstaPay (01…)" style="flex:1;min-height:40px;">
-        <button class="btn btn-primary btn-sm" onclick="saveAdminProfile()">Save</button>
-        <button class="btn btn-ghost btn-sm" onclick="dismissWAPrompt()">Later</button>
+      <div class="tab-bar-inner">
+        <button class="tab-btn active" data-tab="sessions" id="tab-btn-sessions">
+          <span class="tab-icon">🍽</span>Sessions
+        </button>
+        <button class="tab-btn" data-tab="orders" id="tab-btn-orders">
+          <span class="tab-icon">📋</span>Orders
+        </button>
+        <button class="tab-btn" data-tab="members" id="tab-btn-members">
+          <span class="tab-icon">👥</span>Members
+        </button>
+        <button class="tab-btn" data-tab="restaurants" id="tab-btn-restaurants">
+          <span class="tab-icon">🏪</span>Restaurants
+        </button>
       </div>
     </div>
 
-    <!-- SESSIONS -->
-    <div id="tab-sessions" class="tab-panel active">
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title" id="lbl-sessions-title">Sessions</div>
-          <button class="btn btn-primary btn-sm" id="btn-toggle-session">+ New</button>
-        </div>
-        <div id="form-new-session" class="form-section">
-          <div class="field">
-            <span class="field-label">Label (optional)</span>
-            <input type="text" id="sess-label" placeholder="Friday Breakfast">
-          </div>
+    <!-- NEW SESSION sub-screen -->
+    <div id="screen-new-session" class="sub-screen">
+      <div class="sub-screen-inner">
+        <button class="sub-back" onclick="closeNewSession()">← Back</button>
+        <div class="page-title">New session</div>
+        <div class="card">
           <div class="field">
             <span class="field-label">Restaurant</span>
-            <select id="sess-restaurant"><option value="">Select…</option></select>
+            <select id="sess-restaurant" onchange="onRestaurantChange(this.value)"><option value="">Select restaurant…</option></select>
+          </div>
+          <div class="field">
+            <span class="field-label">Session label (optional)</span>
+            <input type="text" id="sess-label" placeholder="Friday Breakfast">
           </div>
           <div class="field">
             <span class="field-label">Order deadline</span>
             <input type="datetime-local" id="sess-deadline"
               oninput="autoFillLabel(this.value,'sess-label')">
+            <span class="field-hint">Members can order until this time.</span>
           </div>
           <div class="field">
             <span class="field-label">Delivery address (optional)</span>
@@ -334,86 +609,36 @@
             <input type="text" id="sess-address-notes" placeholder="Ring the bell, leave at reception…">
           </div>
           <div id="sess-error" class="error-msg" style="display:none;"></div>
-          <div style="display:flex;gap:8px;">
-            <button class="btn btn-primary" id="btn-create-session">Create Draft</button>
-            <button class="btn btn-ghost" id="btn-cancel-session">Cancel</button>
+        </div>
+
+        <div id="new-session-menu-section" style="display:none;flex-direction:column;gap:10px;">
+          <div class="section-label">Menu &amp; prices</div>
+          <div class="card" id="new-session-menu-items">
+            <div class="card-sub" style="text-align:center;color:var(--text-muted);">Select a restaurant to preview menu items.</div>
           </div>
         </div>
-      </div>
 
-      <div id="session-list"><div class="spinner"></div></div>
-
-      <!-- Past sessions archive (BUG 8) -->
-      <div id="past-sessions-section" style="display:none;flex-direction:column;gap:10px;">
-        <div class="archive-toggle" id="archive-toggle" onclick="toggleArchive()">
-          <span class="archive-toggle-label" id="archive-toggle-label">▾ Past Sessions</span>
-          <span class="archive-toggle-arrow">▾</span>
-        </div>
-        <div id="past-sessions-list"></div>
-      </div>
-
-    </div>
-
-    <!-- ORDERS (BUG 9: no picker, auto-load) -->
-    <div id="tab-orders" class="tab-panel">
-      <div id="orders-session-label"></div>
-      <div id="orders-content">
-        <div class="empty">Loading…</div>
+        <button class="btn btn-primary btn-xl" id="btn-create-session" onclick="createNewSession()">Open Session for Orders</button>
       </div>
     </div>
 
-    <!-- MEMBERS -->
-    <div id="tab-members" class="tab-panel">
-
-      <!-- Admin profile quick-edit -->
-      <div class="card" style="background:#FFF8F0;border:1.5px solid #E8D5C4;">
-        <div style="font-size:14px;font-weight:700;" id="lbl-my-profile">My Profile</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button class="btn btn-secondary btn-sm" onclick="editMyProfile()">✏ WhatsApp / InstaPay</button>
+    <!-- PAYMENTS sub-screen -->
+    <div id="screen-payments" class="sub-screen">
+      <div class="sub-screen-inner">
+        <button class="sub-back" onclick="closePayments()">← Back</button>
+        <div id="payments-header" style="display:flex;flex-direction:column;gap:4px;">
+          <div class="page-title">Payments</div>
+          <div id="payments-rest-name" style="font-size:13px;color:var(--text-muted);"></div>
+          <span class="badge badge-delivered" style="width:fit-content;">DELIVERED</span>
         </div>
+        <div id="payments-content">
+          <div class="spinner"></div>
+        </div>
+        <button class="btn btn-primary btn-xl" id="btn-settle-session" onclick="settleFromPayments()" style="margin-top:8px;">Mark Session as Settled</button>
       </div>
-
-      <div class="section-label" id="lbl-pending-label">Pending Approval</div>
-      <div id="pending-list"><div class="spinner"></div></div>
-
-      <div class="section-label" id="lbl-active-label">Active Members</div>
-      <div class="card" style="padding:6px 18px;">
-        <div id="active-list"><div class="spinner"></div></div>
-      </div>
-
     </div>
 
-    <!-- RESTAURANTS -->
-    <div id="tab-restaurants" class="tab-panel">
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title" id="lbl-rest-title">Restaurants</div>
-          <button class="btn btn-primary btn-sm" id="btn-toggle-rest">+ Add</button>
-        </div>
-        <div id="form-add-rest" class="form-section">
-          <div class="field">
-            <span class="field-label">Name</span>
-            <input type="text" id="rest-name" placeholder="Sunrise Café">
-          </div>
-          <div class="field">
-            <span class="field-label">Phone numbers (comma-separated)</span>
-            <input type="text" id="rest-phones" placeholder="+201000000000">
-          </div>
-          <div class="field">
-            <span class="field-label">Notes (optional)</span>
-            <textarea id="rest-notes" placeholder="Min order, delivery info…"></textarea>
-          </div>
-          <div id="rest-error" class="error-msg" style="display:none;"></div>
-          <div style="display:flex;gap:8px;">
-            <button class="btn btn-primary" id="btn-save-rest">Save</button>
-            <button class="btn btn-ghost" id="btn-cancel-rest">Cancel</button>
-          </div>
-        </div>
-      </div>
-      <div id="restaurant-list"><div class="spinner"></div></div>
-    </div>
-
-  </div>
+  </div><!-- end admin-shell -->
 
   <script type="module">
     import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -426,9 +651,24 @@
 
     let adminMember = null;
     let groupId     = null;
-    let activeOrdersSessionId = null; // BUG 9: track which session orders tab shows
+    let activeOrdersSessionId = null;
+    let paymentsSessionId     = null;
 
-    // ── Language (BUG 2) ──────────────────────────────────────────────
+    // ── Avatar system ──────────────────────────────────────────────────
+    const AVATAR_COLORS = ['#3B82F6','#10B981','#F59E0B','#EF4444','#8B5CF6','#EC4899','#6366F1','#14B8A6','#F97316','#84CC16'];
+    function avatarColor(name) {
+      let h = 0; for (const c of (name||'')) h = (h*31 + c.charCodeAt(0)) & 0xFFFFFFFF;
+      return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];
+    }
+    function avatarInitials(name) {
+      const p = (name||'').trim().split(/\s+/);
+      return p.length>=2 ? (p[0][0]+p[p.length-1][0]).toUpperCase() : (name||'??').slice(0,2).toUpperCase();
+    }
+    function avatarHtml(name, size=40) {
+      return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${avatarColor(name)};display:flex;align-items:center;justify-content:center;font-size:${Math.round(size*0.35)}px;font-weight:700;color:white;flex-shrink:0;">${avatarInitials(name)}</div>`;
+    }
+
+    // ── Language ──────────────────────────────────────────────────────
     let lang = localStorage.getItem('bitesync_lang') || 'en';
 
     const ADM = {
@@ -436,7 +676,7 @@
         back: '← My Order', sessions: 'Sessions', orders: 'Orders',
         members: 'Members', restaurants: 'Restaurants',
         noSession: 'No active session', noSessionSub: 'No open or closed sessions right now.',
-        pending: 'Pending Approval', active: 'Active Members', myProfile: 'My Profile',
+        pending: 'Pending approvals', active: 'Team', myProfile: 'My Profile',
         pastLabel: 'Past Sessions', noOrders: 'No orders yet.',
         splitFirst: 'Split delivery fee before marking paid',
         markPaid: 'Mark Paid', unmark: 'Unmark', markExempt: 'Exempt', markUnpaid: 'Unpaid',
@@ -446,7 +686,7 @@
         back: 'طلبي →', sessions: 'الجلسات', orders: 'الطلبات',
         members: 'الأعضاء', restaurants: 'المطاعم',
         noSession: 'لا توجد جلسة نشطة', noSessionSub: 'لا توجد جلسات مفتوحة أو مغلقة حالياً.',
-        pending: 'في انتظار الموافقة', active: 'الأعضاء النشطون', myProfile: 'ملفي الشخصي',
+        pending: 'في انتظار الموافقة', active: 'الفريق', myProfile: 'ملفي الشخصي',
         pastLabel: 'الجلسات السابقة', noOrders: 'لا توجد طلبات بعد.',
         splitFirst: 'قسّم رسوم التوصيل أولاً قبل تحديد الدفع',
         markPaid: 'تم الدفع', unmark: 'إلغاء', markExempt: 'معفى', markUnpaid: 'لم يدفع',
@@ -466,18 +706,18 @@
       document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
       const btn = document.getElementById('admin-lang-btn');
       if (btn) btn.textContent = lang === 'en' ? 'AR' : 'EN';
-      const back = document.getElementById('hdr-back');
-      if (back) back.textContent = ta('back');
-      // Update tab labels
       const tmap = {sessions:'sessions',orders:'orders',members:'members',restaurants:'restaurants'};
       for (const [tab, key] of Object.entries(tmap)) {
         const el = document.getElementById(`tab-btn-${tab}`);
-        if (el) el.textContent = ta(key);
+        if (el) {
+          const icon = el.querySelector('.tab-icon');
+          const iconText = icon ? icon.outerHTML : '';
+          el.innerHTML = iconText + ta(key);
+        }
       }
-      const el = id => document.getElementById(id);
-      if (el('lbl-my-profile')) el('lbl-my-profile').textContent = ta('myProfile');
-      if (el('lbl-pending-label')) el('lbl-pending-label').textContent = ta('pending');
-      if (el('lbl-active-label')) el('lbl-active-label').textContent = ta('active');
+      const e = id => document.getElementById(id);
+      if (e('lbl-pending-label')) e('lbl-pending-label').textContent = ta('pending');
+      if (e('lbl-active-label')) e('lbl-active-label').textContent = ta('active');
     }
 
     applyLang();
@@ -496,6 +736,18 @@
 
       adminMember = data;
       groupId     = data.group_id;
+
+      // Fetch group info
+      const { data: grpData } = await supabase
+        .from('bitesync_groups')
+        .select('name, location')
+        .eq('id', groupId)
+        .single();
+      const locationText = [grpData?.name, grpData?.location].filter(Boolean).join(' — ');
+      const locSub = document.getElementById('sessions-location-sub');
+      if (locSub) locSub.textContent = locationText || '';
+      const membSub = document.getElementById('members-location-sub');
+      if (membSub) membSub.textContent = locationText || 'Your team';
 
       document.getElementById('loading-overlay').classList.add('hidden');
       document.getElementById('admin-shell').style.display = 'block';
@@ -520,27 +772,24 @@
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
-        document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === `tab-${btn.dataset.tab}`));
+        document.querySelectorAll('.admin-tab').forEach(p => p.classList.toggle('active', p.id === `screen-${btn.dataset.tab}`));
         ({ members: loadMembers, restaurants: loadRestaurants, sessions: loadSessions, orders: loadOrdersTab })[btn.dataset.tab]?.();
       });
     });
 
-    // ── Cairo TZ helpers (BUG 3) ──────────────────────────────────────
+    // ── Cairo TZ helpers ──────────────────────────────────────────────
     function todayCairo() {
       return new Date().toLocaleDateString('sv-SE', { timeZone: 'Africa/Cairo' });
     }
     function dateCairo(iso) {
       return new Date(iso).toLocaleDateString('sv-SE', { timeZone: 'Africa/Cairo' });
     }
-
-    // BUG 3: Fixed toInputDatetime uses Cairo TZ explicitly
     function toInputDatetime(iso) {
       if (!iso) return '';
       const s = new Date(iso).toLocaleString('sv-SE', { timeZone: 'Africa/Cairo' });
       return s.slice(0, 16).replace(' ', 'T');
     }
 
-    // BUG 6: Auto-fill label when deadline changes
     window.autoFillLabel = (deadlineValue, targetLabelId) => {
       if (!deadlineValue) return;
       const el = document.getElementById(targetLabelId);
@@ -567,17 +816,27 @@
     }
 
     function renderPending(list) {
-      const el = document.getElementById('pending-list');
+      const section = document.getElementById('pending-section');
+      const el      = document.getElementById('pending-list');
+      const badge   = document.getElementById('pending-badge');
+
       if (!list.length) {
-        el.innerHTML = '<div class="card"><div class="card-sub" style="text-align:center;padding:4px 0;">No pending requests 🎉</div></div>';
+        section.style.display = 'none';
         return;
       }
+      section.style.display = 'flex';
+      badge.style.display = 'inline-flex';
+      badge.textContent = list.length + ' NEW';
+
       el.innerHTML = list.map(m => `
-        <div class="card" style="gap:10px;">
-          <div>
-            <div class="member-name">${x(m.full_name)}</div>
-            <div class="member-detail">📞 ${x(m.phone_number)}</div>
-            <div class="member-detail">Requested ${ago(m.joined_at)}</div>
+        <div class="card" style="gap:12px;padding:16px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            ${avatarHtml(m.full_name, 40)}
+            <div class="member-info">
+              <div class="member-name">${x(m.full_name)}</div>
+              <div class="member-detail">📞 ${x(m.phone_number)}</div>
+              <div class="member-detail">${ago(m.joined_at)}</div>
+            </div>
           </div>
           <div style="display:flex;gap:8px;">
             <button class="btn btn-success btn-sm" onclick="approve('${m.id}')">✓ Approve</button>
@@ -588,15 +847,20 @@
 
     function renderActive(list) {
       const el = document.getElementById('active-list');
+      const countEl = document.getElementById('active-count');
+      if (countEl) countEl.textContent = `${list.length} members`;
       if (!list.length) { el.innerHTML = '<div class="empty" style="padding:16px 0;">No active members yet.</div>'; return; }
       el.innerHTML = list.map(m => `
         <div class="member-row">
+          ${avatarHtml(m.full_name, 40)}
           <div class="member-info">
-            <div class="member-name">${x(m.full_name)}${m.is_admin ? ' <span class="badge badge-admin">Admin</span>' : ''}</div>
-            <div class="member-detail">📞 ${x(m.phone_number)}</div>
-            ${m.instapay_number ? `<div class="member-detail">💳 ${x(m.instapay_number)}</div>` : ''}
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+              <span class="member-name">${x(m.full_name)}</span>
+              ${m.is_admin ? '<span class="badge badge-admin">Admin</span>' : ''}
+            </div>
+            <div class="member-detail" style="color:var(--text-muted);font-size:12px;">Tap to view contact</div>
           </div>
-          ${m.id === adminMember.id ? `<button class="btn btn-ghost btn-sm" style="font-size:12px;min-height:32px;" onclick="editMyProfile()">✏ Edit</button>` : ''}
+          ${m.id === adminMember.id ? `<button class="btn btn-ghost btn-sm" style="font-size:11px;" onclick="editMyProfile()">✏ Edit</button>` : ''}
         </div>`).join('');
     }
 
@@ -639,7 +903,7 @@
     // Jump to orders tab from sessions
     window.viewOrders = async (sessionId) => {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === 'orders'));
-      document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-orders'));
+      document.querySelectorAll('.admin-tab').forEach(p => p.classList.toggle('active', p.id === 'screen-orders'));
       await loadOrders(sessionId);
     };
 
@@ -651,13 +915,13 @@
     document.getElementById('btn-toggle-rest').addEventListener('click', () => {
       restFormOpen = !restFormOpen;
       document.getElementById('form-add-rest').classList.toggle('open', restFormOpen);
-      document.getElementById('btn-toggle-rest').textContent = restFormOpen ? '✕' : '+ Add';
+      document.getElementById('btn-toggle-rest').textContent = restFormOpen ? '✕ Cancel' : '+ Add Restaurant';
     });
 
     document.getElementById('btn-cancel-rest').addEventListener('click', () => {
       restFormOpen = false;
       document.getElementById('form-add-rest').classList.remove('open');
-      document.getElementById('btn-toggle-rest').textContent = '+ Add';
+      document.getElementById('btn-toggle-rest').textContent = '+ Add Restaurant';
       ['rest-name','rest-phones','rest-notes'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('rest-error').style.display = 'none';
     });
@@ -691,16 +955,20 @@
       for (const r of data) {
         const card = document.createElement('div');
         card.className = 'card';
+        card.style.gap = '0';
         card.innerHTML = `
-          <div class="card-header">
-            <div style="min-width:0;">
-              <div class="card-title">${x(r.name)}</div>
-              ${r.phones?.length ? `<div class="card-sub">${r.phones.map(x).join(' · ')}</div>` : ''}
-              ${r.notes ? `<div class="card-sub">${x(r.notes)}</div>` : ''}
+          <div style="display:flex;align-items:center;gap:12px;padding:2px 0;">
+            <div class="rest-icon">${(r.name||'?')[0].toUpperCase()}</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:16px;font-weight:700;">${x(r.name)}</div>
+              ${r.notes ? `<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${x(r.notes)}</div>` : ''}
             </div>
-            <button class="btn btn-secondary btn-sm" id="menu-btn-${r.id}" onclick="toggleMenu('${r.id}')">▾ Menu</button>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span id="menu-item-count-${r.id}" style="font-size:12px;color:var(--text-muted);">— items</span>
+              <button class="btn btn-ghost btn-sm" id="menu-btn-${r.id}" onclick="toggleMenu('${r.id}')">▾</button>
+            </div>
           </div>
-          <div id="menu-section-${r.id}" style="display:none;flex-direction:column;gap:10px;">
+          <div id="menu-section-${r.id}" style="display:none;flex-direction:column;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
             <div id="menu-items-${r.id}"></div>
             <hr>
             <div class="section-label">Add item</div>
@@ -712,6 +980,13 @@
             <button class="btn btn-primary btn-sm" onclick="addItem('${r.id}')">+ Add Item</button>
           </div>`;
         el.appendChild(card);
+        // Load item count
+        supabase.from('bitesync_menu_items').select('id', { count: 'exact', head: true })
+          .eq('restaurant_id', r.id)
+          .then(({ count }) => {
+            const countEl = document.getElementById(`menu-item-count-${r.id}`);
+            if (countEl) countEl.textContent = `${count || 0} items`;
+          });
       }
     }
 
@@ -719,7 +994,7 @@
       const sec  = document.getElementById(`menu-section-${rid}`);
       const open = sec.style.display !== 'none';
       sec.style.display = open ? 'none' : 'flex';
-      document.getElementById(`menu-btn-${rid}`).textContent = open ? '▾ Menu' : '▴ Hide';
+      document.getElementById(`menu-btn-${rid}`).textContent = open ? '▾' : '▴';
       if (!open) await loadMenuItems(rid);
     };
 
@@ -728,7 +1003,7 @@
       const { data } = await supabase.from('bitesync_menu_items')
         .select('id, name, category, price, is_available').eq('restaurant_id', rid)
         .order('category', { nullsFirst: true }).order('name');
-      if (!data?.length) { el.innerHTML = '<div class="card-sub" style="color:#B09880;">No items yet.</div>'; return; }
+      if (!data?.length) { el.innerHTML = '<div style="font-size:13px;color:var(--text-muted);">No items yet.</div>'; return; }
       el.innerHTML = data.map(item => `
         <div>
           <div class="menu-item-row">
@@ -737,8 +1012,8 @@
               ${item.category ? `<div class="menu-item-cat">${x(item.category)}</div>` : ''}
             </div>
             <div class="menu-item-price">${(+item.price).toFixed(2)} EGP</div>
-            <button class="btn btn-ghost btn-sm" style="min-height:30px;padding:0 8px;" title="Edit" onclick="toggleEditItem('${item.id}')">✏</button>
-            <button class="btn btn-ghost btn-sm" style="min-height:30px;padding:0 8px;color:#E74C3C;" title="Delete" onclick="deleteItem('${item.id}','${rid}')">🗑</button>
+            <button class="btn btn-ghost btn-sm" style="min-height:28px;padding:0 8px;" title="Edit" onclick="toggleEditItem('${item.id}')">✏</button>
+            <button class="btn btn-ghost btn-sm" style="min-height:28px;padding:0 8px;color:#E74C3C;" title="Delete" onclick="deleteItem('${item.id}','${rid}')">🗑</button>
             <button class="toggle ${item.is_available?'on':''}" onclick="toggleAvail('${item.id}',${item.is_available},'${rid}')"></button>
           </div>
           <div id="edit-item-${item.id}" style="display:none;flex-direction:column;gap:8px;padding:6px 0 12px;">
@@ -795,58 +1070,83 @@
     };
 
     // ════════════════════════════════════════════════════════════════
-    // SESSIONS (BUG 8: archive)
+    // SESSIONS
     // ════════════════════════════════════════════════════════════════
-    let sessFormOpen = false;
 
-    document.getElementById('btn-toggle-session').addEventListener('click', async () => {
-      sessFormOpen = !sessFormOpen;
-      document.getElementById('form-new-session').classList.toggle('open', sessFormOpen);
-      document.getElementById('btn-toggle-session').textContent = sessFormOpen ? '✕' : '+ New';
-      if (sessFormOpen) {
-        const sel = document.getElementById('sess-restaurant');
-        sel.innerHTML = '<option value="">Loading…</option>';
-        const [{ data: rests }, { data: lastSess }] = await Promise.all([
-          supabase.from('bitesync_restaurants').select('id,name').eq('created_by_group_id', groupId).order('name'),
-          supabase.from('bitesync_sessions')
-            .select('delivery_address, delivery_address_notes')
-            .eq('group_id', groupId).not('delivery_address', 'is', null)
-            .order('created_at', { ascending: false }).limit(1),
-        ]);
-        sel.innerHTML = '<option value="">Select restaurant…</option>' +
-          (rests||[]).map(r=>`<option value="${r.id}">${x(r.name)}</option>`).join('');
+    // ── New session sub-screen ────────────────────────────────────────
+    document.getElementById('btn-open-new-session').addEventListener('click', openNewSession);
 
-        // Default deadline: tomorrow 09:00 Cairo time
-        const now = new Date();
-        const tomorrowCairo = new Date(now.toLocaleDateString('sv-SE', {timeZone:'Africa/Cairo'}) + 'T09:00:00');
-        tomorrowCairo.setDate(tomorrowCairo.getDate() + 1);
-        document.getElementById('sess-deadline').value = toInputDatetime(tomorrowCairo.toISOString());
+    async function openNewSession() {
+      const sel = document.getElementById('sess-restaurant');
+      sel.innerHTML = '<option value="">Loading…</option>';
+      const [{ data: rests }, { data: lastSess }] = await Promise.all([
+        supabase.from('bitesync_restaurants').select('id,name').eq('created_by_group_id', groupId).order('name'),
+        supabase.from('bitesync_sessions')
+          .select('delivery_address, delivery_address_notes')
+          .eq('group_id', groupId).not('delivery_address', 'is', null)
+          .order('created_at', { ascending: false }).limit(1),
+      ]);
+      sel.innerHTML = '<option value="">Select restaurant…</option>' +
+        (rests||[]).map(r=>`<option value="${r.id}">${x(r.name)}</option>`).join('');
 
-        const labelEl = document.getElementById('sess-label');
-        labelEl.dataset.manuallyEdited = '';
-        autoFillLabel(document.getElementById('sess-deadline').value, 'sess-label');
+      // Default deadline: tomorrow 09:00 Cairo time
+      const now = new Date();
+      const tomorrowCairo = new Date(now.toLocaleDateString('sv-SE', {timeZone:'Africa/Cairo'}) + 'T09:00:00');
+      tomorrowCairo.setDate(tomorrowCairo.getDate() + 1);
+      document.getElementById('sess-deadline').value = toInputDatetime(tomorrowCairo.toISOString());
 
-        if (lastSess?.[0]) {
-          document.getElementById('sess-address').value       = lastSess[0].delivery_address || '';
-          document.getElementById('sess-address-notes').value = lastSess[0].delivery_address_notes || '';
-        }
+      const labelEl = document.getElementById('sess-label');
+      labelEl.dataset.manuallyEdited = '';
+      autoFillLabel(document.getElementById('sess-deadline').value, 'sess-label');
+
+      if (lastSess?.[0]) {
+        document.getElementById('sess-address').value       = lastSess[0].delivery_address || '';
+        document.getElementById('sess-address-notes').value = lastSess[0].delivery_address_notes || '';
       }
-    });
 
-    // Track manual label edits so auto-fill stops overriding
+      document.getElementById('new-session-menu-section').style.display = 'none';
+      document.getElementById('sess-error').style.display = 'none';
+      document.getElementById('screen-new-session').classList.add('visible');
+    }
+
+    window.closeNewSession = () => {
+      document.getElementById('screen-new-session').classList.remove('visible');
+    };
+
+    // Track manual label edits
     document.getElementById('sess-label').addEventListener('input', function() {
       this.dataset.manuallyEdited = '1';
     });
 
-    document.getElementById('btn-cancel-session').addEventListener('click', () => {
-      sessFormOpen = false;
-      document.getElementById('form-new-session').classList.remove('open');
-      document.getElementById('btn-toggle-session').textContent = '+ New';
-      ['sess-label','sess-address','sess-address-notes'].forEach(id => document.getElementById(id).value = '');
-      document.getElementById('sess-restaurant').value = '';
-    });
+    // Preview menu on restaurant change
+    window.onRestaurantChange = async (restId) => {
+      const menuSection = document.getElementById('new-session-menu-section');
+      const menuItems   = document.getElementById('new-session-menu-items');
+      if (!restId) { menuSection.style.display = 'none'; return; }
+      menuSection.style.display = 'flex';
+      menuItems.innerHTML = '<div class="spinner-sm" style="margin:10px auto;"></div>';
 
-    document.getElementById('btn-create-session').addEventListener('click', async () => {
+      const { data } = await supabase.from('bitesync_menu_items')
+        .select('id, name, category, price')
+        .eq('restaurant_id', restId)
+        .eq('is_available', true)
+        .order('category', { nullsFirst: true }).order('name');
+
+      if (!data?.length) {
+        menuItems.innerHTML = '<div class="card-sub" style="color:var(--text-muted);">No available items. Add items in the Restaurants tab first.</div>';
+        return;
+      }
+      menuItems.innerHTML = data.map(item => `
+        <div class="menu-item-row">
+          <div class="menu-item-info">
+            <div class="menu-item-name">${x(item.name)}</div>
+            ${item.category ? `<div class="menu-item-cat">${x(item.category)}</div>` : ''}
+          </div>
+          <div class="menu-item-price">${(+item.price).toFixed(2)} EGP</div>
+        </div>`).join('');
+    };
+
+    window.createNewSession = async () => {
       const errEl        = document.getElementById('sess-error');
       const label        = document.getElementById('sess-label').value.trim();
       const restId       = document.getElementById('sess-restaurant').value;
@@ -860,23 +1160,43 @@
       const btn = document.getElementById('btn-create-session');
       btn.disabled = true; btn.textContent = 'Creating…';
 
-      // BUG 3: save deadline as proper ISO with timezone conversion
-      const { error } = await supabase.from('bitesync_sessions').insert({
+      // Create session as 'open' directly
+      const { data: newSession, error } = await supabase.from('bitesync_sessions').insert({
         group_id:               groupId,
         restaurant_id:          restId,
         label:                  label || null,
-        status:                 'draft',
+        status:                 'open',
         order_deadline:         deadline ? new Date(deadline).toISOString() : null,
         delivery_address:       address || null,
         delivery_address_notes: addressNotes || null,
         created_by:             adminMember.id,
-      });
+      }).select('id').single();
 
-      btn.disabled = false; btn.textContent = 'Create Draft';
+      btn.disabled = false; btn.textContent = 'Open Session for Orders';
+
       if (error) { errEl.textContent = 'Failed. Try again.'; errEl.style.display = 'block'; return; }
-      document.getElementById('btn-cancel-session').click();
+
+      // Auto-add ALL available menu items from restaurant as session_items
+      const { data: menuItems } = await supabase.from('bitesync_menu_items')
+        .select('id, name, category, price')
+        .eq('restaurant_id', restId)
+        .eq('is_available', true);
+
+      if (menuItems?.length) {
+        await supabase.from('bitesync_session_items').insert(
+          menuItems.map(item => ({
+            session_id: newSession.id,
+            menu_item_id: item.id,
+            name: item.name,
+            category: item.category || null,
+            price: item.price,
+          }))
+        );
+      }
+
+      document.getElementById('screen-new-session').classList.remove('visible');
       loadSessions();
-    });
+    };
 
     async function loadSessions() {
       const el = document.getElementById('session-list');
@@ -890,9 +1210,9 @@
 
       if (!data?.length) { el.innerHTML = '<div class="empty">No sessions yet.</div>'; return; }
 
-      const today    = todayCairo();
-      const active   = data.filter(s => dateCairo(s.created_at) >= today && !['settled','cancelled'].includes(s.status));
-      const past     = data.filter(s => !active.includes(s));
+      const today  = todayCairo();
+      const active = data.filter(s => dateCairo(s.created_at) >= today && !['settled','cancelled'].includes(s.status));
+      const past   = data.filter(s => !active.includes(s));
 
       el.innerHTML = '';
       if (!active.length) {
@@ -919,7 +1239,7 @@
         }
       }
 
-      // BUG 8: Past sessions archive section
+      // Past sessions archive
       const archiveSection = document.getElementById('past-sessions-section');
       if (past.length) {
         archiveSection.style.display = 'flex';
@@ -935,7 +1255,7 @@
             <div class="past-session-card" onclick="viewOrders('${s.id}')">
               <div style="min-width:0;">
                 <div style="font-size:14px;font-weight:700;">${x(name)}</div>
-                <div style="font-size:12px;color:#7A5C42;margin-top:2px;">${x(restName)} · ${dateStr}</div>
+                <div style="font-size:12px;color:var(--text-sec);margin-top:2px;">${x(restName)} · ${dateStr}</div>
               </div>
               <span class="badge badge-${s.status}">${s.status}</span>
             </div>`;
@@ -959,40 +1279,81 @@
         ? new Date(s.order_deadline).toLocaleString('en-EG', { dateStyle:'short', timeStyle:'short', timeZone:'Africa/Cairo' })
         : '—';
 
+      const statusSteps = ['draft','open','closed','delivered','settled'];
+      const curIdx = statusSteps.indexOf(s.status);
+
+      const pipelineHtml = `<div class="pipeline">` +
+        statusSteps.map((step, i) => {
+          const cls = i < curIdx ? 'done' : i === curIdx ? 'current' : '';
+          const lineHtml = i < statusSteps.length - 1
+            ? `<div class="pipe-line ${i < curIdx ? 'done' : ''}"></div>`
+            : '';
+          return `<div class="pipeline-step ${cls}"><div class="pipe-dot"></div><span class="pipe-label">${step.charAt(0).toUpperCase() + step.slice(1)}</span></div>${lineHtml}`;
+        }).join('') + `</div>`;
+
       const card = document.createElement('div');
       card.className = 'card';
 
-      const actions = {
-        draft:     `<button class="btn btn-success btn-sm" onclick="openSession('${s.id}')">▶ Open</button>
-                    <button class="btn btn-ghost btn-sm"   onclick="toggleEditSession('${s.id}')">✏ Edit</button>
-                    <button class="btn btn-danger btn-sm"  onclick="cancelSession('${s.id}')">✕ Cancel</button>`,
-        open:      `<button class="btn btn-secondary btn-sm" onclick="viewOrders('${s.id}')">📋 Orders</button>
-                    <button class="btn btn-ghost btn-sm"   onclick="toggleEditSession('${s.id}')">✏ Edit</button>
-                    <button class="btn btn-warning btn-sm" onclick="closeSession('${s.id}')">■ Close</button>
-                    <button class="btn btn-danger btn-sm"  onclick="cancelSession('${s.id}')">✕ Cancel</button>`,
-        closed:    `<button class="btn btn-secondary btn-sm" onclick="viewOrders('${s.id}')">📋 Orders</button>
-                    <button class="btn btn-secondary btn-sm" onclick="reopenSession('${s.id}')">↩ Reopen</button>
-                    <button class="btn btn-primary btn-sm"   onclick="deliverSession('${s.id}')">📦 Mark Delivered</button>
-                    <button class="btn btn-danger btn-sm"    onclick="cancelSession('${s.id}')">✕ Cancel</button>`,
-        delivered: `<button class="btn btn-secondary btn-sm" onclick="viewOrders('${s.id}')">📋 Orders</button>
-                    <button class="btn btn-success btn-sm"   onclick="settleSession('${s.id}')">✓ Settle</button>`,
-        settled: '', cancelled: '',
-      }[s.status] || '';
+      // Context-aware primary action button
+      let primaryAction = '';
+      let secondaryActions = '';
+
+      if (s.status === 'draft') {
+        primaryAction = `<button class="btn btn-primary btn-full" onclick="openSession('${s.id}')">Open Session for Orders</button>`;
+        secondaryActions = `
+          <button class="btn btn-ghost btn-sm" onclick="toggleEditSession('${s.id}')">✏ Edit</button>
+          <button class="btn btn-danger btn-sm"  onclick="cancelSession('${s.id}')">✕ Cancel</button>`;
+      } else if (s.status === 'open') {
+        primaryAction = `<button class="btn btn-warning btn-full" style="background:#E67E22;" onclick="closeSession('${s.id}')">Close &amp; Review Orders →</button>`;
+        secondaryActions = `
+          <button class="btn btn-ghost btn-sm" onclick="toggleEditSession('${s.id}')">✏ Edit</button>
+          <button class="btn btn-ghost btn-sm" onclick="viewOrders('${s.id}')">📋 Orders</button>
+          <button class="btn btn-danger btn-sm"  onclick="cancelSession('${s.id}')">✕ Cancel</button>`;
+      } else if (s.status === 'closed') {
+        primaryAction = `<button class="btn btn-primary btn-full" id="deliver-btn-${s.id}" onclick="deliverSession('${s.id}')">Mark as Delivered</button>`;
+        secondaryActions = `
+          <button class="btn btn-secondary btn-sm" onclick="viewOrders('${s.id}')">📋 Orders</button>
+          <button class="btn btn-ghost btn-sm" onclick="reopenSession('${s.id}')">↩ Reopen</button>
+          <button class="btn btn-danger btn-sm"  onclick="cancelSession('${s.id}')">✕ Cancel</button>`;
+      } else if (s.status === 'delivered') {
+        primaryAction = `<button class="btn btn-secondary btn-full" onclick="openPayments('${s.id}')">→ Payments</button>`;
+        secondaryActions = `<button class="btn btn-ghost btn-sm" onclick="viewOrders('${s.id}')">📋 Orders</button>`;
+      }
 
       card.innerHTML = `
-        <div class="card-header">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
           <div style="min-width:0;">
-            <div class="card-title">${x(name)}</div>
-            <div class="card-sub">${x(restName)} · Deadline: ${deadline}</div>
-            ${s.delivery_address ? `<div class="card-sub">📍 ${x(s.delivery_address)}${s.delivery_address_notes ? ` — ${x(s.delivery_address_notes)}` : ''}</div>` : ''}
-            ${s.delivery_fee ? `<div class="card-sub">Delivery fee: ${(+s.delivery_fee).toFixed(2)} EGP</div>` : ''}
+            <div style="font-size:18px;font-weight:800;letter-spacing:-0.3px;">${x(name)}</div>
+            <div style="font-size:13px;color:var(--text-sec);margin-top:2px;">${x(restName)} · #${s.id.slice(-4).toUpperCase()}</div>
           </div>
           <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-            <span class="badge badge-${s.status}">${s.status}</span>
+            <span class="badge badge-${s.status}">${s.status.toUpperCase()}</span>
             ${s.status === 'open' ? `<span id="order-count-${s.id}" class="badge badge-active">…</span>` : ''}
           </div>
         </div>
-        ${actions ? `<div id="actions-${s.id}" style="display:flex;gap:8px;flex-wrap:wrap;">${actions}</div>` : ''}
+
+        ${pipelineHtml}
+
+        <div class="stats-row">
+          <div class="stat-item">
+            <div class="stat-val" id="stat-ordered-${s.id}">—</div>
+            <div class="stat-label">Ordered</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-val">—</div>
+            <div class="stat-label">Items</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-val">${deadline}</div>
+            <div class="stat-label">Deadline</div>
+          </div>
+        </div>
+
+        <div id="actions-${s.id}" style="display:flex;flex-direction:column;gap:8px;">
+          ${primaryAction}
+          ${secondaryActions ? `<div style="display:flex;gap:8px;flex-wrap:wrap;">${secondaryActions}</div>` : ''}
+        </div>
+
         ${['draft','open'].includes(s.status) ? `
           <div id="edit-session-${s.id}" style="display:none;flex-direction:column;gap:10px;">
             <hr>
@@ -1012,6 +1373,7 @@
             </div>
           </div>
         ` : ''}
+
         ${s.status === 'draft' ? `
           <hr>
           <div class="section-label">Menu items for this session</div>
@@ -1019,11 +1381,19 @@
           <div id="sitems-${s.id}"><div class="spinner" style="width:24px;height:24px;border-width:2px;margin:10px auto;"></div></div>
         ` : ''}`;
 
+      // Load stats
+      supabase.from('bitesync_orders').select('id', { count: 'exact', head: true }).eq('session_id', s.id)
+        .then(({ count }) => {
+          const el = document.getElementById(`stat-ordered-${s.id}`);
+          if (el) el.textContent = count ?? '—';
+        });
+
       return card;
     }
 
     async function loadSessionItemPicker(sessionId, restaurantId) {
       const el = document.getElementById(`sitems-${sessionId}`);
+      if (!el) return;
       const [{ data: items }, { data: existing }] = await Promise.all([
         supabase.from('bitesync_menu_items')
           .select('id, name, category, price').eq('restaurant_id', restaurantId)
@@ -1031,7 +1401,7 @@
         supabase.from('bitesync_session_items').select('menu_item_id').eq('session_id', sessionId),
       ]);
       if (!items?.length) {
-        el.innerHTML = '<div class="card-sub" style="color:#B09880;">No available items — add some in Restaurants tab first.</div>';
+        el.innerHTML = '<div class="card-sub" style="color:var(--text-muted);">No available items — add some in Restaurants tab first.</div>';
         return;
       }
       const checked = new Set((existing||[]).map(e => e.menu_item_id));
@@ -1043,7 +1413,7 @@
             ${checked.has(item.id) ? 'checked' : ''}
             onchange="toggleSItem(this)">
           <span class="item-check-label">
-            ${x(item.name)}${item.category ? ` <span style="color:#B09880;font-size:12px;">${x(item.category)}</span>` : ''}
+            ${x(item.name)}${item.category ? ` <span style="color:var(--text-muted);font-size:12px;">${x(item.category)}</span>` : ''}
           </span>
           <span class="item-check-price">${(+item.price).toFixed(2)} EGP</span>
         </label>`).join('');
@@ -1089,11 +1459,13 @@
       const actionsDiv = document.getElementById(`actions-${id}`);
       if (!actionsDiv) return;
       actionsDiv.innerHTML = `
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;width:100%;">
-          <div style="font-size:13px;font-weight:600;color:#7A5C42;flex-basis:100%;">Enter delivery fee (EGP):</div>
-          <input type="number" id="fee-input-${id}" placeholder="0.00" min="0" step="0.01" style="width:130px;" />
-          <button class="btn btn-primary btn-sm" onclick="confirmDeliver('${id}')">✓ Confirm Delivery</button>
-          <button class="btn btn-ghost btn-sm" onclick="loadSessions()">Cancel</button>
+        <div style="display:flex;flex-direction:column;gap:8px;width:100%;">
+          <div style="font-size:13px;font-weight:600;color:var(--text-sec);">Enter delivery fee (EGP):</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="number" id="fee-input-${id}" placeholder="0.00" min="0" step="0.01" style="flex:1;" />
+            <button class="btn btn-primary btn-sm" onclick="confirmDeliver('${id}')">✓ Confirm</button>
+            <button class="btn btn-ghost btn-sm" onclick="loadSessions()">Cancel</button>
+          </div>
         </div>`;
       document.getElementById(`fee-input-${id}`)?.focus();
     };
@@ -1117,14 +1489,12 @@
       el.style.display = el.style.display === 'none' ? 'flex' : 'none';
     };
 
-    // BUG 3 + BUG 6: saveSession with proper ISO deadline + label auto-update
     window.saveSession = async (id) => {
       const label        = document.getElementById(`es-label-${id}`).value.trim();
       const deadline     = document.getElementById(`es-deadline-${id}`).value;
       const address      = document.getElementById(`es-address-${id}`).value.trim();
       const addressNotes = document.getElementById(`es-address-notes-${id}`).value.trim();
 
-      // BUG 6: auto-generate label from deadline if label is empty
       let finalLabel = label;
       if (!finalLabel && deadline) {
         finalLabel = new Date(deadline).toLocaleDateString('en-EG', {
@@ -1134,7 +1504,6 @@
 
       await supabase.from('bitesync_sessions').update({
         label:                  finalLabel || null,
-        // BUG 3: convert datetime-local (treated as local time) to UTC ISO
         order_deadline:         deadline ? new Date(deadline).toISOString() : null,
         delivery_address:       address || null,
         delivery_address_notes: addressNotes || null,
@@ -1142,10 +1511,155 @@
       loadSessions();
     };
 
+    // ── Payments sub-screen ───────────────────────────────────────────
+    window.openPayments = async (sessionId) => {
+      paymentsSessionId = sessionId;
+      document.getElementById('screen-payments').classList.add('visible');
+      await loadPayments(sessionId);
+    };
+
+    window.closePayments = () => {
+      document.getElementById('screen-payments').classList.remove('visible');
+      paymentsSessionId = null;
+    };
+
+    async function loadPayments(sessionId) {
+      const el = document.getElementById('payments-content');
+      el.innerHTML = '<div class="spinner"></div>';
+
+      const [{ data: session }, { data: orders }] = await Promise.all([
+        supabase.from('bitesync_sessions')
+          .select('delivery_fee, status, label, bitesync_restaurants(name)')
+          .eq('id', sessionId).single(),
+        supabase.from('bitesync_orders')
+          .select(`id, member_id, excluded_from_delivery, items_subtotal, delivery_share, final_total, paid_status,
+            bitesync_members(full_name),
+            bitesync_order_items(id, quantity, unit_price, line_total, item_notes, bitesync_session_items(name))`)
+          .eq('session_id', sessionId).order('submitted_at'),
+      ]);
+
+      const restName = session?.bitesync_restaurants?.name || '';
+      document.getElementById('payments-rest-name').textContent = restName;
+
+      if (!orders?.length) {
+        el.innerHTML = '<div class="empty">No orders yet.</div>';
+        return;
+      }
+
+      const fee = +(session?.delivery_fee || 0);
+      const anyHasDeliveryShare = orders.some(o => +(o.delivery_share || 0) > 0);
+      const feeSplitDone = fee <= 0 || anyHasDeliveryShare;
+
+      const collected    = orders.filter(o => o.paid_status === 'paid').reduce((s, o) => s + +(o.final_total || 0), 0);
+      const outstanding  = orders.filter(o => o.paid_status !== 'paid' && o.paid_status !== 'exempt').reduce((s, o) => s + +(o.final_total || 0), 0);
+
+      let html = `
+        <div class="card payments-fee-card">
+          <div class="field-label">Delivery fee (split across members)</div>
+          <input type="number" id="pay-fee-input" class="fee-input-large" value="${fee > 0 ? fee.toFixed(2) : ''}" placeholder="0.00" min="0" step="0.01"
+            onblur="saveDeliveryFee('${sessionId}', this.value)">
+          <div class="fee-totals-row">
+            <div class="fee-total-box fee-collected">
+              <div class="fee-total-val" id="pay-collected">${collected.toFixed(2)} EGP</div>
+              <div class="fee-total-label">Collected</div>
+            </div>
+            <div class="fee-total-box fee-outstanding">
+              <div class="fee-total-val" id="pay-outstanding">${outstanding.toFixed(2)} EGP</div>
+              <div class="fee-total-label">Outstanding</div>
+            </div>
+          </div>
+        </div>`;
+
+      for (const o of orders) {
+        const name     = o.bitesync_members?.full_name || 'Unknown';
+        const subtotal = +(o.items_subtotal || 0);
+        const delivery = +(o.delivery_share  || 0);
+        const total    = +(o.final_total     || 0);
+
+        const disabled = (fee > 0 && !feeSplitDone) ? `disabled title="${ta('splitFirst')}"` : '';
+
+        html += `
+          <div class="card" style="gap:10px;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              ${avatarHtml(name, 40)}
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:15px;font-weight:700;">${x(name)}</div>
+                <div style="font-size:12px;color:var(--text-muted);">
+                  ${subtotal.toFixed(2)} EGP items${delivery > 0 ? ` + ${delivery.toFixed(2)} EGP delivery` : ''}
+                </div>
+              </div>
+              <div style="font-size:16px;font-weight:800;">${total.toFixed(2)} EGP</div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+              <div class="pay-seg">
+                <button class="${o.paid_status==='unpaid'?'active-unpaid':''}" ${disabled}
+                  onclick="setPaidStatus('${o.id}','unpaid','${sessionId}',true)">Unpaid</button>
+                <button class="${o.paid_status==='paid'?'active-paid':''}" ${disabled}
+                  onclick="setPaidStatus('${o.id}','paid','${sessionId}',true)">Paid</button>
+                <button class="${o.paid_status==='exempt'?'active-exempt':''}" ${disabled}
+                  onclick="setPaidStatus('${o.id}','exempt','${sessionId}',true)">Exempt</button>
+              </div>
+              ${!feeSplitDone && fee > 0 ? `
+                <button class="btn btn-primary btn-sm" onclick="splitDeliveryFromPayments('${sessionId}', ${fee})">Split Fee</button>
+              ` : (anyHasDeliveryShare ? `<button class="btn btn-ghost btn-sm" onclick="splitDeliveryFromPayments('${sessionId}', ${fee})">Re-split</button>` : '')}
+            </div>
+          </div>`;
+      }
+
+      el.innerHTML = html;
+    }
+
+    window.saveDeliveryFee = async (sessionId, feeVal) => {
+      const fee = parseFloat(feeVal) || 0;
+      await supabase.from('bitesync_sessions').update({
+        delivery_fee: fee > 0 ? fee : null,
+      }).eq('id', sessionId);
+      // Reload payments
+      await loadPayments(sessionId);
+    };
+
+    window.splitDeliveryFromPayments = async (sessionId, fee) => {
+      const { data: orders } = await supabase
+        .from('bitesync_orders').select('id, items_subtotal, excluded_from_delivery, paid_status')
+        .eq('session_id', sessionId);
+
+      if (!orders?.length) return;
+
+      const paidOrders = orders.filter(o => o.paid_status === 'paid');
+      if (paidOrders.length > 0) {
+        const ok = confirm(`${paidOrders.length} order${paidOrders.length !== 1 ? 's are' : ' is'} already marked as paid.\n\nResplitting will change their totals. Reset all payment marks to unpaid first?`);
+        if (!ok) return;
+        await Promise.all(orders.map(o =>
+          supabase.from('bitesync_orders').update({ paid_status: 'unpaid', paid_at: null }).eq('id', o.id)
+        ));
+      }
+
+      const eligible = orders.filter(o => !o.excluded_from_delivery);
+      const share    = eligible.length > 0 ? Math.round((fee / eligible.length) * 100) / 100 : 0;
+
+      await Promise.all(orders.map(o => {
+        const excl = o.excluded_from_delivery;
+        return supabase.from('bitesync_orders').update({
+          delivery_share: excl ? 0 : share,
+          final_total:    Math.round((+(o.items_subtotal) + (excl ? 0 : share)) * 100) / 100,
+        }).eq('id', o.id);
+      }));
+
+      loadPayments(sessionId);
+    };
+
+    window.settleFromPayments = async () => {
+      if (!paymentsSessionId) return;
+      if (!confirm('Mark this session as settled?')) return;
+      await supabase.from('bitesync_sessions').update({ status: 'settled' }).eq('id', paymentsSessionId);
+      document.getElementById('screen-payments').classList.remove('visible');
+      paymentsSessionId = null;
+      loadSessions();
+    };
+
     // ════════════════════════════════════════════════════════════════
-    // ORDERS (BUG 9: no picker, auto-load active session)
+    // ORDERS
     // ════════════════════════════════════════════════════════════════
-    // BUG 9: auto-load most recent non-settled/non-cancelled session
     async function loadOrdersTab() {
       const el = document.getElementById('orders-content');
       el.innerHTML = '<div class="spinner"></div>';
@@ -1161,6 +1675,7 @@
       if (!data?.length) {
         const lbl = document.getElementById('orders-session-label');
         lbl.classList.remove('visible');
+        document.getElementById('orders-subtitle').textContent = '';
         el.innerHTML = `<div class="empty">${ta('noSession')}</div>`;
         return;
       }
@@ -1190,12 +1705,13 @@
 
       if (error) { el.innerHTML = '<div class="empty">Failed to load orders.</div>'; return; }
 
-      // Update session label at top of orders tab
-      const lbl = document.getElementById('orders-session-label');
-      const sessName = session?.label || `Session`;
+      const lbl      = document.getElementById('orders-session-label');
+      const sessName = session?.label || 'Session';
       const restName = session?.bitesync_restaurants?.name || '';
       lbl.textContent = `${sessName}${restName ? ` · ${restName}` : ''} (${session?.status || ''})`;
       lbl.classList.add('visible');
+
+      document.getElementById('orders-subtitle').textContent = restName;
 
       el.innerHTML = '';
       waSessionData = session;
@@ -1203,7 +1719,7 @@
 
       const isReadOnly = ['settled','cancelled'].includes(session?.status);
 
-      // WhatsApp export
+      // WhatsApp button
       const waCard = document.createElement('div');
       waCard.className = 'card';
       const restPhone = session?.bitesync_restaurants?.phones?.[0];
@@ -1211,7 +1727,7 @@
         <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
           <div>
             <div style="font-weight:700;font-size:15px;">📲 Send to Restaurant</div>
-            <div style="font-size:12px;color:#7A5C42;margin-top:3px;">${restPhone ? `Will open WhatsApp to ${x(restPhone)}` : 'No restaurant phone — message copied to clipboard'}</div>
+            <div style="font-size:12px;color:var(--text-sec);margin-top:3px;">${restPhone ? `Will open WhatsApp to ${x(restPhone)}` : 'No restaurant phone — message copied to clipboard'}</div>
           </div>
           <button class="btn btn-success btn-sm" onclick="exportWhatsApp()">Send via WA</button>
         </div>`;
@@ -1224,10 +1740,41 @@
         el.appendChild(empty);
       } else {
         const fee = +(session?.delivery_fee || 0);
-
-        // BUG 7: check if split has been done
         const anyHasDeliveryShare = orders.some(o => +(o.delivery_share || 0) > 0);
         const feeSplitDone = fee <= 0 || anyHasDeliveryShare;
+
+        // Consolidated item view
+        const itemMap = new Map();
+        const membersByItem = new Map();
+        for (const o of orders) {
+          const memberName = o.bitesync_members?.full_name || 'Unknown';
+          for (const oi of o.bitesync_order_items || []) {
+            const iname = oi.bitesync_session_items?.name || '?';
+            if (!itemMap.has(iname)) { itemMap.set(iname, 0); membersByItem.set(iname, []); }
+            itemMap.set(iname, itemMap.get(iname) + oi.quantity);
+            membersByItem.get(iname).push(memberName);
+          }
+        }
+
+        if (itemMap.size > 0) {
+          const consolidatedCard = document.createElement('div');
+          consolidatedCard.className = 'card';
+          consolidatedCard.innerHTML = `<div style="font-weight:700;font-size:15px;margin-bottom:4px;">${itemMap.size} item type${itemMap.size !== 1 ? 's' : ''}</div>` +
+            [...itemMap.entries()].map(([iname, qty]) => {
+              const members = membersByItem.get(iname) || [];
+              return `
+                <div class="consolidated-item">
+                  <div class="consolidated-item-info">
+                    <div class="consolidated-item-name">${x(iname)}</div>
+                    <div class="avatars-row" style="margin-top:4px;">
+                      ${members.map(m => avatarHtml(m, 24)).join('')}
+                    </div>
+                  </div>
+                  <span class="consolidated-qty">×${qty}</span>
+                </div>`;
+            }).join('');
+          el.appendChild(consolidatedCard);
+        }
 
         // Delivery fee split card
         if (fee > 0 && !isReadOnly) {
@@ -1240,8 +1787,8 @@
             <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
               <div>
                 <div style="font-weight:700;">Delivery Fee: ${fee.toFixed(2)} EGP</div>
-                <div style="font-size:13px;color:#7A5C42;">÷ ${includedCount} order${includedCount!==1?'s':''} = ${perPerson.toFixed(2)} EGP each${excludedCount > 0 ? ` · ${excludedCount} excluded` : ''}</div>
-                ${anyHasDeliveryShare ? '<div style="font-size:12px;color:#27AE60;margin-top:4px;">✓ Already split</div>' : '<div style="font-size:12px;color:#E67E22;margin-top:4px;">⚠ Not yet split — split before marking paid</div>'}
+                <div style="font-size:13px;color:var(--text-sec);">÷ ${includedCount} order${includedCount!==1?'s':''} = ${perPerson.toFixed(2)} EGP each${excludedCount > 0 ? ` · ${excludedCount} excluded` : ''}</div>
+                ${anyHasDeliveryShare ? '<div style="font-size:12px;color:var(--success);margin-top:4px;">✓ Already split</div>' : '<div style="font-size:12px;color:#E67E22;margin-top:4px;">⚠ Not yet split</div>'}
               </div>
               <button class="btn btn-primary btn-sm" id="btn-split-delivery" onclick="splitDelivery('${sessionId}', ${fee})">
                 ${anyHasDeliveryShare ? 'Re-split' : 'Split Now'}
@@ -1249,6 +1796,18 @@
             </div>`;
           el.appendChild(splitCard);
         }
+
+        // Ordered section
+        const orderedMembersCard = document.createElement('div');
+        orderedMembersCard.className = 'card';
+        orderedMembersCard.innerHTML = `
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px;">
+            <span style="font-weight:700;">Ordered (${orders.length})</span>
+          </div>
+          <div class="avatars-row">
+            ${orders.map(o => avatarHtml(o.bitesync_members?.full_name || 'Unknown', 40)).join('')}
+          </div>`;
+        el.appendChild(orderedMembersCard);
 
         let grandTotal = 0;
 
@@ -1268,34 +1827,36 @@
               <div class="order-line">
                 <div class="order-line-name">
                   <span class="order-line-qty">${oi.quantity}×</span>${x(iname)}
-                  ${icat ? `<span style="color:#B09880;font-size:12px;"> ${x(icat)}</span>` : ''}
-                  ${oi.item_notes ? `<div style="font-size:12px;color:#7A5C42;margin-inline-start:18px;">↳ ${x(oi.item_notes)}</div>` : ''}
+                  ${icat ? `<span style="color:var(--text-muted);font-size:12px;"> ${x(icat)}</span>` : ''}
+                  ${oi.item_notes ? `<div style="font-size:12px;color:var(--text-sec);margin-inline-start:18px;">↳ ${x(oi.item_notes)}</div>` : ''}
                 </div>
                 <div style="font-weight:600;white-space:nowrap;">${(+oi.line_total).toFixed(2)} EGP</div>
               </div>`;
           }).join('');
 
-          // BUG 7: payment controls — 3-way segmented control, disabled until fee is split
           const payControls = isReadOnly ? `<span class="badge badge-${o.paid_status}">${o.paid_status}</span>` : (() => {
-            const disabled = (fee > 0 && !feeSplitDone) ? 'disabled title="' + ta('splitFirst') + '"' : '';
+            const disabled = (fee > 0 && !feeSplitDone) ? `disabled title="${ta('splitFirst')}"` : '';
             return `
               <div class="pay-seg">
                 <button class="${o.paid_status==='unpaid'?'active-unpaid':''}" ${disabled}
-                  onclick="setPaidStatus('${o.id}','unpaid','${sessionId}')">Unpaid</button>
+                  onclick="setPaidStatus('${o.id}','unpaid','${sessionId}',false)">Unpaid</button>
                 <button class="${o.paid_status==='paid'?'active-paid':''}" ${disabled}
-                  onclick="setPaidStatus('${o.id}','paid','${sessionId}')">Paid</button>
+                  onclick="setPaidStatus('${o.id}','paid','${sessionId}',false)">Paid</button>
                 <button class="${o.paid_status==='exempt'?'active-exempt':''}" ${disabled}
-                  onclick="setPaidStatus('${o.id}','exempt','${sessionId}')">Exempt</button>
+                  onclick="setPaidStatus('${o.id}','exempt','${sessionId}',false)">Exempt</button>
               </div>`;
           })();
 
           card.innerHTML = `
-            <div class="card-header">
-              <div class="card-title">${x(name)}</div>
+            <div style="display:flex;align-items:center;gap:12px;">
+              ${avatarHtml(name, 40)}
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:15px;font-weight:700;">${x(name)}</div>
+              </div>
               <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
                 ${payControls}
                 ${!isReadOnly ? `
-                <button class="btn btn-sm btn-ghost" style="font-size:12px;min-height:30px;padding:0 9px;${o.excluded_from_delivery?'color:#E67E22;font-weight:700;':''}"
+                <button class="btn btn-sm btn-ghost" style="font-size:11px;min-height:28px;padding:0 8px;${o.excluded_from_delivery?'color:#E67E22;font-weight:700;':''}"
                   onclick="toggleExclude('${o.id}',${o.excluded_from_delivery},'${sessionId}')"
                   title="${o.excluded_from_delivery?'Excluded from delivery split':'Include in delivery split'}">
                   ${o.excluded_from_delivery ? '🚫 Excl' : '÷ Split'}
@@ -1303,73 +1864,77 @@
               </div>
             </div>
             ${lines}
-            ${o.order_notes ? `<div style="font-size:13px;color:#7A5C42;margin-top:4px;">📝 ${x(o.order_notes)}</div>` : ''}
+            ${o.order_notes ? `<div style="font-size:13px;color:var(--text-sec);margin-top:4px;">📝 ${x(o.order_notes)}</div>` : ''}
             <div class="order-total"><span>Subtotal</span><span>${(+o.items_subtotal).toFixed(2)} EGP</span></div>
             ${o.excluded_from_delivery
-              ? `<div style="font-size:12px;color:#B09880;padding-top:4px;font-style:italic;">Not included in delivery split</div>`
-              : o.delivery_share ? `<div class="order-line" style="color:#7A5C42;font-size:13px;padding-top:4px;"><span>Delivery share</span><span>${(+o.delivery_share).toFixed(2)} EGP</span></div>` : ''}
-            <div style="display:flex;justify-content:space-between;font-weight:800;font-size:16px;color:#E07856;margin-top:4px;">
+              ? `<div style="font-size:12px;color:var(--text-muted);padding-top:4px;font-style:italic;">Not included in delivery split</div>`
+              : o.delivery_share ? `<div class="order-line" style="color:var(--text-sec);font-size:13px;padding-top:4px;"><span>Delivery share</span><span>${(+o.delivery_share).toFixed(2)} EGP</span></div>` : ''}
+            <div style="display:flex;justify-content:space-between;font-weight:800;font-size:16px;color:var(--primary);margin-top:4px;">
               <span>Total</span><span>${total.toFixed(2)} EGP</span>
             </div>`;
 
           el.appendChild(card);
         }
 
+        // Summary card
         const summary = document.createElement('div');
         summary.className = 'card';
         const unpaidCount = orders.filter(o => o.paid_status === 'unpaid').length;
         summary.innerHTML = `
           <div style="display:flex;justify-content:space-between;font-weight:800;font-size:17px;">
             <span>Session Total</span>
-            <span style="color:#E07856;">${grandTotal.toFixed(2)} EGP</span>
+            <span style="color:var(--primary);">${grandTotal.toFixed(2)} EGP</span>
           </div>
-          <div style="font-size:13px;color:#7A5C42;">${orders.length} order${orders.length!==1?'s':''}</div>
+          <div style="font-size:13px;color:var(--text-sec);">${orders.length} order${orders.length!==1?'s':''}</div>
           ${(!isReadOnly && unpaidCount > 0) ? `<button class="btn btn-success btn-sm btn-full" onclick="markAllPaid('${sessionId}')">✓ Mark All ${unpaidCount} Paid</button>` : ''}`;
         el.appendChild(summary);
 
+        // Not yet ordered
         if (allMembers?.length) {
           const orderedIds = new Set(orders.map(o => o.member_id));
-          const notYet = allMembers.filter(m => !orderedIds.has(m.id));
+          const notYet     = allMembers.filter(m => !orderedIds.has(m.id));
           if (notYet.length) {
             const nyCard = document.createElement('div');
             nyCard.className = 'card';
             nyCard.innerHTML = `
-              <div style="font-weight:700;font-size:15px;color:#E07856;">⏳ Haven't ordered yet (${notYet.length})</div>
-              ${notYet.map(m => `<div style="font-size:14px;padding:3px 0;color:#7A5C42;">${x(m.full_name)}</div>`).join('')}`;
+              <div style="font-weight:700;font-size:15px;margin-bottom:4px;">Haven't ordered yet (${notYet.length})</div>
+              ${notYet.map(m => `
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0;">
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    ${avatarHtml(m.full_name, 36)}
+                    <span style="font-size:14px;">${x(m.full_name)}</span>
+                  </div>
+                  <button class="btn btn-secondary btn-sm" style="min-height:30px;font-size:11px;opacity:.6;" disabled>Remind</button>
+                </div>`).join('')}`;
             el.appendChild(nyCard);
           }
         }
       }
     }
 
-    // BUG 7: 3-way payment status setter
-    window.setPaidStatus = async (orderId, newStatus, sessionId) => {
+    // Payment status setters
+    window.setPaidStatus = async (orderId, newStatus, sessionId, fromPayments) => {
       const upd = { paid_status: newStatus };
       if (newStatus === 'paid') upd.paid_at = new Date().toISOString();
       await supabase.from('bitesync_orders').update(upd).eq('id', orderId);
-      loadOrders(sessionId);
+      if (fromPayments) loadPayments(sessionId);
+      else loadOrders(sessionId);
     };
 
-    // BUG 7: splitDelivery warns if any orders are paid, then resets before splitting
     window.splitDelivery = async (sessionId, fee) => {
       const btn = document.getElementById('btn-split-delivery');
-      btn.disabled = true; btn.textContent = 'Checking…';
+      if (btn) { btn.disabled = true; btn.textContent = 'Checking…'; }
 
       const { data: orders } = await supabase
         .from('bitesync_orders').select('id, items_subtotal, excluded_from_delivery, paid_status')
         .eq('session_id', sessionId);
 
-      if (!orders?.length) { btn.disabled = false; return; }
+      if (!orders?.length) { if (btn) btn.disabled = false; return; }
 
-      // BUG 7: warn if any paid orders will have their totals changed
       const paidOrders = orders.filter(o => o.paid_status === 'paid');
       if (paidOrders.length > 0) {
-        const ok = confirm(
-          `${paidOrders.length} order${paidOrders.length !== 1 ? 's are' : ' is'} already marked as paid.\n\n` +
-          `Resplitting will change their totals. Reset all payment marks to unpaid first?`
-        );
-        if (!ok) { btn.disabled = false; btn.textContent = 'Re-split'; return; }
-        // Reset all to unpaid
+        const ok = confirm(`${paidOrders.length} order${paidOrders.length !== 1 ? 's are' : ' is'} already marked as paid.\n\nResplitting will change their totals. Reset all payment marks to unpaid first?`);
+        if (!ok) { if (btn) { btn.disabled = false; btn.textContent = 'Re-split'; } return; }
         await Promise.all(orders.map(o =>
           supabase.from('bitesync_orders').update({ paid_status: 'unpaid', paid_at: null }).eq('id', o.id)
         ));
