@@ -1081,9 +1081,8 @@
         <div class="session-header">
           <div class="session-header-row1">
             <div class="session-rest-name">${x(restName)}</div>
-            <span class="badge-open">OPEN</span>
           </div>
-          <div class="session-sub">${groupName || ''} · Order #${sessionIdShort}</div>
+          <div class="session-sub">Order #${sessionIdShort}</div>
           ${deadline ? `<div class="session-meta" id="deadline-countdown">${countdownDisplay} · ${orderCount} ${t('orderingNow')}</div>` : ''}
         </div>`;
 
@@ -1179,17 +1178,16 @@
       const sessionIdShort = session.id.slice(-4).toUpperCase();
 
       // Session header
-      let headerBadge = status === 'closed'
-        ? `<span class="badge-closed">CLOSED</span>`
-        : `<span class="badge-delivered">DELIVERED</span>`;
+      const deliveredBadge = status === 'delivered'
+        ? `<span class="badge-delivered">DELIVERED</span>` : '';
 
       let html = `
         <div class="session-header">
           <div class="session-header-row1">
             <div class="session-rest-name">${x(restName)}</div>
-            ${headerBadge}
+            ${deliveredBadge}
           </div>
-          <div class="session-sub">${groupName || ''} · Order #${sessionIdShort}</div>
+          <div class="session-sub">Order #${sessionIdShort}</div>
         </div>`;
 
       if (status === 'closed') {
@@ -1229,18 +1227,17 @@
 
         html += `
           <div class="card" style="gap:10px;">
-            <div class="summary-label">${t('finalBreakdown')}</div>
             ${items.map(oi => `
               <div class="summary-item">
                 <span class="summary-item-name">${oi.quantity}× ${x(oi.bitesync_session_items?.name || '—')}</span>
                 <span class="summary-item-price">${(+oi.line_total).toFixed(2)} EGP</span>
               </div>
               ${oi.item_notes ? `<div style="font-size:12px;color:var(--text-sec);padding:0 0 4px 12px;">↳ ${x(oi.item_notes)}</div>` : ''}`).join('')}
+            ${delivery > 0 ? `
             <div class="breakdown-row">
               <span>${t('items')}</span>
               <span>${subtotal.toFixed(2)} EGP</span>
             </div>
-            ${delivery > 0 ? `
             <div class="breakdown-row">
               <span>${t('deliveryShareOf').replace('N', '?')}</span>
               <span>${delivery.toFixed(2)} EGP</span>
@@ -1354,9 +1351,8 @@
         <div class="session-header">
           <div class="session-header-row1">
             <div class="session-rest-name">${x(restName)}</div>
-            <span style="background:#E0E7FF;color:#3730A3;border-radius:999px;padding:3px 10px;font-size:11px;font-weight:700;">SETTLED</span>
           </div>
-          <div class="session-sub">${groupName || ''} · Order #${sessionIdShort}</div>
+          <div class="session-sub">Order #${sessionIdShort}</div>
         </div>`;
 
       if (myOrder.paid_status === 'exempt') {
