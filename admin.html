@@ -459,8 +459,6 @@
   <!-- Admin shell -->
   <div id="admin-shell">
 
-    <!-- Persistent back-to-order pill (only shown when navigated from member view) -->
-    <a id="back-to-order-pill" href="index.html" style="display:none;position:fixed;top:12px;left:12px;z-index:201;background:rgba(255,255,255,.92);border:1.5px solid #EDE4DB;border-radius:999px;padding:5px 14px;font-size:13px;font-weight:700;color:#C96442;cursor:pointer;text-decoration:none;backdrop-filter:blur(4px);line-height:1.4;">← My Order</a>
 
     <div class="admin-main">
 
@@ -472,6 +470,7 @@
             <div class="page-subtitle" id="sessions-location-sub">Loading…</div>
           </div>
           <div style="display:flex;gap:8px;align-items:center;">
+            <a href="index.html" class="btn btn-primary btn-sm" style="text-decoration:none;">📝 My Order</a>
             <button class="btn btn-ghost btn-sm btn-icon" onclick="loadSessions()" title="Refresh">↻</button>
           </div>
         </div>
@@ -785,11 +784,6 @@
       document.getElementById('loading-overlay').classList.add('hidden');
       document.getElementById('admin-shell').style.display = 'block';
 
-      // Always show My Order pill for admins
-      const pill = document.getElementById('back-to-order-pill');
-      if (pill) pill.style.display = 'inline-flex';
-      const langBtn = document.getElementById('admin-lang-btn');
-      if (langBtn) langBtn.style.marginInlineStart = 'auto';
 
       if (!adminMember.whatsapp_number || !adminMember.instapay_number) {
         document.getElementById('admin-wa-input').value = adminMember.whatsapp_number || '';
