@@ -522,6 +522,32 @@
           <button class="btn btn-ghost btn-sm" onclick="editMyProfile()">✏ My Profile</button>
         </div>
 
+        <!-- Group delivery address card -->
+        <div class="card" id="group-delivery-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+            <div style="font-weight:700;font-size:15px;">📍 Delivery Address</div>
+            <button class="btn btn-ghost btn-sm" id="btn-edit-delivery" onclick="toggleDeliveryEdit()">✏ Edit</button>
+          </div>
+          <div id="delivery-display">
+            <div id="delivery-addr-display" style="font-size:14px;color:var(--text-sec);">Loading…</div>
+            <div id="delivery-notes-display" style="font-size:13px;color:var(--text-muted);margin-top:2px;"></div>
+          </div>
+          <div id="delivery-edit-form" style="display:none;flex-direction:column;gap:10px;">
+            <div class="field">
+              <span class="field-label">Address</span>
+              <input type="text" id="input-group-addr" placeholder="123 Main St, Floor 5">
+            </div>
+            <div class="field">
+              <span class="field-label">Delivery notes (sent to restaurant)</span>
+              <textarea id="input-group-addr-notes" placeholder="Ring the bell, leave at reception…" style="min-height:60px;"></textarea>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-primary btn-sm" onclick="saveGroupDelivery()">Save</button>
+              <button class="btn btn-ghost btn-sm" onclick="toggleDeliveryEdit()">Cancel</button>
+            </div>
+          </div>
+        </div>
+
         <div id="pending-section" style="display:none;flex-direction:column;gap:8px;">
           <div style="display:flex;align-items:center;gap:8px;">
             <span class="section-label" id="lbl-pending-label">Pending approvals</span>
@@ -817,15 +843,51 @@
     // MEMBERS
     // ════════════════════════════════════════════════════════════════
     async function loadMembers() {
-      const { data } = await supabase
-        .from('bitesync_members')
-        .select('id, full_name, phone_number, whatsapp_number, instapay_number, status, is_admin, joined_at')
-        .eq('group_id', groupId).order('joined_at');
+      const [{ data }, { data: grp }] = await Promise.all([
+        supabase.from('bitesync_members')
+          .select('id, full_name, phone_number, whatsapp_number, instapay_number, status, is_admin, joined_at')
+          .eq('group_id', groupId).order('joined_at'),
+        supabase.from('bitesync_groups')
+          .select('delivery_address, delivery_address_notes')
+          .eq('id', groupId).single(),
+      ]);
+
+      // Render delivery card
+      const addrDisplay  = document.getElementById('delivery-addr-display');
+      const notesDisplay = document.getElementById('delivery-notes-display');
+      const inputAddr    = document.getElementById('input-group-addr');
+      const inputNotes   = document.getElementById('input-group-addr-notes');
+      if (addrDisplay) addrDisplay.textContent = grp?.delivery_address || 'No address set';
+      if (notesDisplay) notesDisplay.textContent = grp?.delivery_address_notes || '';
+      if (inputAddr)  inputAddr.value  = grp?.delivery_address || '';
+      if (inputNotes) inputNotes.value = grp?.delivery_address_notes || '';
 
       if (!data) return;
       renderPending(data.filter(m => m.status === 'pending'));
       renderActive(data.filter(m => m.status === 'active'));
     }
+
+    window.toggleDeliveryEdit = () => {
+      const form    = document.getElementById('delivery-edit-form');
+      const display = document.getElementById('delivery-display');
+      const isEditing = form.style.display !== 'none';
+      form.style.display    = isEditing ? 'none' : 'flex';
+      display.style.display = isEditing ? 'block' : 'none';
+    };
+
+    window.saveGroupDelivery = async () => {
+      const addr  = document.getElementById('input-group-addr').value.trim();
+      const notes = document.getElementById('input-group-addr-notes').value.trim();
+      await supabase.from('bitesync_groups').update({
+        delivery_address:       addr  || null,
+        delivery_address_notes: notes || null,
+      }).eq('id', groupId);
+      const addrDisplay  = document.getElementById('delivery-addr-display');
+      const notesDisplay = document.getElementById('delivery-notes-display');
+      if (addrDisplay)  addrDisplay.textContent  = addr  || 'No address set';
+      if (notesDisplay) notesDisplay.textContent = notes || '';
+      toggleDeliveryEdit();
+    };
 
     function renderPending(list) {
       const section = document.getElementById('pending-section');
@@ -2413,7 +2475,6 @@
       const addrNotes = session?.delivery_address_notes || '';
 
       const itemMap = new Map();
-      const allNotes = [];
       for (const o of orders) {
         for (const oi of o.bitesync_order_items || []) {
           const iname = oi.bitesync_session_items?.name || '?';
@@ -2422,7 +2483,7 @@
           e.qty += oi.quantity;
           if (oi.item_notes) e.notes.push(`${oi.quantity > 1 ? oi.quantity + '× ' : ''}${oi.item_notes}`);
         }
-        if (o.order_notes) allNotes.push(o.order_notes);
+        // order_notes are internal only — not sent to restaurant
       }
 
       const itemLines = [...itemMap.entries()].map(([n, { qty, notes }]) => {
@@ -2435,12 +2496,10 @@
 اكتب رسالة واتساب قصيرة واحترافية لإرسالها إلى مطعم "${restName}" تحتوي على:
 - الطلبات (الأصناف والكميات فقط، بدون ذكر أسماء الأشخاص)
 - عنوان التوصيل (إن وجد)
-- أي ملاحظات عامة
 
 بيانات الطلب:
 ${itemLines}
 ${address ? `عنوان التوصيل: ${address}${addrNotes ? ' — ' + addrNotes : ''}` : ''}
-${allNotes.length ? `ملاحظات: ${allNotes.join(' / ')}` : ''}
 
 اكتب الرسالة فقط بدون مقدمات أو شرح.`;
 
@@ -2476,7 +2535,6 @@ ${allNotes.length ? `ملاحظات: ${allNotes.join(' / ')}` : ''}
           for (const nt of notes) fallback += `  ↳ ${nt}\n`;
         }
         if (address) fallback += `\n📍 ${address}${addrNotes ? '\n_' + addrNotes + '_' : ''}`;
-        if (allNotes.length) fallback += `\n\n📝 ملاحظات: ${allNotes.join(' / ')}`;
         fallback += '\nشكراً 🙏';
         textarea.value = fallback;
         result.style.display = 'flex';
@@ -2523,7 +2581,6 @@ ${allNotes.length ? `ملاحظات: ${allNotes.join(' / ')}` : ''}
         weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Africa/Cairo'
       });
       const itemMap = new Map();
-      const allOrderNotes = [];
       for (const o of orders) {
         for (const oi of o.bitesync_order_items || []) {
           const iname = oi.bitesync_session_items?.name || '?';
@@ -2532,7 +2589,7 @@ ${allNotes.length ? `ملاحظات: ${allNotes.join(' / ')}` : ''}
           entry.qty += oi.quantity;
           if (oi.item_notes) entry.notes.push({ qty: oi.quantity, text: oi.item_notes });
         }
-        if (o.order_notes) allOrderNotes.push(o.order_notes);
+        // order_notes are internal only — not sent to restaurant
       }
       const address = session.delivery_address
         ? `\n📍 *${session.delivery_address}*${session.delivery_address_notes ? `\n_${session.delivery_address_notes}_` : ''}` : '';
@@ -2540,10 +2597,6 @@ ${allNotes.length ? `ملاحظات: ${allNotes.join(' / ')}` : ''}
       for (const [iname, { qty, notes }] of itemMap) {
         msg += `\n• ${qty}× ${iname}`;
         for (const n of notes) msg += `\n  _↳ ${n.qty > 1 ? `×${n.qty} ` : ''}${n.text}_`;
-      }
-      if (allOrderNotes.length) {
-        msg += `\n\n📝 *Notes:*`;
-        for (const note of allOrderNotes) msg += `\n_${note}_`;
       }
       const grandTotal = orders.reduce((s, o) => s + +(o.items_subtotal || 0), 0);
       const fee = +(session.delivery_fee || 0);
