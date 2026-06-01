@@ -799,6 +799,7 @@
     // ── Global state ──────────────────────────────────────────────────
     let me            = null;
     let groupName     = null;
+    let groupId       = null;
     let activeSession = null;
     let sessionItems  = [];
     let cart          = new Map();
@@ -832,10 +833,11 @@
       // Fetch group name
       const { data: grpData } = await supabase
         .from('bitesync_groups')
-        .select('name')
+        .select('id, name')
         .eq('group_code', GROUP_CODE)
         .single();
       groupName = grpData?.name || null;
+      groupId   = grpData?.id   || null;
       updateGroupStrings();
 
       const memberId = localStorage.getItem('bitesync_member_id');
@@ -1698,7 +1700,7 @@
       const sel = document.getElementById('claim-name');
       sel.innerHTML = `<option value="">${lang === 'ar' ? 'جارٍ التحميل…' : 'Loading…'}</option>`;
       const { data } = await supabase
-        .from('bitesync_members').select('full_name').eq('group_id', me.group_id).eq('status','active').order('full_name');
+        .from('bitesync_members').select('full_name').eq('group_id', me?.group_id || groupId).eq('status','active').order('full_name');
       sel.innerHTML = `<option value="">${lang === 'ar' ? 'اختر اسمك…' : 'Select your name…'}</option>` +
         (data||[]).map(m=>`<option value="${x(m.full_name)}">${x(m.full_name)}</option>`).join('');
     }
