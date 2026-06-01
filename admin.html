@@ -708,6 +708,8 @@
     let adminMember = null;
     let groupId     = null;
     let claudeApiKey = null;
+    let groupDeliveryAddress = '';
+    let groupDeliveryNotes   = '';
     let activeOrdersSessionId  = null;
     let paymentsSessionId      = null;
     let currentDetailSessionId = null;
@@ -768,10 +770,12 @@
       // Fetch group info (including Claude API key stored server-side)
       const { data: grpData } = await supabase
         .from('bitesync_groups')
-        .select('name, claude_api_key')
+        .select('name, claude_api_key, delivery_address, delivery_address_notes')
         .eq('id', groupId)
         .single();
-      claudeApiKey = grpData?.claude_api_key || null;
+      claudeApiKey         = grpData?.claude_api_key         || null;
+      groupDeliveryAddress = grpData?.delivery_address       || '';
+      groupDeliveryNotes   = grpData?.delivery_address_notes || '';
       const locationText = grpData?.name || '';
       const locSub = document.getElementById('sessions-location-sub');
       if (locSub) locSub.textContent = locationText || '';
@@ -2633,8 +2637,8 @@
       const session = waSessionData;
       const orders  = waOrdersData || [];
       const restName = session?.bitesync_restaurants?.name || 'المطعم';
-      const address  = session?.delivery_address || '';
-      const addrNotes = session?.delivery_address_notes || '';
+      const address   = session?.delivery_address       || groupDeliveryAddress || '';
+      const addrNotes = session?.delivery_address_notes || groupDeliveryNotes   || '';
 
       const itemMap = new Map();
       for (const o of orders) {
