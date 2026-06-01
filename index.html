@@ -200,6 +200,14 @@
       background: transparent; color: var(--text-sec); border: 1.5px solid var(--border);
       font-weight: 600;
     }
+    #admin-pill {
+      position: fixed; top: 12px; inset-inline-end: 56px; z-index: 201;
+      background: rgba(255,255,255,.92); border: 1.5px solid var(--border);
+      border-radius: var(--r-pill); padding: 5px 14px;
+      font-size: 13px; font-weight: 700; color: var(--primary);
+      cursor: pointer; font-family: inherit; display: none;
+      backdrop-filter: blur(4px); line-height: 1.4;
+    }
 
     /* ── No-session state ── */
     .no-session-card {
@@ -520,6 +528,9 @@
       </div>
       <button class="btn btn-ghost" id="btn-back-from-claim">← Back</button>
     </div>
+
+    <!-- Admin pill (fixed, for admins only) -->
+    <button id="admin-pill" onclick="goToAdmin()">⚙ Admin</button>
 
     <!-- Home -->
     <div id="screen-home" class="screen">
@@ -852,6 +863,25 @@
 
       if (!error && data && data.status === 'active') {
         me = data;
+        // Restore cart/scroll state when returning from admin
+        const fromAdmin = sessionStorage.getItem('bitesync_from_member');
+        if (fromAdmin) {
+          sessionStorage.removeItem('bitesync_from_member');
+          const draft = sessionStorage.getItem('bitesync_draft');
+          if (draft) {
+            try {
+              const { cart: c, notes: n } = JSON.parse(draft);
+              Object.entries(c || {}).forEach(([k, v]) => cart.set(k, v));
+              Object.entries(n || {}).forEach(([k, v]) => itemNotes.set(k, v));
+            } catch (_) {}
+            sessionStorage.removeItem('bitesync_draft');
+          }
+          const savedScroll = sessionStorage.getItem('bitesync_scroll');
+          sessionStorage.removeItem('bitesync_scroll');
+          goHome();
+          if (savedScroll) requestAnimationFrame(() => window.scrollTo(0, parseInt(savedScroll, 10)));
+          return;
+        }
         goHome();
         return;
       }
@@ -864,12 +894,26 @@
     function goHome() {
       const locEl = document.getElementById('home-location');
       if (locEl) locEl.textContent = groupName ? groupName : '';
+      // Hide old in-header link; show floating pill for admins
       const al = document.getElementById('admin-link');
-      if (al) { al.style.display = me.is_admin ? 'flex' : 'none'; al.textContent = t('admin'); }
+      if (al) al.style.display = 'none';
+      const pill = document.getElementById('admin-pill');
+      if (pill) pill.style.display = me.is_admin ? 'block' : 'none';
       show('home');
       loadActiveSession();
       subscribeToSessions();
     }
+
+    window.goToAdmin = function() {
+      sessionStorage.setItem('bitesync_scroll', String(window.scrollY));
+      const cartObj = {};
+      cart.forEach((v, k) => { cartObj[k] = v; });
+      const notesObj = {};
+      itemNotes.forEach((v, k) => { notesObj[k] = v; });
+      sessionStorage.setItem('bitesync_draft', JSON.stringify({ cart: cartObj, notes: notesObj }));
+      sessionStorage.setItem('bitesync_from_member', '1');
+      location.href = 'admin.html';
+    };
 
     // ── Realtime ──────────────────────────────────────────────────────
     let realtimeChannel = null;

@@ -448,6 +448,9 @@
   <!-- Admin shell -->
   <div id="admin-shell">
 
+    <!-- Persistent back-to-order pill (only shown when navigated from member view) -->
+    <a id="back-to-order-pill" href="index.html" style="display:none;position:fixed;top:12px;left:12px;z-index:201;background:rgba(255,255,255,.92);border:1.5px solid #EDE4DB;border-radius:999px;padding:5px 14px;font-size:13px;font-weight:700;color:#C96442;cursor:pointer;text-decoration:none;backdrop-filter:blur(4px);line-height:1.4;">← My Order</a>
+
     <div class="admin-main">
 
       <!-- SESSIONS tab -->
@@ -751,6 +754,15 @@
 
       document.getElementById('loading-overlay').classList.add('hidden');
       document.getElementById('admin-shell').style.display = 'block';
+
+      // Show back-to-order pill if admin navigated here from member view
+      if (sessionStorage.getItem('bitesync_from_member')) {
+        const pill = document.getElementById('back-to-order-pill');
+        if (pill) pill.style.display = 'inline-flex';
+        // Shift the lang toggle right so it doesn't overlap the pill
+        const langBtn = document.getElementById('admin-lang-btn');
+        if (langBtn) langBtn.style.marginInlineStart = 'auto';
+      }
 
       if (!adminMember.whatsapp_number || !adminMember.instapay_number) {
         document.getElementById('admin-wa-input').value = adminMember.whatsapp_number || '';
