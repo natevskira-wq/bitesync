@@ -785,14 +785,11 @@
       document.getElementById('loading-overlay').classList.add('hidden');
       document.getElementById('admin-shell').style.display = 'block';
 
-      // Show back-to-order pill if admin navigated here from member view
-      if (sessionStorage.getItem('bitesync_from_member')) {
-        const pill = document.getElementById('back-to-order-pill');
-        if (pill) pill.style.display = 'inline-flex';
-        // Shift the lang toggle right so it doesn't overlap the pill
-        const langBtn = document.getElementById('admin-lang-btn');
-        if (langBtn) langBtn.style.marginInlineStart = 'auto';
-      }
+      // Always show My Order pill for admins
+      const pill = document.getElementById('back-to-order-pill');
+      if (pill) pill.style.display = 'inline-flex';
+      const langBtn = document.getElementById('admin-lang-btn');
+      if (langBtn) langBtn.style.marginInlineStart = 'auto';
 
       if (!adminMember.whatsapp_number || !adminMember.instapay_number) {
         document.getElementById('admin-wa-input').value = adminMember.whatsapp_number || '';
