@@ -2046,7 +2046,8 @@
 
     window.endSessionFromDetail = async (id) => {
       if (!confirm('End this session? It will be moved to Past Sessions.')) return;
-      await supabase.from('bitesync_sessions').update({ status: 'ended' }).eq('id', id);
+      const { error } = await supabase.from('bitesync_sessions').update({ status: 'ended' }).eq('id', id);
+      if (error) { alert('Failed to end session. Try again.'); return; }
       closeSessionDetail();
       await loadSessions();
       const list = document.getElementById('past-sessions-list');
