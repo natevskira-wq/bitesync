@@ -472,7 +472,6 @@
             <div class="page-subtitle" id="sessions-location-sub">Loading…</div>
           </div>
           <div style="display:flex;gap:8px;align-items:center;">
-            <button class="lang-toggle" id="admin-lang-btn" onclick="toggleLang()">AR</button>
             <button class="btn btn-ghost btn-sm btn-icon" onclick="loadSessions()" title="Refresh">↻</button>
           </div>
         </div>
@@ -702,7 +701,7 @@
     }
 
     // ── Language ──────────────────────────────────────────────────────
-    let lang = localStorage.getItem('bitesync_lang') || 'en';
+    const lang = 'en';
 
     const ADM = {
       en: {
@@ -715,42 +714,12 @@
         markPaid: 'Mark Paid', unmark: 'Unmark', markExempt: 'Exempt', markUnpaid: 'Unpaid',
         sessTitle: 'Sessions', restTitle: 'Restaurants',
       },
-      ar: {
-        back: 'طلبي →', sessions: 'الجلسات', orders: 'الطلبات',
-        members: 'الأعضاء', restaurants: 'المطاعم',
-        noSession: 'لا توجد جلسة نشطة', noSessionSub: 'لا توجد جلسات مفتوحة أو مغلقة حالياً.',
-        pending: 'في انتظار الموافقة', active: 'الفريق', myProfile: 'ملفي الشخصي',
-        pastLabel: 'الجلسات السابقة', noOrders: 'لا توجد طلبات بعد.',
-        splitFirst: 'قسّم رسوم التوصيل أولاً قبل تحديد الدفع',
-        markPaid: 'تم الدفع', unmark: 'إلغاء', markExempt: 'معفى', markUnpaid: 'لم يدفع',
-        sessTitle: 'الجلسات', restTitle: 'المطاعم',
-      }
     };
-    function ta(k) { return (ADM[lang] || ADM.en)[k] || ADM.en[k] || k; }
-
-    window.toggleLang = () => {
-      lang = lang === 'en' ? 'ar' : 'en';
-      localStorage.setItem('bitesync_lang', lang);
-      applyLang();
-    };
+    function ta(k) { return ADM.en[k] || k; }
 
     function applyLang() {
-      document.documentElement.lang = lang;
-      document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-      const btn = document.getElementById('admin-lang-btn');
-      if (btn) btn.textContent = lang === 'en' ? 'AR' : 'EN';
-      const tmap = {sessions:'sessions',orders:'orders',members:'members',restaurants:'restaurants'};
-      for (const [tab, key] of Object.entries(tmap)) {
-        const el = document.getElementById(`tab-btn-${tab}`);
-        if (el) {
-          const icon = el.querySelector('.tab-icon');
-          const iconText = icon ? icon.outerHTML : '';
-          el.innerHTML = iconText + ta(key);
-        }
-      }
-      const e = id => document.getElementById(id);
-      if (e('lbl-pending-label')) e('lbl-pending-label').textContent = ta('pending');
-      if (e('lbl-active-label')) e('lbl-active-label').textContent = ta('active');
+      document.documentElement.lang = 'en';
+      document.documentElement.dir = 'ltr';
     }
 
     applyLang();
@@ -773,11 +742,11 @@
       // Fetch group info (including Claude API key stored server-side)
       const { data: grpData } = await supabase
         .from('bitesync_groups')
-        .select('name, location, claude_api_key')
+        .select('name, claude_api_key')
         .eq('id', groupId)
         .single();
       claudeApiKey = grpData?.claude_api_key || null;
-      const locationText = [grpData?.name, grpData?.location].filter(Boolean).join(' — ');
+      const locationText = grpData?.name || '';
       const locSub = document.getElementById('sessions-location-sub');
       if (locSub) locSub.textContent = locationText || '';
       const membSub = document.getElementById('members-location-sub');

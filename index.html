@@ -423,8 +423,6 @@
 </head>
 <body>
 
-  <button class="lang-toggle" id="lang-toggle-btn" onclick="toggleLang()">AR</button>
-
   <div class="app">
 
     <!-- Checking -->
@@ -742,26 +740,14 @@
       }
     };
 
-    let lang = localStorage.getItem('bitesync_lang') || 'en';
-    function t(k) { return (STRINGS[lang] || STRINGS.en)[k] || STRINGS.en[k] || k; }
-
-    window.toggleLang = () => {
-      lang = lang === 'en' ? 'ar' : 'en';
-      localStorage.setItem('bitesync_lang', lang);
-      applyLang();
-      applyTranslations();
-      if (me) {
-        if (activeSession !== null || currentScreen === 'home') loadActiveSession();
-      }
-    };
+    const lang = 'en';
+    function t(k) { return STRINGS.en[k] || k; }
 
     let currentScreen = 'checking';
 
     function applyLang() {
-      document.documentElement.lang = lang;
-      document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-      const btn = document.getElementById('lang-toggle-btn');
-      if (btn) btn.textContent = lang === 'en' ? 'AR' : 'EN';
+      document.documentElement.lang = 'en';
+      document.documentElement.dir = 'ltr';
     }
 
     function applyTranslations() {
