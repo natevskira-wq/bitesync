@@ -682,6 +682,7 @@
 
     let adminMember = null;
     let groupId     = null;
+    let claudeApiKey = null;
     let activeOrdersSessionId  = null;
     let paymentsSessionId      = null;
     let currentDetailSessionId = null;
@@ -769,12 +770,13 @@
       adminMember = data;
       groupId     = data.group_id;
 
-      // Fetch group info
+      // Fetch group info (including Claude API key stored server-side)
       const { data: grpData } = await supabase
         .from('bitesync_groups')
-        .select('name, location')
+        .select('name, location, claude_api_key')
         .eq('id', groupId)
         .single();
+      claudeApiKey = grpData?.claude_api_key || null;
       const locationText = [grpData?.name, grpData?.location].filter(Boolean).join(' — ');
       const locSub = document.getElementById('sessions-location-sub');
       if (locSub) locSub.textContent = locationText || '';
@@ -1618,7 +1620,25 @@
           <div style="font-size:12px;color:var(--text-muted);">Enter after the restaurant confirms delivery cost.</div>
         </div>`;
 
-      body.innerHTML = summaryHtml + restHtml + feeHtml + `
+      const arabicCard = `
+        <div class="card" id="arabic-wa-card-${sid}">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+            <div>
+              <div style="font-weight:700;font-size:15px;">🤖 رسالة الطلب بالعربي</div>
+              <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">توليد ملخص الطلب بالعربية لإرساله للمطعم</div>
+            </div>
+            <button class="btn btn-secondary btn-sm" id="btn-gen-arabic-${sid}" onclick="generateArabicWA('${sid}')">✨ توليد</button>
+          </div>
+          <div id="arabic-wa-result-${sid}" style="display:none;flex-direction:column;gap:8px;">
+            <textarea id="arabic-wa-text-${sid}" dir="rtl" style="min-height:160px;font-size:14px;line-height:1.7;font-family:inherit;"></textarea>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-success btn-sm" style="flex:1;" onclick="sendArabicWA('${sid}')">💬 إرسال عبر واتساب</button>
+              <button class="btn btn-ghost btn-sm" onclick="generateArabicWA('${sid}')">↻ إعادة توليد</button>
+            </div>
+          </div>
+        </div>`;
+
+      body.innerHTML = summaryHtml + restHtml + arabicCard + feeHtml + `
         <div style="display:flex;flex-direction:column;gap:8px;padding-top:4px;">
           <button class="btn btn-primary btn-xl" onclick="deliverSessionFromDetail('${sid}')">Mark as Delivered</button>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
@@ -2399,6 +2419,117 @@
         supabase.from('bitesync_orders').update({ paid_status: 'paid', paid_at: now }).eq('id', o.id)
       ));
       loadOrders(sessionId);
+    };
+
+    // ── Arabic AI WhatsApp summary ────────────────────────────────────
+    window.generateArabicWA = async (sid) => {
+      const btn     = document.getElementById(`btn-gen-arabic-${sid}`);
+      const result  = document.getElementById(`arabic-wa-result-${sid}`);
+      const textarea = document.getElementById(`arabic-wa-text-${sid}`);
+      if (!btn || !result || !textarea) return;
+
+      if (!claudeApiKey) {
+        alert('Claude API key not configured.');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = '⏳ جاري التوليد…';
+
+      // Build order data for the prompt
+      const session = waSessionData;
+      const orders  = waOrdersData || [];
+      const restName = session?.bitesync_restaurants?.name || 'المطعم';
+      const address  = session?.delivery_address || '';
+      const addrNotes = session?.delivery_address_notes || '';
+
+      const itemMap = new Map();
+      const allNotes = [];
+      for (const o of orders) {
+        for (const oi of o.bitesync_order_items || []) {
+          const iname = oi.bitesync_session_items?.name || '?';
+          if (!itemMap.has(iname)) itemMap.set(iname, { qty: 0, notes: [] });
+          const e = itemMap.get(iname);
+          e.qty += oi.quantity;
+          if (oi.item_notes) e.notes.push(`${oi.quantity > 1 ? oi.quantity + '× ' : ''}${oi.item_notes}`);
+        }
+        if (o.order_notes) allNotes.push(o.order_notes);
+      }
+
+      const itemLines = [...itemMap.entries()].map(([n, { qty, notes }]) => {
+        let line = `- ${qty}× ${n}`;
+        if (notes.length) line += '\n  ' + notes.map(nt => `↳ ${nt}`).join('\n  ');
+        return line;
+      }).join('\n');
+
+      const prompt = `أنت مساعد لإعداد رسائل الطلبات بالعربية الفصحى المبسطة.
+اكتب رسالة واتساب قصيرة واحترافية لإرسالها إلى مطعم "${restName}" تحتوي على:
+- الطلبات (الأصناف والكميات فقط، بدون ذكر أسماء الأشخاص)
+- عنوان التوصيل (إن وجد)
+- أي ملاحظات عامة
+
+بيانات الطلب:
+${itemLines}
+${address ? `عنوان التوصيل: ${address}${addrNotes ? ' — ' + addrNotes : ''}` : ''}
+${allNotes.length ? `ملاحظات: ${allNotes.join(' / ')}` : ''}
+
+اكتب الرسالة فقط بدون مقدمات أو شرح.`;
+
+      try {
+        const resp = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'x-api-key': claudeApiKey,
+            'anthropic-version': '2023-06-01',
+            'anthropic-dangerous-direct-browser-access': 'true',
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 512,
+            messages: [{ role: 'user', content: prompt }],
+          }),
+        });
+
+        if (!resp.ok) throw new Error(`API error ${resp.status}`);
+        const data = await resp.json();
+        const text = data.content?.[0]?.text || '';
+
+        textarea.value = text;
+        result.style.display = 'flex';
+      } catch (err) {
+        console.error('Claude API error:', err);
+        // Fallback: generate static Arabic message
+        const date = new Date().toLocaleDateString('ar-EG', { weekday:'long', day:'numeric', month:'long', timeZone:'Africa/Cairo' });
+        let fallback = `السلام عليكم 🌿\nطلبية ${restName} — ${date}\n\n`;
+        for (const [n, { qty, notes }] of itemMap) {
+          fallback += `• ${qty}× ${n}\n`;
+          for (const nt of notes) fallback += `  ↳ ${nt}\n`;
+        }
+        if (address) fallback += `\n📍 ${address}${addrNotes ? '\n_' + addrNotes + '_' : ''}`;
+        if (allNotes.length) fallback += `\n\n📝 ملاحظات: ${allNotes.join(' / ')}`;
+        fallback += '\nشكراً 🙏';
+        textarea.value = fallback;
+        result.style.display = 'flex';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '✨ توليد';
+      }
+    };
+
+    window.sendArabicWA = (sid) => {
+      const textarea = document.getElementById(`arabic-wa-text-${sid}`);
+      const msg = textarea?.value?.trim();
+      if (!msg) return;
+      const encoded = encodeURIComponent(msg);
+      try { navigator.clipboard.writeText(msg); } catch (_) {}
+      const phone = waSessionData?.bitesync_restaurants?.phones?.[0];
+      if (phone) {
+        const digits = phone.replace(/[^\d]/g, '');
+        window.open(`https://wa.me/${digits}?text=${encoded}`, '_blank');
+      } else {
+        alert('تم نسخ الرسالة! لا يوجد رقم مسجل للمطعم — الصقها يدوياً في واتساب.');
+      }
     };
 
     // ── WhatsApp export ───────────────────────────────────────────────
