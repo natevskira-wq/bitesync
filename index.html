@@ -1324,8 +1324,20 @@
     window.markAsPaid = async (orderId) => {
       const btn = document.getElementById('btn-ive-paid');
       if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
-      await supabase.from('bitesync_orders').update({ paid_status: 'pending' }).eq('id', orderId);
-      loadActiveSession();
+      const { error } = await supabase.from('bitesync_orders').update({ paid_status: 'pending' }).eq('id', orderId);
+      if (error) {
+        alert('Failed to save. Please try again.');
+        if (btn) { btn.disabled = false; btn.textContent = '✓ I\'ve Paid'; }
+        return;
+      }
+      const el = document.getElementById('payment-section');
+      if (el) {
+        el.innerHTML = `
+          <div class="paid-banner" style="background:#FEF3C7;border-color:#F59E0B;">
+            <div class="paid-banner-title" style="color:#92400E;">⏳ Waiting for confirmation</div>
+            <div class="paid-banner-sub" style="color:#78350F;">The admin has been notified and will confirm your payment shortly.</div>
+          </div>`;
+      }
     };
 
     // ── Settled — InstaPay screen ─────────────────────────────────────
