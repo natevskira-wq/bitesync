@@ -265,8 +265,8 @@
 
     /* ── Member rows ── */
     .member-row {
-      display: flex; align-items: center; gap: 12px;
-      padding: 12px 0; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 0; border-bottom: 1px solid var(--border);
     }
     .member-row:last-child { border-bottom: none; }
     .member-info  { flex: 1; min-width: 0; }
@@ -427,6 +427,17 @@
       border: 1.5px solid var(--border); display: none;
     }
     #orders-session-label.visible { display: block; }
+
+    /* ── Session detail state views ── */
+    .sd-stats-bar {
+      display: flex; gap: 4px;
+    }
+    .sd-stat {
+      flex: 1; background: var(--surface); border-radius: var(--r-sm); padding: 14px 10px;
+      text-align: center; box-shadow: var(--shadow);
+    }
+    .sd-stat-val { font-size: 24px; font-weight: 900; letter-spacing: -0.5px; }
+    .sd-stat-lbl { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .4px; margin-top: 2px; }
   </style>
 </head>
 <body>
@@ -641,6 +652,23 @@
       </div>
     </div>
 
+    <!-- SESSION DETAIL sub-screen -->
+    <div id="screen-session-detail" class="sub-screen">
+      <div class="sub-screen-inner">
+        <button class="sub-back" onclick="closeSessionDetail()">← Sessions</button>
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+          <div>
+            <div id="sd-name" class="page-title">Loading…</div>
+            <div id="sd-meta" style="font-size:13px;color:var(--text-muted);margin-top:2px;"></div>
+          </div>
+          <span id="sd-badge" class="badge"></span>
+        </div>
+        <div id="sd-body" style="display:flex;flex-direction:column;gap:14px;">
+          <div class="spinner"></div>
+        </div>
+      </div>
+    </div>
+
   </div><!-- end admin-shell -->
 
   <script type="module">
@@ -654,8 +682,9 @@
 
     let adminMember = null;
     let groupId     = null;
-    let activeOrdersSessionId = null;
-    let paymentsSessionId     = null;
+    let activeOrdersSessionId  = null;
+    let paymentsSessionId      = null;
+    let currentDetailSessionId = null;
 
     // ── Avatar system ──────────────────────────────────────────────────
     const AVATAR_COLORS = ['#3B82F6','#10B981','#F59E0B','#EF4444','#8B5CF6','#EC4899','#6366F1','#14B8A6','#F97316','#84CC16'];
@@ -1236,7 +1265,6 @@
         for (const s of active) {
           const card = buildSessionCard(s);
           el.appendChild(card);
-          if (s.status === 'draft') loadSessionItemPicker(s.id, s.restaurant_id);
         }
         // Live order counts on open sessions
         const openIds = active.filter(s => s.status === 'open').map(s => s.id);
@@ -1285,52 +1313,16 @@
     };
 
     function buildSessionCard(s) {
-      const name     = s.label || `Session ${s.id.slice(0,6)}`;
+      const name     = s.label || `Session #${s.id.slice(-4).toUpperCase()}`;
       const restName = s.bitesync_restaurants?.name || '—';
       const deadline = s.order_deadline
         ? new Date(s.order_deadline).toLocaleString('en-EG', { dateStyle:'short', timeStyle:'short', timeZone:'Africa/Cairo' })
         : '—';
 
-      const statusSteps = ['draft','open','closed','delivered','settled'];
-      const curIdx = statusSteps.indexOf(s.status);
-
-      const pipelineHtml = `<div class="pipeline">` +
-        statusSteps.map((step, i) => {
-          const cls = i < curIdx ? 'done' : i === curIdx ? 'current' : '';
-          const lineHtml = i < statusSteps.length - 1
-            ? `<div class="pipe-line ${i < curIdx ? 'done' : ''}"></div>`
-            : '';
-          return `<div class="pipeline-step ${cls}"><div class="pipe-dot"></div><span class="pipe-label">${step.charAt(0).toUpperCase() + step.slice(1)}</span></div>${lineHtml}`;
-        }).join('') + `</div>`;
-
       const card = document.createElement('div');
       card.className = 'card';
-
-      // Context-aware primary action button
-      let primaryAction = '';
-      let secondaryActions = '';
-
-      if (s.status === 'draft') {
-        primaryAction = `<button class="btn btn-primary btn-full" onclick="openSession('${s.id}')">Open Session for Orders</button>`;
-        secondaryActions = `
-          <button class="btn btn-ghost btn-sm" onclick="toggleEditSession('${s.id}')">✏ Edit</button>
-          <button class="btn btn-danger btn-sm"  onclick="cancelSession('${s.id}')">✕ Cancel</button>`;
-      } else if (s.status === 'open') {
-        primaryAction = `<button class="btn btn-warning btn-full" style="background:#E67E22;" onclick="closeSession('${s.id}')">Close &amp; Review Orders →</button>`;
-        secondaryActions = `
-          <button class="btn btn-ghost btn-sm" onclick="toggleEditSession('${s.id}')">✏ Edit</button>
-          <button class="btn btn-ghost btn-sm" onclick="viewOrders('${s.id}')">📋 Orders</button>
-          <button class="btn btn-danger btn-sm"  onclick="cancelSession('${s.id}')">✕ Cancel</button>`;
-      } else if (s.status === 'closed') {
-        primaryAction = `<button class="btn btn-primary btn-full" id="deliver-btn-${s.id}" onclick="deliverSession('${s.id}')">Mark as Delivered</button>`;
-        secondaryActions = `
-          <button class="btn btn-secondary btn-sm" onclick="viewOrders('${s.id}')">📋 Orders</button>
-          <button class="btn btn-ghost btn-sm" onclick="reopenSession('${s.id}')">↩ Reopen</button>
-          <button class="btn btn-danger btn-sm"  onclick="cancelSession('${s.id}')">✕ Cancel</button>`;
-      } else if (s.status === 'delivered') {
-        primaryAction = `<button class="btn btn-secondary btn-full" onclick="openPayments('${s.id}')">→ Payments</button>`;
-        secondaryActions = `<button class="btn btn-ghost btn-sm" onclick="viewOrders('${s.id}')">📋 Orders</button>`;
-      }
+      card.style.cursor = 'pointer';
+      card.addEventListener('click', () => openSessionDetail(s.id));
 
       card.innerHTML = `
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
@@ -1338,73 +1330,29 @@
             <div style="font-size:18px;font-weight:800;letter-spacing:-0.3px;">${x(name)}</div>
             <div style="font-size:13px;color:var(--text-sec);margin-top:2px;">${x(restName)} · #${s.id.slice(-4).toUpperCase()}</div>
           </div>
-          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-            <span class="badge badge-${s.status}">${s.status.toUpperCase()}</span>
-            ${s.status === 'open' ? `<span id="order-count-${s.id}" class="badge badge-active">…</span>` : ''}
-          </div>
+          <span class="badge badge-${s.status}">${s.status.toUpperCase()}</span>
         </div>
-
-        ${pipelineHtml}
-
-        <div class="stats-row">
-          <div class="stat-item">
-            <div class="stat-val" id="stat-ordered-${s.id}">—</div>
-            <div class="stat-label">Ordered</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+          <div style="font-size:13px;color:var(--text-muted);">
+            ${deadline !== '—' ? `Deadline: ${deadline}` : 'No deadline'}
+            ${s.status === 'open' ? `<span id="order-count-${s.id}" class="badge badge-active" style="margin-inline-start:6px;font-size:11px;">…</span>` : ''}
           </div>
-          <div class="stat-item">
-            <div class="stat-val">—</div>
-            <div class="stat-label">Items</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-val">${deadline}</div>
-            <div class="stat-label">Deadline</div>
-          </div>
-        </div>
+          <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openSessionDetail('${s.id}')">Manage →</button>
+        </div>`;
 
-        <div id="actions-${s.id}" style="display:flex;flex-direction:column;gap:8px;">
-          ${primaryAction}
-          ${secondaryActions ? `<div style="display:flex;gap:8px;flex-wrap:wrap;">${secondaryActions}</div>` : ''}
-        </div>
-
-        ${['draft','open'].includes(s.status) ? `
-          <div id="edit-session-${s.id}" style="display:none;flex-direction:column;gap:10px;">
-            <hr>
-            <div class="field"><span class="field-label">Label</span>
-              <input type="text" id="es-label-${s.id}" value="${x(s.label||'')}"
-                oninput="this.dataset.manuallyEdited='1'"></div>
-            <div class="field"><span class="field-label">Deadline</span>
-              <input type="datetime-local" id="es-deadline-${s.id}" value="${toInputDatetime(s.order_deadline)}"
-                oninput="autoFillLabel(this.value,'es-label-${s.id}')"></div>
-            <div class="field"><span class="field-label">Delivery address</span>
-              <input type="text" id="es-address-${s.id}" value="${x(s.delivery_address||'')}"></div>
-            <div class="field"><span class="field-label">Address notes</span>
-              <input type="text" id="es-address-notes-${s.id}" value="${x(s.delivery_address_notes||'')}"></div>
-            <div style="display:flex;gap:6px;">
-              <button class="btn btn-primary btn-sm" onclick="saveSession('${s.id}')">Save</button>
-              <button class="btn btn-ghost btn-sm"   onclick="toggleEditSession('${s.id}')">Cancel</button>
-            </div>
-          </div>
-        ` : ''}
-
-        ${s.status === 'draft' ? `
-          <hr>
-          <div class="section-label">Menu items for this session</div>
-          <div class="card-sub">Tick the items members can order from:</div>
-          <div id="sitems-${s.id}"><div class="spinner" style="width:24px;height:24px;border-width:2px;margin:10px auto;"></div></div>
-        ` : ''}`;
-
-      // Load stats
-      supabase.from('bitesync_orders').select('id', { count: 'exact', head: true }).eq('session_id', s.id)
-        .then(({ count }) => {
-          const el = document.getElementById(`stat-ordered-${s.id}`);
-          if (el) el.textContent = count ?? '—';
-        });
+      if (s.status === 'open') {
+        supabase.from('bitesync_orders').select('id', { count: 'exact', head: true }).eq('session_id', s.id)
+          .then(({ count }) => {
+            const el = document.getElementById(`order-count-${s.id}`);
+            if (el) el.textContent = `${count ?? 0} ordered`;
+          });
+      }
 
       return card;
     }
 
-    async function loadSessionItemPicker(sessionId, restaurantId) {
-      const el = document.getElementById(`sitems-${sessionId}`);
+    async function loadSessionItemPicker(sessionId, restaurantId, targetElId) {
+      const el = document.getElementById(targetElId || `sitems-${sessionId}`);
       if (!el) return;
       const [{ data: items }, { data: existing }] = await Promise.all([
         supabase.from('bitesync_menu_items')
@@ -1440,6 +1388,477 @@
       } else {
         await supabase.from('bitesync_session_items').delete().eq('session_id', sid).eq('menu_item_id', mid);
       }
+    };
+
+    // ════════════════════════════════════════════════════════════════
+    // SESSION DETAIL SCREEN
+    // ════════════════════════════════════════════════════════════════
+
+    window.openSessionDetail = async (sessionId) => {
+      currentDetailSessionId = sessionId;
+      document.getElementById('screen-session-detail').classList.add('visible');
+      document.getElementById('screen-session-detail').scrollTo(0, 0);
+      await loadSessionDetail(sessionId);
+    };
+
+    window.closeSessionDetail = () => {
+      document.getElementById('screen-session-detail').classList.remove('visible');
+      currentDetailSessionId = null;
+      loadSessions();
+    };
+
+    async function loadSessionDetail(sessionId) {
+      const body = document.getElementById('sd-body');
+      body.innerHTML = '<div class="spinner"></div>';
+
+      const [{ data: session }, { data: orders }, { data: allMembers }] = await Promise.all([
+        supabase.from('bitesync_sessions')
+          .select('id, label, status, order_deadline, delivery_fee, delivery_address, delivery_address_notes, restaurant_id, created_at, bitesync_restaurants(name, phones)')
+          .eq('id', sessionId).single(),
+        supabase.from('bitesync_orders')
+          .select(`id, member_id, excluded_from_delivery, status, items_subtotal, delivery_share, final_total, paid_status, order_notes, submitted_at,
+            bitesync_members(full_name),
+            bitesync_order_items(id, quantity, unit_price, line_total, item_notes, bitesync_session_items(name, category))`)
+          .eq('session_id', sessionId).order('submitted_at'),
+        supabase.from('bitesync_members').select('id, full_name, phone_number, whatsapp_number').eq('group_id', groupId).eq('status', 'active').order('full_name'),
+      ]);
+
+      if (!session) { body.innerHTML = '<div class="empty">Session not found.</div>'; return; }
+
+      const name = session.label || `Session #${session.id.slice(-4).toUpperCase()}`;
+      document.getElementById('sd-name').textContent = name;
+      const restName = session.bitesync_restaurants?.name || '';
+      const deadlineFmt = session.order_deadline
+        ? new Date(session.order_deadline).toLocaleString('en-EG', { dateStyle:'short', timeStyle:'short', timeZone:'Africa/Cairo' })
+        : '';
+      document.getElementById('sd-meta').textContent = [restName, deadlineFmt ? `Due ${deadlineFmt}` : ''].filter(Boolean).join(' · ');
+      const badge = document.getElementById('sd-badge');
+      badge.className = `badge badge-${session.status}`;
+      badge.textContent = session.status.toUpperCase();
+
+      waSessionData = session;
+      waOrdersData  = orders || [];
+
+      const ordersArr  = orders || [];
+      const membersArr = allMembers || [];
+
+      switch (session.status) {
+        case 'draft':     renderDetailDraft(session, ordersArr, membersArr, body); break;
+        case 'open':      renderDetailOpen(session, ordersArr, membersArr, body); break;
+        case 'closed':    renderDetailClosed(session, ordersArr, membersArr, body); break;
+        case 'delivered': renderDetailDelivered(session, ordersArr, membersArr, body); break;
+        case 'settled':   renderDetailSettled(session, ordersArr, membersArr, body); break;
+        case 'cancelled': body.innerHTML = `<div class="card"><div class="card-sub">This session was cancelled.</div></div>`; break;
+        default:          body.innerHTML = `<div class="empty">Unknown status.</div>`;
+      }
+    }
+
+    // ── State renderers ───────────────────────────────────────────────
+
+    function renderDetailDraft(s, orders, members, body) {
+      const sid = s.id;
+      body.innerHTML = `
+        <div class="card">
+          <div class="card-title">Session Details</div>
+          <div class="field"><span class="field-label">Label</span>
+            <input type="text" id="sd-lbl-${sid}" value="${x(s.label||'')}" placeholder="Friday Breakfast"></div>
+          <div class="field"><span class="field-label">Deadline</span>
+            <input type="datetime-local" id="sd-ddl-${sid}" value="${toInputDatetime(s.order_deadline)}"
+              oninput="autoFillLabel(this.value,'sd-lbl-${sid}')"></div>
+          <div class="field"><span class="field-label">Delivery address</span>
+            <input type="text" id="sd-addr-${sid}" value="${x(s.delivery_address||'')}" placeholder="123 Main St, Floor 5"></div>
+          <div class="field"><span class="field-label">Address notes</span>
+            <input type="text" id="sd-anote-${sid}" value="${x(s.delivery_address_notes||'')}" placeholder="Leave at reception…"></div>
+          <button class="btn btn-ghost btn-sm" onclick="saveDetailEdit('${sid}')">💾 Save Changes</button>
+        </div>
+        <div class="section-label" style="margin-top:4px;">Menu Items</div>
+        <div class="card-sub">Tick the items members can order:</div>
+        <div id="sd-menu-${sid}"><div class="spinner" style="width:24px;height:24px;border-width:2px;margin:10px auto;"></div></div>
+        <div style="display:flex;flex-direction:column;gap:8px;padding-top:4px;">
+          <button class="btn btn-primary btn-xl" onclick="openSessionFromDetail('${sid}')">Open Session for Orders</button>
+          <button class="btn btn-ghost btn-sm" onclick="cancelSessionFromDetail('${sid}')">✕ Cancel Session</button>
+        </div>`;
+      loadSessionItemPicker(sid, s.restaurant_id, `sd-menu-${sid}`);
+    }
+
+    function renderDetailOpen(s, orders, members, body) {
+      const sid = s.id;
+      const orderedIds = new Set(orders.map(o => o.member_id));
+      const notYet = members.filter(m => !orderedIds.has(m.id));
+
+      const deadline = s.order_deadline ? new Date(s.order_deadline) : null;
+      const isOverdue = deadline && deadline.getTime() < Date.now();
+      const deadlineFmt = deadline
+        ? new Date(deadline).toLocaleString('en-EG', { dateStyle:'short', timeStyle:'short', timeZone:'Africa/Cairo' })
+        : 'None';
+
+      const statsHtml = `
+        <div class="sd-stats-bar">
+          <div class="sd-stat">
+            <div class="sd-stat-val" style="color:var(--success);">${orders.length}</div>
+            <div class="sd-stat-lbl">Ordered</div>
+          </div>
+          <div class="sd-stat">
+            <div class="sd-stat-val" style="color:${notYet.length > 0 ? 'var(--warn-text)' : 'var(--success)'};">${notYet.length}</div>
+            <div class="sd-stat-lbl">Not yet</div>
+          </div>
+          <div class="sd-stat">
+            <div class="sd-stat-val" style="font-size:14px;color:${isOverdue ? '#E74C3C' : 'var(--text)'};">${isOverdue ? '⚠ OVERDUE' : deadlineFmt}</div>
+            <div class="sd-stat-lbl">Deadline</div>
+          </div>
+        </div>`;
+
+      const orderedHtml = orders.length > 0 ? `
+        <div class="section-label">Ordered (${orders.length})</div>
+        <div class="card" style="gap:0;padding:6px 12px;">
+          ${orders.map(o => {
+            const name = o.bitesync_members?.full_name || 'Unknown';
+            const items = o.bitesync_order_items || [];
+            const summary = items.map(oi => `${oi.quantity}× ${oi.bitesync_session_items?.name || '?'}`).join(', ');
+            return `<div class="member-row">
+              ${avatarHtml(name, 36)}
+              <div style="flex:1;min-width:0;">
+                <div style="font-weight:700;font-size:14px;">${x(name)}</div>
+                ${summary ? `<div style="font-size:12px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${x(summary)}</div>` : ''}
+              </div>
+              <span style="font-size:16px;">✓</span>
+            </div>`;
+          }).join('')}
+        </div>` : '';
+
+      const notYetHtml = notYet.length > 0 ? `
+        <div class="section-label">Haven't Ordered (${notYet.length})</div>
+        <div class="card" style="gap:0;padding:6px 12px;">
+          ${notYet.map(m => `<div class="member-row">
+            ${avatarHtml(m.full_name, 36)}
+            <div style="flex:1;font-weight:600;font-size:14px;">${x(m.full_name)}</div>
+          </div>`).join('')}
+        </div>` : '';
+
+      const editHtml = `
+        <div id="sd-edit-${sid}" style="display:none;flex-direction:column;gap:10px;">
+          <div class="card">
+            <div class="card-title">Edit Session</div>
+            <div class="field"><span class="field-label">Label</span>
+              <input type="text" id="sd-lbl-${sid}" value="${x(s.label||'')}"></div>
+            <div class="field"><span class="field-label">Deadline</span>
+              <input type="datetime-local" id="sd-ddl-${sid}" value="${toInputDatetime(s.order_deadline)}"
+                oninput="autoFillLabel(this.value,'sd-lbl-${sid}')"></div>
+            <div class="field"><span class="field-label">Delivery address</span>
+              <input type="text" id="sd-addr-${sid}" value="${x(s.delivery_address||'')}"></div>
+            <div class="field"><span class="field-label">Address notes</span>
+              <input type="text" id="sd-anote-${sid}" value="${x(s.delivery_address_notes||'')}"></div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-primary btn-sm" onclick="saveDetailEdit('${sid}')">Save</button>
+              <button class="btn btn-ghost btn-sm" onclick="toggleSdEl('sd-edit-${sid}')">Cancel</button>
+            </div>
+          </div>
+        </div>`;
+
+      body.innerHTML = statsHtml + orderedHtml + notYetHtml + editHtml + `
+        <div style="display:flex;flex-direction:column;gap:8px;padding-top:4px;">
+          <button class="btn btn-xl" style="background:#E67E22;color:white;min-height:52px;" onclick="closeSessionFromDetail('${sid}')">Close &amp; Review Orders →</button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-ghost btn-sm" onclick="toggleSdEl('sd-edit-${sid}')">✏ Edit</button>
+            <button class="btn btn-danger btn-sm" onclick="cancelSessionFromDetail('${sid}')">✕ Cancel</button>
+          </div>
+        </div>`;
+    }
+
+    function renderDetailClosed(s, orders, members, body) {
+      const sid = s.id;
+
+      const itemMap = new Map();
+      for (const o of orders) {
+        for (const oi of o.bitesync_order_items || []) {
+          const iname = oi.bitesync_session_items?.name || '?';
+          if (!itemMap.has(iname)) itemMap.set(iname, { qty: 0, notes: [] });
+          const e = itemMap.get(iname);
+          e.qty += oi.quantity;
+          if (oi.item_notes) e.notes.push(`${oi.quantity > 1 ? oi.quantity + '× ' : ''}${oi.item_notes}`);
+        }
+      }
+
+      const summaryHtml = itemMap.size > 0 ? `
+        <div class="section-label">Order Summary (${orders.length} order${orders.length!==1?'s':''})</div>
+        <div class="card" style="gap:0;padding:6px 12px;">
+          ${[...itemMap.entries()].map(([n, { qty, notes }]) => `
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);">
+              <div>
+                <div style="font-size:15px;font-weight:600;">${x(n)}</div>
+                ${notes.map(note => `<div style="font-size:12px;color:var(--text-sec);">↳ ${x(note)}</div>`).join('')}
+              </div>
+              <span style="font-size:18px;font-weight:800;color:var(--primary);">×${qty}</span>
+            </div>`).join('')}
+        </div>` : `<div class="empty">No orders yet.</div>`;
+
+      const phones = s.bitesync_restaurants?.phones || [];
+      const phone = phones[0] || '';
+      const restName = s.bitesync_restaurants?.name || '—';
+      const restHtml = `
+        <div class="card">
+          <div style="font-weight:700;font-size:15px;margin-bottom:2px;">🏪 ${x(restName)}</div>
+          ${phone ? `<div style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">${x(phone)}</div>` : ''}
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            ${phone ? `<a href="tel:${x(phone)}" class="btn btn-ghost btn-sm" style="flex:1;min-width:100px;text-align:center;text-decoration:none;">📞 Call</a>` : ''}
+            <button class="btn btn-success btn-sm" style="flex:2;min-width:140px;" onclick="exportWhatsApp()">💬 Send Order via WA</button>
+          </div>
+          ${!phone ? `<div style="font-size:12px;color:var(--text-muted);">No phone saved — message will be copied to clipboard.</div>` : ''}
+        </div>`;
+
+      const fee = +(s.delivery_fee || 0);
+      const feeHtml = `
+        <div class="card">
+          <div class="card-title">Delivery Fee</div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <input type="number" id="sd-fee-${sid}" value="${fee > 0 ? fee.toFixed(2) : ''}" placeholder="0.00" min="0" step="0.01"
+              style="flex:1;" onblur="saveDetailFee('${sid}',this.value)">
+            <span style="font-size:14px;color:var(--text-muted);flex-shrink:0;">EGP</span>
+          </div>
+          <div style="font-size:12px;color:var(--text-muted);">Enter after the restaurant confirms delivery cost.</div>
+        </div>`;
+
+      body.innerHTML = summaryHtml + restHtml + feeHtml + `
+        <div style="display:flex;flex-direction:column;gap:8px;padding-top:4px;">
+          <button class="btn btn-primary btn-xl" onclick="deliverSessionFromDetail('${sid}')">Mark as Delivered</button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-ghost btn-sm" onclick="reopenSessionFromDetail('${sid}')">↩ Reopen</button>
+            <button class="btn btn-danger btn-sm" onclick="cancelSessionFromDetail('${sid}')">✕ Cancel</button>
+          </div>
+        </div>`;
+    }
+
+    function renderDetailDelivered(s, orders, members, body) {
+      const sid = s.id;
+      const fee = +(s.delivery_fee || 0);
+      const anyHasDelivery = orders.some(o => +(o.delivery_share || 0) > 0);
+      const feeSplitDone = fee <= 0 || anyHasDelivery;
+      const eligible = orders.filter(o => !o.excluded_from_delivery);
+      const perPerson = eligible.length > 0 ? Math.round((fee / eligible.length) * 100) / 100 : 0;
+      const collected   = orders.filter(o => o.paid_status === 'paid').reduce((s, o) => s + +(o.final_total || 0), 0);
+      const outstanding = orders.filter(o => !['paid','exempt'].includes(o.paid_status)).reduce((s, o) => s + +(o.final_total || 0), 0);
+      const unpaidCount = orders.filter(o => o.paid_status === 'unpaid').length;
+      const disabled = (fee > 0 && !feeSplitDone) ? 'disabled title="Split delivery fee first"' : '';
+
+      const feeCard = `
+        <div class="card">
+          <div class="card-title">Delivery Fee</div>
+          <input type="number" id="sd-fee-${sid}" class="fee-input-large" value="${fee > 0 ? fee.toFixed(2) : ''}" placeholder="0.00" min="0" step="0.01"
+            onblur="saveDetailFee('${sid}',this.value)">
+          ${fee > 0 ? `
+            <div style="font-size:13px;color:var(--text-sec);">
+              ÷ ${eligible.length} order${eligible.length!==1?'s':''} = <strong>${perPerson.toFixed(2)} EGP</strong> each
+              ${anyHasDelivery ? ' · <span style="color:var(--success);">✓ Split done</span>' : ' · <span style="color:#E67E22;">⚠ Not split yet</span>'}
+            </div>
+            ${!feeSplitDone
+              ? `<button class="btn btn-primary btn-sm" onclick="splitDetailDelivery('${sid}',${fee})">Split Fee Now</button>`
+              : `<button class="btn btn-ghost btn-sm" onclick="splitDetailDelivery('${sid}',${fee})">Re-split</button>`}
+          ` : ''}
+          <div class="fee-totals-row">
+            <div class="fee-total-box fee-collected">
+              <div class="fee-total-val">${collected.toFixed(2)} EGP</div>
+              <div class="fee-total-label">Collected</div>
+            </div>
+            <div class="fee-total-box fee-outstanding">
+              <div class="fee-total-val">${outstanding.toFixed(2)} EGP</div>
+              <div class="fee-total-label">Outstanding</div>
+            </div>
+          </div>
+        </div>`;
+
+      const memberCards = orders.map(o => {
+        const name     = o.bitesync_members?.full_name || 'Unknown';
+        const subtotal = +(o.items_subtotal || 0);
+        const delivery = +(o.delivery_share  || 0);
+        const total    = +(o.final_total     || 0);
+        const items    = o.bitesync_order_items || [];
+        const summary  = items.map(oi => `${oi.quantity}× ${oi.bitesync_session_items?.name || '?'}`).join(', ');
+        return `
+          <div class="card" style="gap:10px;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              ${avatarHtml(name, 40)}
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:15px;font-weight:700;">${x(name)}</div>
+                ${summary ? `<div style="font-size:12px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${x(summary)}</div>` : ''}
+                <div style="font-size:12px;color:var(--text-muted);">${subtotal.toFixed(2)} EGP items${delivery > 0 ? ` + ${delivery.toFixed(2)} delivery` : ''}</div>
+              </div>
+              <div style="font-size:17px;font-weight:800;flex-shrink:0;">${total.toFixed(2)}<span style="font-size:11px;"> EGP</span></div>
+            </div>
+            <div class="pay-seg">
+              <button class="${o.paid_status==='unpaid'?'active-unpaid':''}" ${disabled}
+                onclick="setDetailPaid('${o.id}','unpaid','${sid}')">Unpaid</button>
+              <button class="${o.paid_status==='paid'?'active-paid':''}" ${disabled}
+                onclick="setDetailPaid('${o.id}','paid','${sid}')">Paid</button>
+              <button class="${o.paid_status==='exempt'?'active-exempt':''}" ${disabled}
+                onclick="setDetailPaid('${o.id}','exempt','${sid}')">Exempt</button>
+            </div>
+          </div>`;
+      }).join('');
+
+      body.innerHTML = feeCard + memberCards + `
+        <div style="display:flex;flex-direction:column;gap:8px;padding-top:4px;">
+          ${unpaidCount > 0 ? `<button class="btn btn-ghost btn-sm btn-full" onclick="markAllDetailPaid('${sid}')">✓ Mark All ${unpaidCount} as Paid</button>` : ''}
+          <button class="btn btn-success btn-xl" onclick="settleSessionFromDetail('${sid}')">✓ Settle Session</button>
+          <button class="btn btn-ghost btn-sm" onclick="reopenToClosedFromDetail('${sid}')">↩ Reopen to Closed</button>
+        </div>`;
+    }
+
+    function renderDetailSettled(s, orders, members, body) {
+      const sid     = s.id;
+      const total   = orders.reduce((sum, o) => sum + +(o.final_total || 0), 0);
+      const collected = orders.filter(o => o.paid_status === 'paid').reduce((sum, o) => sum + +(o.final_total || 0), 0);
+
+      const summaryCard = `
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;">
+            <span style="font-size:16px;font-weight:700;">Session Total</span>
+            <span style="font-size:20px;font-weight:800;color:var(--primary);">${total.toFixed(2)} EGP</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:14px;color:var(--text-sec);">Collected</span>
+            <span style="font-size:15px;font-weight:700;color:var(--success);">${collected.toFixed(2)} EGP</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:14px;color:var(--text-sec);">Orders</span>
+            <span style="font-size:14px;font-weight:600;">${orders.length}</span>
+          </div>
+        </div>`;
+
+      const membersCard = orders.length > 0 ? `
+        <div class="card" style="gap:0;padding:6px 12px;">
+          ${orders.map(o => {
+            const name  = o.bitesync_members?.full_name || 'Unknown';
+            const total = +(o.final_total || 0);
+            return `<div class="member-row">
+              ${avatarHtml(name, 36)}
+              <div style="flex:1;font-size:14px;font-weight:600;">${x(name)}</div>
+              <span class="badge badge-${o.paid_status}">${o.paid_status}</span>
+              <span style="font-size:14px;font-weight:700;margin-inline-start:8px;">${total.toFixed(2)} EGP</span>
+            </div>`;
+          }).join('')}
+        </div>` : `<div class="empty">No orders.</div>`;
+
+      body.innerHTML = summaryCard + membersCard + `
+        <div style="display:flex;flex-direction:column;gap:8px;padding-top:4px;">
+          <button class="btn btn-ghost btn-sm" onclick="reopenToDeliveredFromDetail('${sid}')">↩ Reopen to Delivered</button>
+        </div>`;
+    }
+
+    // ── Detail action handlers ────────────────────────────────────────
+
+    window.openSessionFromDetail = async (id) => {
+      const { data } = await supabase.from('bitesync_session_items').select('id').eq('session_id', id).limit(1);
+      if (!data?.length) { alert('Tick at least one menu item before opening the session.'); return; }
+      await supabase.from('bitesync_sessions').update({ status: 'open' }).eq('id', id);
+      await loadSessionDetail(id);
+    };
+
+    window.closeSessionFromDetail = async (id) => {
+      if (!confirm('Close this session? Members can no longer place orders.')) return;
+      await supabase.from('bitesync_sessions').update({ status: 'closed', closed_at: new Date().toISOString() }).eq('id', id);
+      await loadSessionDetail(id);
+    };
+
+    window.deliverSessionFromDetail = async (id) => {
+      const feeEl = document.getElementById(`sd-fee-${id}`);
+      const fee   = parseFloat(feeEl?.value) || 0;
+      await supabase.from('bitesync_sessions').update({ status: 'delivered', delivery_fee: fee > 0 ? fee : null }).eq('id', id);
+      await loadSessionDetail(id);
+    };
+
+    window.saveDetailFee = async (id, feeVal) => {
+      const fee = parseFloat(feeVal) || 0;
+      await supabase.from('bitesync_sessions').update({ delivery_fee: fee > 0 ? fee : null }).eq('id', id);
+    };
+
+    window.splitDetailDelivery = async (sid, fee) => {
+      const { data: orders } = await supabase.from('bitesync_orders').select('id, items_subtotal, excluded_from_delivery, paid_status').eq('session_id', sid);
+      if (!orders?.length) return;
+      const paid = orders.filter(o => o.paid_status === 'paid');
+      if (paid.length > 0) {
+        if (!confirm(`${paid.length} order${paid.length!==1?'s are':' is'} already paid. Reset all to unpaid and re-split?`)) return;
+        await Promise.all(orders.map(o => supabase.from('bitesync_orders').update({ paid_status: 'unpaid', paid_at: null }).eq('id', o.id)));
+      }
+      const eligible = orders.filter(o => !o.excluded_from_delivery);
+      const share    = eligible.length > 0 ? Math.round((fee / eligible.length) * 100) / 100 : 0;
+      await Promise.all(orders.map(o => {
+        const excl = o.excluded_from_delivery;
+        return supabase.from('bitesync_orders').update({
+          delivery_share: excl ? 0 : share,
+          final_total: Math.round((+(o.items_subtotal) + (excl ? 0 : share)) * 100) / 100,
+        }).eq('id', o.id);
+      }));
+      await loadSessionDetail(sid);
+    };
+
+    window.setDetailPaid = async (orderId, status, sid) => {
+      const upd = { paid_status: status };
+      if (status === 'paid') upd.paid_at = new Date().toISOString();
+      await supabase.from('bitesync_orders').update(upd).eq('id', orderId);
+      await loadSessionDetail(sid);
+    };
+
+    window.markAllDetailPaid = async (sid) => {
+      const { data: orders } = await supabase.from('bitesync_orders').select('id, paid_status').eq('session_id', sid);
+      const now = new Date().toISOString();
+      await Promise.all((orders || []).filter(o => o.paid_status === 'unpaid').map(o =>
+        supabase.from('bitesync_orders').update({ paid_status: 'paid', paid_at: now }).eq('id', o.id)
+      ));
+      await loadSessionDetail(sid);
+    };
+
+    window.settleSessionFromDetail = async (id) => {
+      if (!confirm('Mark this session as settled?')) return;
+      await supabase.from('bitesync_sessions').update({ status: 'settled' }).eq('id', id);
+      await loadSessionDetail(id);
+    };
+
+    window.reopenSessionFromDetail = async (id) => {
+      if (!confirm('Reopen this session? Members will be able to place orders again.')) return;
+      await supabase.from('bitesync_sessions').update({ status: 'open', closed_at: null }).eq('id', id);
+      await loadSessionDetail(id);
+    };
+
+    window.reopenToClosedFromDetail = async (id) => {
+      if (!confirm('Reopen this session to Closed state?')) return;
+      await supabase.from('bitesync_sessions').update({ status: 'closed' }).eq('id', id);
+      await loadSessionDetail(id);
+    };
+
+    window.reopenToDeliveredFromDetail = async (id) => {
+      if (!confirm('Reopen this session to Delivered state?')) return;
+      await supabase.from('bitesync_sessions').update({ status: 'delivered' }).eq('id', id);
+      await loadSessionDetail(id);
+    };
+
+    window.cancelSessionFromDetail = async (id) => {
+      if (!confirm('Cancel this session? This cannot be undone.')) return;
+      await supabase.from('bitesync_sessions').update({ status: 'cancelled' }).eq('id', id);
+      closeSessionDetail();
+    };
+
+    window.saveDetailEdit = async (id) => {
+      const label   = document.getElementById(`sd-lbl-${id}`)?.value?.trim() || '';
+      const deadline = document.getElementById(`sd-ddl-${id}`)?.value || '';
+      const address  = document.getElementById(`sd-addr-${id}`)?.value?.trim() || '';
+      const anote    = document.getElementById(`sd-anote-${id}`)?.value?.trim() || '';
+      let finalLabel = label;
+      if (!finalLabel && deadline) {
+        finalLabel = new Date(deadline).toLocaleDateString('en-EG', { weekday:'long', day:'numeric', month:'long', timeZone:'Africa/Cairo' });
+      }
+      await supabase.from('bitesync_sessions').update({
+        label:                  finalLabel || null,
+        order_deadline:         deadline ? new Date(deadline).toISOString() : null,
+        delivery_address:       address || null,
+        delivery_address_notes: anote || null,
+      }).eq('id', id);
+      await loadSessionDetail(id);
+    };
+
+    window.toggleSdEl = (elId) => {
+      const el = document.getElementById(elId);
+      if (!el) return;
+      el.style.display = el.style.display === 'flex' ? 'none' : 'flex';
     };
 
     window.openSession = async (id) => {
