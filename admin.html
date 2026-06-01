@@ -975,7 +975,8 @@
                 ${contactBtns}
                 ${isSelf
                   ? `<button class="btn btn-ghost btn-sm" style="font-size:11px;" onclick="toggleSelfEdit('${m.id}')">✏ Edit</button>`
-                  : `<button class="btn btn-ghost btn-sm" style="font-size:11px;" onclick="toggleAdmin('${m.id}',${m.is_admin})">${m.is_admin ? 'Revoke Admin' : 'Make Admin'}</button>`}
+                  : `<button class="btn btn-ghost btn-sm" style="font-size:11px;" onclick="toggleAdmin('${m.id}',${m.is_admin})">${m.is_admin ? 'Revoke Admin' : 'Make Admin'}</button>
+                     <button class="btn btn-ghost btn-sm" style="font-size:11px;color:#E74C3C;" onclick="removeMember('${m.id}','${x(m.full_name)}')">✕</button>`}
               </div>
             </div>
             ${isSelf ? `
@@ -996,6 +997,13 @@
       const action = isCurrentlyAdmin ? 'revoke admin from' : 'make admin';
       if (!confirm(`${action.charAt(0).toUpperCase() + action.slice(1)} this member?`)) return;
       await supabase.from('bitesync_members').update({ is_admin: !isCurrentlyAdmin }).eq('id', id);
+      loadMembers();
+    };
+
+    window.removeMember = async (id, name) => {
+      if (!confirm(`Remove ${name} from the group?\n\nTheir past orders are kept for records.`)) return;
+      const { error } = await supabase.from('bitesync_members').delete().eq('id', id);
+      if (error) { alert('Failed to remove member. They may have active orders.'); return; }
       loadMembers();
     };
 
