@@ -908,10 +908,13 @@
     window.saveGroupDelivery = async () => {
       const addr  = document.getElementById('input-group-addr').value.trim();
       const notes = document.getElementById('input-group-addr-notes').value.trim();
-      await supabase.from('bitesync_groups').update({
+      const { error } = await supabase.from('bitesync_groups').update({
         delivery_address:       addr  || null,
         delivery_address_notes: notes || null,
       }).eq('id', groupId);
+      if (error) { alert('Failed to save delivery address. Try again.'); return; }
+      groupDeliveryAddress = addr;
+      groupDeliveryNotes   = notes;
       const addrDisplay  = document.getElementById('delivery-addr-display');
       const notesDisplay = document.getElementById('delivery-notes-display');
       if (addrDisplay)  addrDisplay.textContent  = addr  || 'No address set';
