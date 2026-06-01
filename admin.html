@@ -1016,7 +1016,9 @@
       const { error } = await supabase.from('bitesync_members').update(upd).eq('id', id);
       if (error) { alert('Failed to save. Try again.'); return; }
       Object.assign(adminMember, upd);
-      loadMembers();
+      const saveBtn = document.querySelector(`#self-edit-${id} .btn-primary`);
+      if (saveBtn) { saveBtn.textContent = '✓ Saved'; saveBtn.disabled = true; }
+      setTimeout(() => loadMembers(), 800);
     };
 
     window.approve = async (id) => {
@@ -1764,7 +1766,7 @@
           <div style="font-size:12px;color:var(--text-muted);">Enter after the restaurant confirms delivery cost.</div>
         </div>`;
 
-      const arabicCard = `
+      const arabicCard = claudeApiKey ? `
         <div class="card" id="arabic-wa-card-${sid}">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
             <div>
@@ -1780,7 +1782,7 @@
               <button class="btn btn-ghost btn-sm" onclick="generateArabicWA('${sid}')">↻ إعادة توليد</button>
             </div>
           </div>
-        </div>`;
+        </div>` : '';
 
       body.innerHTML = summaryHtml + restHtml + arabicCard + feeHtml + `
         <div style="display:flex;flex-direction:column;gap:8px;padding-top:4px;">
@@ -2316,7 +2318,7 @@
         .from('bitesync_sessions')
         .select('id, label, status, bitesync_restaurants(name)')
         .eq('group_id', groupId)
-        .not('status', 'in', '("draft","settled","cancelled")')
+        .not('status', 'in', '(draft,settled,cancelled)')
         .order('created_at', { ascending: false })
         .limit(1);
 

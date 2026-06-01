@@ -981,12 +981,17 @@
             .order('name');
 
           sessionItems = items || [];
-          cart.clear(); itemNotes.clear();
+          // Only reset cart from DB if there is a submitted order.
+          // When returning from admin with no submitted order, keep the draft that init() restored.
+          const returningFromAdmin = sessionStorage.getItem('bitesync_from_member');
           if (myOrder) {
+            cart.clear(); itemNotes.clear();
             for (const oi of myOrder.bitesync_order_items || []) {
               if (oi.quantity > 0) cart.set(oi.session_item_id, oi.quantity);
               if (oi.item_notes)   itemNotes.set(oi.session_item_id, oi.item_notes);
             }
+          } else if (!returningFromAdmin) {
+            cart.clear(); itemNotes.clear();
           }
 
           // Fetch order count for "N ordering" display
@@ -1225,7 +1230,7 @@
             <div class="summary-label">${t('finalBreakdown')}</div>
             ${items.map(oi => `
               <div class="summary-item">
-                <span class="summary-item-name">1× ${x(oi.bitesync_session_items?.name || '—')}</span>
+                <span class="summary-item-name">${oi.quantity}× ${x(oi.bitesync_session_items?.name || '—')}</span>
                 <span class="summary-item-price">${(+oi.line_total).toFixed(2)} EGP</span>
               </div>
               ${oi.item_notes ? `<div style="font-size:12px;color:var(--text-sec);padding:0 0 4px 12px;">↳ ${x(oi.item_notes)}</div>` : ''}`).join('')}
@@ -1477,7 +1482,7 @@
       if (qtyEl) qtyEl.textContent = next;
 
       // Switch between Add button and counter
-      if (next > 0 && plusEl?.classList.contains !== undefined) {
+      if (next > 0 && plusEl?.classList.contains('btn-add')) {
         // Check if we are showing an "Add" button (needs conversion to counter)
         if (plusEl.textContent === 'Add' || (plusEl.className && plusEl.className.includes('btn-add'))) {
           // Replace the qty control section
@@ -1681,7 +1686,7 @@
       const sel = document.getElementById('claim-name');
       sel.innerHTML = `<option value="">${lang === 'ar' ? 'جارٍ التحميل…' : 'Loading…'}</option>`;
       const { data } = await supabase
-        .from('bitesync_members').select('full_name').eq('status','active').order('full_name');
+        .from('bitesync_members').select('full_name').eq('group_id', me.group_id).eq('status','active').order('full_name');
       sel.innerHTML = `<option value="">${lang === 'ar' ? 'اختر اسمك…' : 'Select your name…'}</option>` +
         (data||[]).map(m=>`<option value="${x(m.full_name)}">${x(m.full_name)}</option>`).join('');
     }
