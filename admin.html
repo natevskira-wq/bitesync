@@ -1365,7 +1365,7 @@
       if (!data?.length) { el.innerHTML = '<div class="empty">No sessions yet.</div>'; return; }
 
       const today  = todayCairo();
-      const active = data.filter(s => dateCairo(s.created_at) >= today && !['settled','cancelled'].includes(s.status));
+      const active = data.filter(s => dateCairo(s.created_at) >= today && !['settled','cancelled','ended'].includes(s.status));
       const past   = data.filter(s => !active.includes(s));
 
       el.innerHTML = '';
@@ -1917,6 +1917,7 @@
 
       body.innerHTML = summaryCard + membersCard + `
         <div style="display:flex;flex-direction:column;gap:8px;padding-top:4px;">
+          <button class="btn btn-danger btn-sm" onclick="endSessionFromDetail('${sid}')">⏹ End Session</button>
           <button class="btn btn-ghost btn-sm" onclick="reopenToDeliveredFromDetail('${sid}')">↩ Reopen to Delivered</button>
         </div>`;
     }
@@ -1988,6 +1989,12 @@
       if (!confirm('Mark this session as settled?')) return;
       await supabase.from('bitesync_sessions').update({ status: 'settled' }).eq('id', id);
       await loadSessionDetail(id);
+    };
+
+    window.endSessionFromDetail = async (id) => {
+      if (!confirm('End this session? It will disappear from members\' view.')) return;
+      await supabase.from('bitesync_sessions').update({ status: 'ended' }).eq('id', id);
+      closeSessionDetail();
     };
 
     window.reopenSessionFromDetail = async (id) => {

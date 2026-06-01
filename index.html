@@ -951,7 +951,7 @@
       const sessionDay = dateCairo(session.created_at);
       const today      = todayCairo();
       const isOldDay   = sessionDay < today;
-      if (isOldDay && (session.status === 'settled' || session.status === 'cancelled')) {
+      if (session.status === 'ended' || (isOldDay && (session.status === 'settled' || session.status === 'cancelled'))) {
         renderNoSession(); return;
       }
 
