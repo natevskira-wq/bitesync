@@ -2,6 +2,7 @@
 <html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>BiteSync · Admin</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -98,7 +99,7 @@
     /* ── Sub-screens (full overlays) ── */
     .sub-screen {
       display: none; position: fixed; inset: 0;
-      background: var(--bg); z-index: 50;
+      background: var(--bg); z-index: 210;
       overflow-y: auto; -webkit-overflow-scrolling: touch;
     }
     .sub-screen.visible { display: block; }
@@ -459,8 +460,6 @@
   <!-- Admin shell -->
   <div id="admin-shell">
 
-    <!-- Persistent back-to-order pill (only shown when navigated from member view) -->
-    <a id="back-to-order-pill" href="index.html" style="display:none;position:fixed;top:12px;left:12px;z-index:201;background:rgba(255,255,255,.92);border:1.5px solid #EDE4DB;border-radius:999px;padding:5px 14px;font-size:13px;font-weight:700;color:#C96442;cursor:pointer;text-decoration:none;backdrop-filter:blur(4px);line-height:1.4;">← My Order</a>
 
     <div class="admin-main">
 
@@ -616,6 +615,9 @@
         <button class="tab-btn" data-tab="restaurants" id="tab-btn-restaurants">
           <span class="tab-icon">🏪</span>Restaurants
         </button>
+        <a href="index.html" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none;font-size:11px;font-weight:700;color:var(--primary);border-inline-start:1.5px solid var(--border);">
+          <span style="font-size:20px;line-height:1;">📝</span>My Order
+        </a>
       </div>
     </div>
 
@@ -785,14 +787,6 @@
       document.getElementById('loading-overlay').classList.add('hidden');
       document.getElementById('admin-shell').style.display = 'block';
 
-      // Show back-to-order pill if admin navigated here from member view
-      if (sessionStorage.getItem('bitesync_from_member')) {
-        const pill = document.getElementById('back-to-order-pill');
-        if (pill) pill.style.display = 'inline-flex';
-        // Shift the lang toggle right so it doesn't overlap the pill
-        const langBtn = document.getElementById('admin-lang-btn');
-        if (langBtn) langBtn.style.marginInlineStart = 'auto';
-      }
 
       if (!adminMember.whatsapp_number || !adminMember.instapay_number) {
         document.getElementById('admin-wa-input').value = adminMember.whatsapp_number || '';
