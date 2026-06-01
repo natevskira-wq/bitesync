@@ -1311,22 +1311,15 @@
           <div id="number-copied-pay" style="display:none;text-align:center;font-size:13px;color:var(--success);font-weight:700;">✓ Copied!</div>` : `
           <div style="font-size:13px;color:var(--text-sec);text-align:center;">Ask ${x(adminName)} for their InstaPay number.</div>`}
         </div>
-        <button class="btn btn-success" id="btn-ive-paid" onclick="markAsPaid('${myOrder.id}','${x(adminWa)}','${x(adminName)}')" style="min-height:56px;font-size:17px;">
+        <button class="btn btn-success" id="btn-ive-paid" onclick="markAsPaid('${myOrder.id}')" style="min-height:56px;font-size:17px;">
           ✓ I've Paid
         </button>`;
     }
 
-    window.markAsPaid = async (orderId, adminWa, adminName) => {
+    window.markAsPaid = async (orderId) => {
       const btn = document.getElementById('btn-ive-paid');
       if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
       await supabase.from('bitesync_orders').update({ paid_status: 'pending' }).eq('id', orderId);
-      // Open WA to admin with notification message
-      if (adminWa) {
-        const waDigits = adminWa.replace(/[^\d]/g, '');
-        const memberName = me?.full_name || 'A member';
-        const msg = encodeURIComponent(`Hi ${adminName}, ${memberName} says they have paid for the breakfast order. Please confirm. 🙏`);
-        window.open(`https://wa.me/${waDigits}?text=${msg}`, '_blank');
-      }
       loadActiveSession();
     };
 

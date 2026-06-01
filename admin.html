@@ -951,30 +951,43 @@
       if (countEl) countEl.textContent = `${list.length} members`;
       if (!list.length) { el.innerHTML = '<div class="empty" style="padding:16px 0;">No active members yet.</div>'; return; }
       el.innerHTML = list.map(m => {
-        const phone = m.phone_number || '';
-        const wa    = m.whatsapp_number || phone;
+        const phone    = m.phone_number    || '';
+        const wa       = m.whatsapp_number || phone;
+        const instapay = m.instapay_number || '';
         const waDigits = wa.replace(/[^\d]/g, '');
-        const isSelf  = m.id === adminMember.id;
+        const isSelf   = m.id === adminMember.id;
         const contactBtns = phone ? `
           <a href="tel:${x(phone)}" class="btn btn-ghost btn-sm" style="padding:0 10px;text-decoration:none;" title="Call">📞</a>
           ${waDigits ? `<a href="https://wa.me/${waDigits}" target="_blank" class="btn btn-ghost btn-sm" style="padding:0 10px;text-decoration:none;" title="WhatsApp">💬</a>` : ''}
         ` : '';
         return `
-          <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
-            ${avatarHtml(m.full_name, 40)}
-            <div style="flex:1;min-width:0;">
-              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-                <span style="font-weight:700;font-size:14px;">${x(m.full_name)}</span>
-                ${m.is_admin ? '<span class="badge badge-admin">Admin</span>' : ''}
+          <div style="border-bottom:1px solid var(--border);padding-bottom:4px;">
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 0 6px;">
+              ${avatarHtml(m.full_name, 40)}
+              <div style="flex:1;min-width:0;">
+                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                  <span style="font-weight:700;font-size:14px;">${x(m.full_name)}</span>
+                  ${m.is_admin ? '<span class="badge badge-admin">Admin</span>' : ''}
+                </div>
+                <div style="font-size:12px;color:var(--text-muted);">${x(phone)}${m.whatsapp_number && m.whatsapp_number !== phone ? ` · WA: ${x(m.whatsapp_number)}` : ''}${instapay ? ` · InstaPay: ${x(instapay)}` : ''}</div>
               </div>
-              <div style="font-size:12px;color:var(--text-muted);">${x(phone)}${m.whatsapp_number && m.whatsapp_number !== phone ? ` · WA: ${x(m.whatsapp_number)}` : ''}</div>
+              <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
+                ${contactBtns}
+                ${isSelf
+                  ? `<button class="btn btn-ghost btn-sm" style="font-size:11px;" onclick="toggleSelfEdit('${m.id}')">✏ Edit</button>`
+                  : `<button class="btn btn-ghost btn-sm" style="font-size:11px;" onclick="toggleAdmin('${m.id}',${m.is_admin})">${m.is_admin ? 'Revoke Admin' : 'Make Admin'}</button>`}
+              </div>
             </div>
-            <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
-              ${contactBtns}
-              ${isSelf
-                ? `<button class="btn btn-ghost btn-sm" style="font-size:11px;" onclick="editMyProfile()">✏ Edit</button>`
-                : `<button class="btn btn-ghost btn-sm" style="font-size:11px;" onclick="toggleAdmin('${m.id}',${m.is_admin})">${m.is_admin ? 'Revoke Admin' : 'Make Admin'}</button>`}
-            </div>
+            ${isSelf ? `
+            <div id="self-edit-${m.id}" style="display:none;flex-direction:column;gap:8px;padding:4px 0 10px 50px;">
+              <input type="tel"  id="se-phone-${m.id}"    value="${x(phone)}"    placeholder="Phone number">
+              <input type="tel"  id="se-wa-${m.id}"       value="${x(wa)}"       placeholder="WhatsApp number">
+              <input type="text" id="se-instapay-${m.id}" value="${x(instapay)}" placeholder="InstaPay number">
+              <div style="display:flex;gap:8px;">
+                <button class="btn btn-primary btn-sm" onclick="saveSelfProfile('${m.id}')">Save</button>
+                <button class="btn btn-ghost btn-sm"   onclick="toggleSelfEdit('${m.id}')">Cancel</button>
+              </div>
+            </div>` : ''}
           </div>`;
       }).join('');
     }
@@ -983,6 +996,26 @@
       const action = isCurrentlyAdmin ? 'revoke admin from' : 'make admin';
       if (!confirm(`${action.charAt(0).toUpperCase() + action.slice(1)} this member?`)) return;
       await supabase.from('bitesync_members').update({ is_admin: !isCurrentlyAdmin }).eq('id', id);
+      loadMembers();
+    };
+
+    window.toggleSelfEdit = (id) => {
+      const el = document.getElementById(`self-edit-${id}`);
+      if (el) el.style.display = el.style.display === 'none' ? 'flex' : 'none';
+    };
+
+    window.saveSelfProfile = async (id) => {
+      const phone    = document.getElementById(`se-phone-${id}`).value.trim();
+      const wa       = document.getElementById(`se-wa-${id}`).value.trim();
+      const instapay = document.getElementById(`se-instapay-${id}`).value.trim();
+      const upd = {};
+      if (phone)    upd.phone_number    = phone;
+      if (wa)       upd.whatsapp_number = wa;
+      if (instapay) upd.instapay_number = instapay;
+      if (!Object.keys(upd).length) { toggleSelfEdit(id); return; }
+      const { error } = await supabase.from('bitesync_members').update(upd).eq('id', id);
+      if (error) { alert('Failed to save. Try again.'); return; }
+      Object.assign(adminMember, upd);
       loadMembers();
     };
 
@@ -1365,7 +1398,7 @@
       if (!data?.length) { el.innerHTML = '<div class="empty">No sessions yet.</div>'; return; }
 
       const today  = todayCairo();
-      const active = data.filter(s => dateCairo(s.created_at) >= today && !['settled','cancelled','ended'].includes(s.status));
+      const active = data.filter(s => dateCairo(s.created_at) >= today && !['cancelled','ended'].includes(s.status));
       const past   = data.filter(s => !active.includes(s));
 
       el.innerHTML = '';
