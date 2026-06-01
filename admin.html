@@ -797,6 +797,32 @@
       }
 
       loadSessions();
+      subscribeAdminRealtime();
+    }
+
+    function subscribeAdminRealtime() {
+      supabase.channel(`admin-group-${groupId}`)
+        .on('postgres_changes', {
+          event: '*', schema: 'public', table: 'bitesync_sessions',
+          filter: `group_id=eq.${groupId}`,
+        }, () => {
+          loadSessions();
+          const detailScreen = document.getElementById('screen-session-detail');
+          if (detailScreen?.classList.contains('visible')) {
+            const sid = detailScreen.dataset.sid;
+            if (sid) loadSessionDetail(sid);
+          }
+        })
+        .on('postgres_changes', {
+          event: 'UPDATE', schema: 'public', table: 'bitesync_orders',
+        }, () => {
+          const detailScreen = document.getElementById('screen-session-detail');
+          if (detailScreen?.classList.contains('visible')) {
+            const sid = detailScreen.dataset.sid;
+            if (sid) loadSessionDetail(sid);
+          }
+        })
+        .subscribe();
     }
 
     function deny() {
@@ -1483,13 +1509,17 @@
 
     window.openSessionDetail = async (sessionId) => {
       currentDetailSessionId = sessionId;
-      document.getElementById('screen-session-detail').classList.add('visible');
-      document.getElementById('screen-session-detail').scrollTo(0, 0);
+      const screen = document.getElementById('screen-session-detail');
+      screen.classList.add('visible');
+      screen.dataset.sid = sessionId;
+      screen.scrollTo(0, 0);
       await loadSessionDetail(sessionId);
     };
 
     window.closeSessionDetail = () => {
-      document.getElementById('screen-session-detail').classList.remove('visible');
+      const screen = document.getElementById('screen-session-detail');
+      screen.classList.remove('visible');
+      delete screen.dataset.sid;
       currentDetailSessionId = null;
       loadSessions();
     };
@@ -1686,11 +1716,7 @@
         <div class="card">
           <div style="font-weight:700;font-size:15px;margin-bottom:2px;">🏪 ${x(restName)}</div>
           ${phone ? `<div style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">${x(phone)}</div>` : ''}
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            ${phone ? `<a href="tel:${x(phone)}" class="btn btn-ghost btn-sm" style="flex:1;min-width:100px;text-align:center;text-decoration:none;">📞 Call</a>` : ''}
-            <button class="btn btn-success btn-sm" style="flex:2;min-width:140px;" onclick="exportWhatsApp()">💬 Send Order via WA</button>
-          </div>
-          ${!phone ? `<div style="font-size:12px;color:var(--text-muted);">No phone saved — message will be copied to clipboard.</div>` : ''}
+          ${phone ? `<a href="tel:${x(phone)}" class="btn btn-ghost btn-sm" style="text-decoration:none;width:fit-content;">📞 Call Restaurant</a>` : ''}
         </div>`;
 
       const fee = +(s.delivery_fee || 0);
@@ -1756,7 +1782,7 @@
                 <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;">InstaPay</div>
                 <div style="font-size:16px;font-weight:700;">${x(adminInstapay)}</div>
               </div>
-              <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText(${JSON.stringify(adminInstapay)}).then(()=>{this.textContent='✓ Copied';setTimeout(()=>this.textContent='Copy',1500)})">Copy</button>
+              <button class="btn btn-ghost btn-sm" data-copy="${x(adminInstapay)}" onclick="copyClip(this)">Copy</button>
             </div>` : ''}
           ${adminWa ? `
             <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
@@ -1766,7 +1792,7 @@
               </div>
               <div style="display:flex;gap:6px;">
                 <a href="https://wa.me/${adminWa.replace(/[^\d]/g,'')}" target="_blank" class="btn btn-ghost btn-sm" style="text-decoration:none;">💬 Open</a>
-                <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText(${JSON.stringify(adminWa)}).then(()=>{this.textContent='✓ Copied';setTimeout(()=>this.textContent='Copy',1500)})">Copy</button>
+                <button class="btn btn-ghost btn-sm" data-copy="${x(adminWa)}" onclick="copyClip(this)">Copy</button>
               </div>
             </div>` : ''}
           ${outstanding > 0 ? `
@@ -1775,7 +1801,7 @@
                 <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;">Outstanding</div>
                 <div style="font-size:20px;font-weight:800;color:var(--primary);">${outstanding.toFixed(2)} EGP</div>
               </div>
-              <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('${outstanding.toFixed(2)}').then(()=>{this.textContent='✓ Copied';setTimeout(()=>this.textContent='Copy',1500)})">Copy</button>
+              <button class="btn btn-ghost btn-sm" data-copy="${outstanding.toFixed(2)}" onclick="copyClip(this)">Copy</button>
             </div>` : ''}
         </div>` : '';
 
@@ -1805,6 +1831,7 @@
           </div>
         </div>`;
 
+      const pendingCount = orders.filter(o => o.paid_status === 'pending').length;
       const memberCards = orders.map(o => {
         const name     = o.bitesync_members?.full_name || 'Unknown';
         const subtotal = +(o.items_subtotal || 0);
@@ -1812,21 +1839,31 @@
         const total    = +(o.final_total     || 0);
         const items    = o.bitesync_order_items || [];
         const summary  = items.map(oi => `${oi.quantity}× ${oi.bitesync_session_items?.name || '?'}`).join(', ');
+        const isPending = o.paid_status === 'pending';
         return `
-          <div class="card" style="gap:10px;">
+          <div class="card" style="gap:10px;${isPending ? 'border:1.5px solid #F59E0B;' : ''}">
             <div style="display:flex;align-items:center;gap:12px;">
               ${avatarHtml(name, 40)}
               <div style="flex:1;min-width:0;">
-                <div style="font-size:15px;font-weight:700;">${x(name)}</div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <span style="font-size:15px;font-weight:700;">${x(name)}</span>
+                  ${isPending ? `<span style="background:#FEF3C7;color:#92400E;border-radius:999px;padding:2px 8px;font-size:10px;font-weight:700;">⏳ PENDING</span>` : ''}
+                </div>
                 ${summary ? `<div style="font-size:12px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${x(summary)}</div>` : ''}
                 <div style="font-size:12px;color:var(--text-muted);">${subtotal.toFixed(2)} EGP items${delivery > 0 ? ` + ${delivery.toFixed(2)} delivery` : ''}</div>
               </div>
               <div style="font-size:17px;font-weight:800;flex-shrink:0;">${total.toFixed(2)}<span style="font-size:11px;"> EGP</span></div>
             </div>
+            ${isPending ? `
+            <div style="display:flex;gap:8px;align-items:center;padding:8px;background:#FEF3C7;border-radius:8px;font-size:13px;color:#92400E;">
+              <span style="flex:1;">Member says they've paid — please verify.</span>
+              <button class="btn btn-success btn-sm" ${disabled} onclick="setDetailPaid('${o.id}','paid','${sid}')">✓ Confirm</button>
+              <button class="btn btn-ghost btn-sm" ${disabled} onclick="setDetailPaid('${o.id}','unpaid','${sid}')">✕ Reject</button>
+            </div>` : ''}
             <div class="pay-seg">
               <button class="${o.paid_status==='unpaid'?'active-unpaid':''}" ${disabled}
                 onclick="setDetailPaid('${o.id}','unpaid','${sid}')">Unpaid</button>
-              <button class="${o.paid_status==='paid'?'active-paid':''}" ${disabled}
+              <button class="${['paid','pending'].includes(o.paid_status)?'active-paid':''}" ${disabled}
                 onclick="setDetailPaid('${o.id}','paid','${sid}')">Paid</button>
               <button class="${o.paid_status==='exempt'?'active-exempt':''}" ${disabled}
                 onclick="setDetailPaid('${o.id}','exempt','${sid}')">Exempt</button>
@@ -1836,7 +1873,8 @@
 
       body.innerHTML = payInfoCard + feeCard + memberCards + `
         <div style="display:flex;flex-direction:column;gap:8px;padding-top:4px;">
-          ${unpaidCount > 0 ? `<button class="btn btn-ghost btn-sm btn-full" onclick="markAllDetailPaid('${sid}')">✓ Mark All ${unpaidCount} as Paid</button>` : ''}
+          ${pendingCount > 0 ? `<div style="font-size:13px;color:#92400E;text-align:center;">⏳ ${pendingCount} member${pendingCount>1?'s':''} pending confirmation</div>` : ''}
+          ${unpaidCount > 0 ? `<button class="btn btn-ghost btn-sm btn-full" onclick="markAllDetailPaid('${sid}')">✓ Mark All ${unpaidCount} Unpaid as Paid</button>` : ''}
           <button class="btn btn-success btn-xl" onclick="settleSessionFromDetail('${sid}')">✓ Settle Session</button>
           <button class="btn btn-ghost btn-sm" onclick="reopenToClosedFromDetail('${sid}')">↩ Reopen to Closed</button>
         </div>`;
@@ -2289,20 +2327,6 @@
 
       const isReadOnly = ['settled','cancelled'].includes(session?.status);
 
-      // WhatsApp button
-      const waCard = document.createElement('div');
-      waCard.className = 'card';
-      const restPhone = session?.bitesync_restaurants?.phones?.[0];
-      waCard.innerHTML = `
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
-          <div>
-            <div style="font-weight:700;font-size:15px;">📲 Send to Restaurant</div>
-            <div style="font-size:12px;color:var(--text-sec);margin-top:3px;">${restPhone ? `Will open WhatsApp to ${x(restPhone)}` : 'No restaurant phone — message copied to clipboard'}</div>
-          </div>
-          <button class="btn btn-success btn-sm" onclick="exportWhatsApp()">Send via WA</button>
-        </div>`;
-      el.appendChild(waCard);
-
       if (!orders?.length) {
         const empty = document.createElement('div');
         empty.className = 'empty';
@@ -2698,6 +2722,14 @@ ${address ? `عنوان التوصيل: ${address}${addrNotes ? ' — ' + addrNo
       if (s == null) return '';
       return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
+
+    window.copyClip = (btn) => {
+      navigator.clipboard.writeText(btn.dataset.copy || '').then(() => {
+        const orig = btn.textContent;
+        btn.textContent = '✓ Copied';
+        setTimeout(() => btn.textContent = orig, 1500);
+      });
+    };
 
     function ago(iso) {
       const m = Math.floor((Date.now() - new Date(iso)) / 60000);

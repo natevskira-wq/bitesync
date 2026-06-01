@@ -906,10 +906,14 @@
     function subscribeToSessions() {
       realtimeChannel?.unsubscribe();
       realtimeChannel = supabase
-        .channel(`group-${me.group_id}`)
+        .channel(`member-group-${me.group_id}`)
         .on('postgres_changes', {
-          event: 'UPDATE', schema: 'public', table: 'bitesync_sessions',
+          event: '*', schema: 'public', table: 'bitesync_sessions',
           filter: `group_id=eq.${me.group_id}`,
+        }, () => loadActiveSession())
+        .on('postgres_changes', {
+          event: 'UPDATE', schema: 'public', table: 'bitesync_orders',
+          filter: `member_id=eq.${me.id}`,
         }, () => loadActiveSession())
         .subscribe();
     }
@@ -1248,49 +1252,81 @@
         area.innerHTML = html;
 
         // Load admin info for payment section
-        loadPaymentSection(myOrder);
+        loadPaymentSection(myOrder, session.id);
         return;
       }
     }
 
-    async function loadPaymentSection(myOrder) {
+    async function loadPaymentSection(myOrder, sessionId) {
       const { data: admins } = await supabase
         .from('bitesync_members')
-        .select('full_name')
+        .select('full_name, whatsapp_number, instapay_number')
         .eq('group_id', me.group_id)
         .eq('is_admin', true)
         .limit(1);
-      const adminName = admins?.[0]?.full_name || 'admin';
+      const admin = admins?.[0] || {};
+      const adminName     = admin.full_name || 'admin';
+      const adminInstapay = admin.instapay_number || '';
+      const adminWa       = admin.whatsapp_number || '';
 
       const el = document.getElementById('payment-section');
       if (!el) return;
 
       if (myOrder.paid_status === 'paid') {
-        el.innerHTML = `<div class="paid-confirm">✓ Payment confirmed</div>`;
+        el.innerHTML = `<div class="paid-confirm">✓ Payment confirmed by admin</div>`;
         return;
       }
       if (myOrder.paid_status === 'exempt') {
         el.innerHTML = `<div class="paid-banner"><div class="paid-banner-title">${t('exempt2')}</div><div class="paid-banner-sub">${t('exemptSub')}</div></div>`;
         return;
       }
+      if (myOrder.paid_status === 'pending') {
+        el.innerHTML = `
+          <div class="paid-banner" style="background:#FEF3C7;border-color:#F59E0B;">
+            <div class="paid-banner-title" style="color:#92400E;">⏳ Waiting for confirmation</div>
+            <div class="paid-banner-sub" style="color:#78350F;">The admin has been notified and will confirm your payment shortly.</div>
+          </div>`;
+        return;
+      }
+
+      const total = +(myOrder.final_total || myOrder.items_subtotal || 0);
 
       el.innerHTML = `
-        <div class="payment-status-row">
-          <span class="payment-status-name">Pay ${x(adminName)} (admin)</span>
-          <span class="badge-unpaid">UNPAID</span>
+        <div class="card instapay-card" style="gap:16px;">
+          <div style="text-align:center;width:100%;">
+            <div class="instapay-label">You owe</div>
+            <div class="instapay-amount">${total.toFixed(2)}</div>
+            <div class="instapay-unit">EGP</div>
+          </div>
+          ${adminInstapay ? `
+          <div style="width:100%;">
+            <div class="instapay-label" style="text-align:center;">InstaPay — ${x(adminName)}</div>
+            <div class="instapay-number">${x(adminInstapay)}</div>
+          </div>
+          <div class="instapay-copy-row">
+            <button class="btn btn-secondary" onclick="copyText('${total.toFixed(2)}','amount-copied-pay')">Copy Amount</button>
+            <button class="btn btn-primary" onclick="copyText('${x(adminInstapay)}','number-copied-pay')">Copy Number</button>
+          </div>
+          <div id="amount-copied-pay" style="display:none;text-align:center;font-size:13px;color:var(--success);font-weight:700;">✓ Copied!</div>
+          <div id="number-copied-pay" style="display:none;text-align:center;font-size:13px;color:var(--success);font-weight:700;">✓ Copied!</div>` : `
+          <div style="font-size:13px;color:var(--text-sec);text-align:center;">Ask ${x(adminName)} for their InstaPay number.</div>`}
         </div>
-        <button class="btn btn-primary" id="btn-ive-paid" onclick="markAsPaid('${myOrder.id}')" style="min-height:56px;font-size:17px;margin-top:8px;">
-          ${t('iHavePaid')} ${x(adminName)}
+        <button class="btn btn-success" id="btn-ive-paid" onclick="markAsPaid('${myOrder.id}','${x(adminWa)}','${x(adminName)}')" style="min-height:56px;font-size:17px;">
+          ✓ I've Paid
         </button>`;
     }
 
-    window.markAsPaid = async (orderId) => {
+    window.markAsPaid = async (orderId, adminWa, adminName) => {
       const btn = document.getElementById('btn-ive-paid');
       if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
-      await supabase.from('bitesync_orders').update({
-        paid_status: 'paid',
-        paid_at: new Date().toISOString()
-      }).eq('id', orderId);
+      await supabase.from('bitesync_orders').update({ paid_status: 'pending' }).eq('id', orderId);
+      // Open WA to admin with notification message
+      if (adminWa) {
+        const waDigits = adminWa.replace(/[^\d]/g, '');
+        const memberName = me?.full_name || 'A member';
+        const msg = encodeURIComponent(`Hi ${adminName}, ${memberName} says they have paid for the breakfast order. Please confirm. 🙏`);
+        window.open(`https://wa.me/${waDigits}?text=${msg}`, '_blank');
+      }
       loadActiveSession();
     };
 
